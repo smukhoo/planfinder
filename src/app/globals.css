@@ -1,6 +1,5 @@
 
-/* Import Leaflet CSS */
-@import "leaflet/dist/leaflet.css";
+@import "leaflet/dist/leaflet.css"; /* Import Leaflet CSS */
 
 @tailwind base;
 @tailwind components;

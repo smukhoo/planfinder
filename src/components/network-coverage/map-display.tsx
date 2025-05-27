@@ -1,59 +1,49 @@
 // src/components/network-coverage/map-display.tsx
 "use client";
 
-import type { LatLngExpression } from 'leaflet';
-import { Loader2 } from 'lucide-react'; // Keep for loading state from parent
+// Removed Leaflet imports as we are now using an iframe.
+// import L from 'leaflet';
+// import type { LatLngExpression, Map as LeafletMap } from 'leaflet';
+// import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+// import { useEffect, useRef } from 'react';
 
-// Define mapStyle outside the component to prevent re-creation on every render
-const mapPlaceholderStyle: React.CSSProperties = {
-  height: '100%',
-  width: '100%',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  backgroundColor: 'hsl(var(--muted))', // Use theme color
-  border: '2px dashed hsl(var(--border))', // Use theme color
-  borderRadius: 'var(--radius)',
-  color: 'hsl(var(--muted-foreground))',
-  flexDirection: 'column',
-  textAlign: 'center',
-  padding: '20px',
-};
+// Removed Leaflet default icon path fix as it's no longer needed for an iframe.
 
+// Props are kept for potential future re-integration or if the parent component
+// still passes them, but they are not used by this iframe-only version.
 interface MapDisplayProps {
-  // Props are kept for potential future re-integration, but not all are used by the placeholder
-  mapCenter: LatLngExpression;
+  mapCenter: any; // LatLngExpression; - Type kept general as it's unused
   mapZoom: number;
-  markerPosition: LatLngExpression | null;
-  isLoadingLocation: boolean; // This can still be used to show a loading state on the placeholder
+  markerPosition: any | null; // LatLngExpression | null; - Type kept general
+  isLoadingLocation: boolean;
+  searchTerm?: string;
+  selectedOperators?: string[];
+  selectedTechnologies?: string[];
 }
 
-export function MapDisplay({ isLoadingLocation, markerPosition, mapCenter, mapZoom }: MapDisplayProps) {
-  // The Leaflet icon fix and map instance management (useRef, useEffect for cleanup) are removed
-  // as we are no longer rendering an actual Leaflet map.
+const mapStyle: React.CSSProperties = {
+  height: '100%',
+  width: '100%',
+  border: 'none', // Remove iframe border
+  borderRadius: 'var(--radius)', // Inherit border radius from parent
+};
 
-  if (isLoadingLocation) {
-    return (
-      <div style={mapPlaceholderStyle}>
-        <Loader2 className="h-10 w-10 animate-spin text-primary mb-3" />
-        <p>Fetching location for map...</p>
-      </div>
-    );
-  }
+export function MapDisplay({ }: MapDisplayProps) {
+  // All Leaflet-specific logic, refs, and effects are removed.
 
   return (
-    <div style={mapPlaceholderStyle}>
-      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-map mb-3 text-primary opacity-70">
-        <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" x2="9" y1="3" y2="18"/><line x1="15" x2="15" y1="6" y2="21"/>
-      </svg>
-      <h3 className="text-lg font-semibold mb-1 text-foreground">Interactive Map Placeholder</h3>
-      <p className="text-sm">
-        The interactive map will be displayed here.
-      </p>
-      {markerPosition && (
-        <p className="text-xs mt-2">Marker at: {JSON.stringify(markerPosition)}</p>
-      )}
-       <p className="text-xs mt-1">Center: {JSON.stringify(mapCenter)}, Zoom: {mapZoom}</p>
-    </div>
+    <iframe
+      src="https://www.airtel.in/wirelesscoverage/"
+      style={mapStyle}
+      title="Airtel Wireless Coverage Map"
+      allow="geolocation" // Allows the iframe to request geolocation if the embedded page supports it
+      sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-geolocation" // Security sandbox, allow necessary features
+    >
+      Your browser does not support iframes. Please visit{' '}
+      <a href="https://www.airtel.in/wirelesscoverage/" target="_blank" rel="noopener noreferrer">
+        Airtel's Coverage Map
+      </a>{' '}
+      directly.
+    </iframe>
   );
 }

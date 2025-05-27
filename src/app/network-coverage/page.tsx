@@ -3,6 +3,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
+import dynamic from 'next/dynamic'; // Import dynamic
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -10,7 +11,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MapPinned, Search, ShieldAlert, Wifi, Smartphone, Settings2, Loader2 } from 'lucide-react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'; // Removed useMap
+// Removed MapContainer from static imports, will be dynamically imported
+import { TileLayer, Marker, Popup } from 'react-leaflet';
 import type { LatLngExpression, Map as LeafletMap } from 'leaflet'; // Import LeafletMap type
 
 const OPERATORS = [
@@ -29,15 +31,14 @@ const TECHNOLOGIES = [
 const DEFAULT_MAP_CENTER: LatLngExpression = [20.5937, 78.9629]; // Approx center of India
 const DEFAULT_MAP_ZOOM = 5;
 
-// Removed ChangeMapView component
-// function ChangeMapView({ center, zoom }: { center: LatLngExpression, zoom: number }) {
-//   const map = useMap();
-//   useEffect(() => { 
-//     map.setView(center, zoom);
-//   }, [map, center, zoom]);
-//   return null;
-// }
-
+// Dynamically import MapContainer
+const DynamicMapContainer = dynamic(
+  () => import('react-leaflet').then((mod) => mod.MapContainer),
+  {
+    ssr: false,
+    loading: () => <p className="flex items-center justify-center h-full text-muted-foreground">Initializing map...</p>,
+  }
+);
 
 export default function NetworkCoveragePage() {
   const [selectedOperators, setSelectedOperators] = useState<string[]>([]);
@@ -48,13 +49,15 @@ export default function NetworkCoveragePage() {
   const [mapCenter, setMapCenter] = useState<LatLngExpression>(DEFAULT_MAP_CENTER);
   const [mapZoom, setMapZoom] = useState<number>(DEFAULT_MAP_ZOOM);
   const [markerPosition, setMarkerPosition] = useState<LatLngExpression | null>(null);
-  const [isClient, setIsClient] = useState(false);
+  // isClient state is no longer needed as next/dynamic handles SSR
+  // const [isClient, setIsClient] = useState(false);
 
   const mapRef = useRef<LeafletMap | null>(null);
 
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
+  // useEffect for setIsClient is no longer needed
+  // useEffect(() => {
+  //   setIsClient(true);
+  // }, []);
 
   const handleOperatorToggle = (operatorId: string) => {
     setSelectedOperators(prev =>
@@ -77,9 +80,7 @@ export default function NetworkCoveragePage() {
     let message = 'Map: ';
     if (searchTerm) {
       message += `Displaying map for "${searchTerm}"`;
-      // In a real app, you'd geocode searchTerm to coordinates and update mapCenter & markerPosition
-      // For now, we'll just update the message and potentially reset marker if search is general
-      setMarkerPosition(null); // Clear marker for general searches
+      setMarkerPosition(null); 
     } else {
       message += `Displaying general map of India`;
       setMapCenter(DEFAULT_MAP_CENTER);
@@ -97,11 +98,9 @@ export default function NetworkCoveragePage() {
     }
     message += `. Actual coverage overlays not yet implemented.`;
     setMapMessage(message);
-    // TODO: Implement actual geocoding and map view update based on searchTerm
   };
   
   useEffect(() => {
-    // Update message when filters change without an explicit search submission
     let baseMessage = "Map: Viewing general map.";
     let coverageLayersText = "";
     if (selectedOperators.length > 0) {
@@ -131,7 +130,7 @@ export default function NetworkCoveragePage() {
           const { latitude, longitude } = position.coords;
           const newCenter: LatLngExpression = [latitude, longitude];
           setMapCenter(newCenter);
-          setMapZoom(13); // Zoom in closer for current location
+          setMapZoom(13); 
           setMarkerPosition(newCenter);
           setSearchTerm(`My Location (${latitude.toFixed(2)}, ${longitude.toFixed(2)})`);
           setMapMessage(`Map centered on your current location. Apply filters to see illustrative coverage info.`);
@@ -254,16 +253,14 @@ export default function NetworkCoveragePage() {
               className="w-full h-[400px] md:h-[500px] bg-muted rounded-md border border-border"
               aria-label="Network coverage map"
             >
-              {isClient && (
-                <MapContainer 
+              {/* Use the dynamically imported MapContainer */}
+              <DynamicMapContainer 
                   center={mapCenter} 
                   zoom={mapZoom} 
                   scrollWheelZoom={true} 
                   style={{ height: "100%", width: "100%" }}
                   whenCreated={(mapInstance) => { mapRef.current = mapInstance; }}
-                  // ChangeMapView component removed, MapContainer will use center/zoom props
                 >
-                  {/* <ChangeMapView center={mapCenter} zoom={mapZoom} /> // Removed */}
                   <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -275,7 +272,6 @@ export default function NetworkCoveragePage() {
                       </Popup>
                     </Marker>
                   )}
-                  {/* Placeholder for future coverage layers */}
                   <div className="absolute top-2 left-2 p-2 bg-background/80 rounded shadow-md text-xs z-[1000]">
                     <p className="font-semibold">Displaying mock coverage for:</p>
                     {selectedOperators.length > 0 ? (
@@ -286,9 +282,7 @@ export default function NetworkCoveragePage() {
                     ) : <p>No technologies selected</p>}
                     {!selectedOperators.length && !selectedTechnologies.length && <p>Select filters to see mock info.</p>}
                 </div>
-                </MapContainer>
-              )}
-              {!isClient && <p className="flex items-center justify-center h-full text-muted-foreground">Loading map...</p>}
+                </DynamicMapContainer>
             </div>
           </CardContent>
         </Card>
@@ -304,7 +298,6 @@ export default function NetworkCoveragePage() {
                     const operator = OPERATORS.find(o => o.id === opId);
                     return selectedTechnologies.map(techId => {
                         const technology = TECHNOLOGIES.find(t => t.id === techId);
-                        // Simple hash function for a pseudo-random but consistent color per combo
                         const colorVal = (opId.charCodeAt(0) + techId.charCodeAt(0)) % 360; 
                         return (
                             <div key={`${opId}-${techId}`} className="flex items-center">
@@ -313,7 +306,7 @@ export default function NetworkCoveragePage() {
                             </div>
                         )
                     })
-                }).flat() // Flatten the array of arrays
+                }).flat() 
             ) : (
                 <p className="text-xs text-muted-foreground">Select operator(s) and technology(s) to see example legend items.</p>
             )}

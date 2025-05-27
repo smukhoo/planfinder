@@ -1,22 +1,24 @@
+
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
 import { getTelecomPlans, TelecomPlan, TelecomPlanFilter } from '@/services/telecom-plans';
 import { PlanList } from '@/components/plans/plan-list';
-import { FilterBar } from '@/components/plans/filter-bar';
+import { FilterBar, AdditionalFeatures } from '@/components/plans/filter-bar';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Info } from 'lucide-react';
-import { PlanComparisonModal } from '@/components/plans/plan-comparison-modal';
+import { PlanComparisonTable } from '@/components/plans/plan-comparison-table';
 import { useSearchParams } from 'next/navigation';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Loader2 } from 'lucide-react';
 
-const MAX_COMPARE_PLANS = 4;
+const MAX_COMPARE_PLANS = 3; // As per image, showing 3 plans in comparison
 
 export default function PlanDiscoveryPage() {
   const searchParams = useSearchParams();
-  const initialQuery = searchParams.get('q') || '';
   const initialOperator = searchParams.get('operator') || undefined;
 
-  const [plans, setPlans] = useState<TelecomPlan[]>([]);
+  const [allPlans, setAllPlans] = useState<TelecomPlan[]>([]);
   const [filteredPlans, setFilteredPlans] = useState<TelecomPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<TelecomPlanFilter>({
@@ -26,58 +28,54 @@ export default function PlanDiscoveryPage() {
     dataPerDay: undefined,
     validity: undefined,
   });
+  const [additionalFeatures, setAdditionalFeatures] = useState<AdditionalFeatures>({
+    unlimitedCalls: false,
+    sms: false,
+    internationalRoaming: false,
+  });
 
   const [allOperators, setAllOperators] = useState<string[]>([]);
   const [allDataOptions, setAllDataOptions] = useState<string[]>([]);
   const [allValidityOptions, setAllValidityOptions] = useState<number[]>([]);
-  const [maxPricePossible, setMaxPricePossible] = useState<number>(1000); // Default max price
+  const [maxPricePossible, setMaxPricePossible] = useState<number>(1000);
 
   const [selectedForCompare, setSelectedForCompare] = useState<string[]>([]);
-  const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
 
   const fetchAndProcessPlans = useCallback(async () => {
     setLoading(true);
     try {
-      // In a real app, getTelecomPlans might take initial filters based on query if available
-      const fetchedPlans = await getTelecomPlans({}); // Fetch all initially to derive filter options
-      setPlans(fetchedPlans);
+      const fetchedPlans = await getTelecomPlans({});
+      setAllPlans(fetchedPlans);
 
-      // Derive filter options from fetched plans
-      const operators = [...new Set(fetchedPlans.map(p => p.operator))];
-      const dataOptions = [...new Set(fetchedPlans.map(p => p.data.endsWith('/day') ? p.data : 'Other'))].sort(); // Basic sort
+      const operators = [...new Set(fetchedPlans.map(p => p.operator))].sort();
+      const dataOptions = [...new Set(fetchedPlans.map(p => p.data.includes('/') ? p.data.split('/')[0].trim() + '/day' : 'Other'))].sort();
       const validityOptions = [...new Set(fetchedPlans.map(p => p.validity))].sort((a, b) => a - b);
       const maxPrice = Math.max(...fetchedPlans.map(p => p.price), 1000);
 
       setAllOperators(operators);
-      setAllDataOptions(dataOptions);
+      setAllDataOptions(dataOptions.filter(d => d !== 'Other').concat(['Other'])); // Ensure 'Other' is last
       setAllValidityOptions(validityOptions);
       setMaxPricePossible(maxPrice);
       
-      // Apply initial filters from query params
       let currentFilters = { ...filters };
       if (initialOperator) {
         currentFilters.operator = initialOperator;
       }
-      // Potentially parse 'initialQuery' here for more complex initial filtering
-      // For now, we're just setting the operator
-
       setFilters(currentFilters); 
-      applyFilters(fetchedPlans, currentFilters);
+      applyFilters(fetchedPlans, currentFilters, additionalFeatures);
 
     } catch (error) {
       console.error("Failed to fetch plans:", error);
-      // TODO: Add user-facing error message
     } finally {
       setLoading(false);
     }
-  }, [initialOperator]); // filters removed from dependency to prevent re-fetch on filter change
+  }, [initialOperator]); // filters and additionalFeatures removed from dependency to avoid re-fetch on their change
 
   useEffect(() => {
     fetchAndProcessPlans();
   }, [fetchAndProcessPlans]);
 
-
-  const applyFilters = (plansToFilter: TelecomPlan[], currentFilters: TelecomPlanFilter) => {
+  const applyFilters = (plansToFilter: TelecomPlan[], currentFilters: TelecomPlanFilter, currentAdditionalFeatures: AdditionalFeatures) => {
     let tempFilteredPlans = [...plansToFilter];
 
     if (currentFilters.operator) {
@@ -89,102 +87,133 @@ export default function PlanDiscoveryPage() {
     if (currentFilters.maxPrice !== undefined) {
       tempFilteredPlans = tempFilteredPlans.filter(plan => plan.price <= currentFilters.maxPrice!);
     }
-    if (currentFilters.dataPerDay) {
-       // More flexible data matching
-      tempFilteredPlans = tempFilteredPlans.filter(plan => {
-        if (currentFilters.dataPerDay === 'Other') {
-          return !plan.data.endsWith('/day');
-        }
-        return plan.data.includes(currentFilters.dataPerDay!);
-      });
+     if (currentFilters.dataPerDay) {
+       if (currentFilters.dataPerDay === 'Other') {
+         tempFilteredPlans = tempFilteredPlans.filter(plan => !plan.data.toLowerCase().includes('/day'));
+       } else {
+         tempFilteredPlans = tempFilteredPlans.filter(plan => plan.data.toLowerCase().startsWith(currentFilters.dataPerDay!.toLowerCase().replace('/day','')));
+       }
     }
     if (currentFilters.validity !== undefined) {
       tempFilteredPlans = tempFilteredPlans.filter(plan => plan.validity === currentFilters.validity);
     }
+
+    if (currentAdditionalFeatures.unlimitedCalls) {
+        tempFilteredPlans = tempFilteredPlans.filter(plan => plan.talktime.toLowerCase().includes('unlimited'));
+    }
+    if (currentAdditionalFeatures.sms) {
+        tempFilteredPlans = tempFilteredPlans.filter(plan => parseInt(plan.sms) > 0 || plan.sms.toLowerCase().includes('unlimited') || plan.sms.toLowerCase().includes('/day') );
+    }
+    if (currentAdditionalFeatures.internationalRoaming) {
+        // This is a mock filter; real data would need a specific flag.
+        tempFilteredPlans = tempFilteredPlans.filter(plan => plan.additionalBenefits?.toLowerCase().includes('roaming'));
+    }
+
     setFilteredPlans(tempFilteredPlans);
   };
 
-
   const handleFilterChange = (newFilters: TelecomPlanFilter) => {
     setFilters(newFilters);
-    applyFilters(plans, newFilters);
+    applyFilters(allPlans, newFilters, additionalFeatures);
   };
 
-  const handleCompareToggle = (planId: string, isSelected: boolean) => {
+  const handleAdditionalFeaturesChange = (newAdditionalFeatures: AdditionalFeatures) => {
+    setAdditionalFeatures(newAdditionalFeatures);
+    applyFilters(allPlans, filters, newAdditionalFeatures);
+  };
+
+  const handlePlanSelectToggle = (planId: string) => {
     setSelectedForCompare(prev => {
-      if (isSelected) {
+      if (prev.includes(planId)) {
+        return prev.filter(id => id !== planId);
+      } else {
         if (prev.length < MAX_COMPARE_PLANS) {
           return [...prev, planId];
         }
         // TODO: Show toast notification for max compare limit
         alert(`You can compare up to ${MAX_COMPARE_PLANS} plans.`);
         return prev;
-      } else {
-        return prev.filter(id => id !== planId);
       }
     });
   };
 
-  const plansToCompare = plans.filter(plan => selectedForCompare.includes(plan.rechargeUrl));
+  const plansToCompare = allPlans.filter(plan => selectedForCompare.includes(plan.rechargeUrl));
 
   return (
     <div className="container mx-auto px-4 py-8 md:px-6">
-      <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl mb-2">
-        Find Your Perfect Mobile Plan
-      </h1>
-      <p className="text-muted-foreground mb-8 text-lg">
-        Filter and compare prepaid plans from top operators.
-      </p>
-
-      <FilterBar
-        initialFilters={filters}
-        onFilterChange={handleFilterChange}
-        allOperators={allOperators}
-        allDataOptions={allDataOptions}
-        allValidityOptions={allValidityOptions}
-        maxPricePossible={maxPricePossible}
-      />
-      
-      {selectedForCompare.length > 0 && (
-        <div className="mb-6 p-4 bg-primary/10 rounded-lg flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div>
-                <p className="font-semibold text-primary-foreground">
-                    {selectedForCompare.length} plan{selectedForCompare.length > 1 ? 's' : ''} selected for comparison.
-                </p>
-                <p className="text-sm text-primary-foreground/80">
-                    You can select up to {MAX_COMPARE_PLANS} plans.
-                </p>
-            </div>
-          <Button 
-            onClick={() => setIsCompareModalOpen(true)} 
-            disabled={selectedForCompare.length < 2}
-            className="bg-accent text-accent-foreground hover:bg-accent/90 group"
-          >
-            Compare Selected ({selectedForCompare.length})
-            <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-          </Button>
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        {/* Filters Column */}
+        <div className="lg:col-span-1">
+          <h2 className="text-2xl font-semibold mb-6 text-foreground">Filters</h2>
+          <FilterBar
+            initialFilters={filters}
+            onFilterChange={handleFilterChange}
+            allOperators={allOperators}
+            allDataOptions={allDataOptions}
+            allValidityOptions={allValidityOptions}
+            maxPricePossible={maxPricePossible}
+            additionalFeatures={additionalFeatures}
+            onAdditionalFeaturesChange={handleAdditionalFeaturesChange}
+          />
         </div>
-      )}
 
-      <PlanList
-        plans={filteredPlans}
-        loading={loading}
-        selectedForCompare={selectedForCompare}
-        onCompareToggle={handleCompareToggle}
-      />
+        {/* Plans and Comparison Column */}
+        <div className="lg:col-span-3">
+          <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-6 gap-4">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight text-foreground">
+                Recharge Plans
+              </h1>
+              <p className="text-muted-foreground text-base">
+                Find the perfect prepaid plan for your needs.
+              </p>
+            </div>
+            <div className="flex items-center gap-4">
+               <Select defaultValue="popularity">
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Sort By" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="popularity">Popularity</SelectItem>
+                  <SelectItem value="price-asc">Price: Low to High</SelectItem>
+                  <SelectItem value="price-desc">Price: High to Low</SelectItem>
+                  <SelectItem value="validity-desc">Validity: High to Low</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          
+          <Tabs defaultValue="english" className="mb-6">
+            <TabsList className="grid w-full grid-cols-3 sm:w-auto sm:inline-flex">
+              <TabsTrigger value="english">English</TabsTrigger>
+              <TabsTrigger value="hindi">Hindi</TabsTrigger>
+              <TabsTrigger value="tamil">Tamil</TabsTrigger>
+            </TabsList>
+          </Tabs>
+          
+          {loading ? (
+            <div className="flex justify-center items-center h-64">
+              <Loader2 className="h-12 w-12 animate-spin text-primary" />
+            </div>
+          ) : (
+            <PlanList
+              plans={filteredPlans}
+              loading={loading}
+              selectedForCompare={selectedForCompare}
+              onPlanSelectToggle={handlePlanSelectToggle}
+            />
+          )}
 
-      <div className="mt-12 p-4 bg-secondary/20 rounded-lg text-center">
-        <p className="text-sm text-muted-foreground flex items-center justify-center">
-          <Info className="h-4 w-4 mr-2 text-secondary-foreground" />
-          Please note: You will be redirected to the operator's official website to complete your recharge. ConnectPlan AI helps you find and compare plans.
-        </p>
+          {plansToCompare.length > 0 && (
+            <div className="mt-12">
+              <h2 className="text-2xl font-semibold mb-6 text-foreground">Plan Comparison</h2>
+              <PlanComparisonTable plansToCompare={plansToCompare} />
+            </div>
+          )}
+        </div>
       </div>
-      
-      <PlanComparisonModal
-        isOpen={isCompareModalOpen}
-        onClose={() => setIsCompareModalOpen(false)}
-        plansToCompare={plansToCompare}
-      />
     </div>
   );
 }
+
+    

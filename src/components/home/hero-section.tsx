@@ -11,13 +11,14 @@ export function HeroSection() {
       <div className="container mx-auto px-4 md:px-6">
         <div className="relative rounded-xl overflow-hidden shadow-2xl">
           <Image
-            src="https://placehold.co/1200x500.png"
-            alt="Mobile phone with charger"
+            src="/hero-background.gif"
+            alt="Animated network connections"
             layout="responsive"
             width={1200}
             height={500}
             className="absolute inset-0 h-full w-full object-cover z-0"
-            data-ai-hint="modern smartphone lifestyle"
+            data-ai-hint="network animation"
+            unoptimized={true} // Add unoptimized for GIFs if not using a loader that supports them
           />
           <div className="relative z-10 flex flex-col items-center justify-center h-[400px] md:h-[500px] bg-black/40 p-8 text-center text-white">
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">

@@ -1,5 +1,4 @@
 
-@import "leaflet/dist/leaflet.css"; /* Import Leaflet CSS */
 
 @tailwind base;
 @tailwind components;
@@ -112,8 +111,10 @@ body {
   }
 }
 
-/* Ensure Leaflet map container has a defined height */
+/* Ensure Leaflet map container has a defined height - Removed as Leaflet is no longer used */
+/*
 .leaflet-container {
   height: 100%;
   width: 100%;
 }
+*/

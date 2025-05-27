@@ -1,17 +1,17 @@
 
 import Link from 'next/link';
-import { Smartphone, Search, Globe, UserCircle, Menu } from 'lucide-react';
+import { Smartphone, Search, Globe, UserCircle, Menu, Users, Settings, HelpCircle, MapPin } from 'lucide-react'; // Added Users, Settings, HelpCircle, MapPin
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
 const navLinks = [
-  { href: '/plans', label: 'Plans' },
-  { href: '#', label: 'Offers' }, // Placeholder
-  { href: '#', label: 'Help' },   // Placeholder
-  { href: '/roaming-advisor', label: 'Roaming' },
-  { href: '/network-coverage', label: 'Coverage' },
-  { href: '/forum', label: 'Forum' },
+  { href: '/plans', label: 'Plans', icon: <Smartphone className="h-4 w-4 sm:mr-1" /> },
+  { href: '#', label: 'Offers', icon: <Settings className="h-4 w-4 sm:mr-1" /> }, // Placeholder, using Settings as example
+  { href: '/roaming-advisor', label: 'Roaming', icon: <Globe className="h-4 w-4 sm:mr-1" /> },
+  // { href: '/network-coverage', label: 'Coverage', icon: <MapPin className="h-4 w-4 sm:mr-1" /> }, // Removed
+  { href: '/forum', label: 'Forum', icon: <Users className="h-4 w-4 sm:mr-1" /> },
+  { href: '#', label: 'Help', icon: <HelpCircle className="h-4 w-4 sm:mr-1" /> },   // Placeholder
 ];
 
 export function Header() {
@@ -19,21 +19,24 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b bg-card shadow-sm">
       <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
         <Link href="/" className="flex items-center gap-2" prefetch={false}>
-          {/* Using Smartphone icon as a generic logo placeholder like in the image */}
           <svg width="28" height="28" viewBox="0 0 24 24" fill="hsl(var(--primary))" xmlns="http://www.w3.org/2000/svg" className="h-7 w-7">
             <circle cx="12" cy="12" r="10" stroke="hsl(var(--primary))" strokeWidth="1.5" fill="none"/>
             <path d="M12 6V12L16 14" stroke="hsl(var(--primary-foreground))" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-             <path d="M10 10L14 14M14 10L10 14" stroke="hsl(var(--primary-foreground))" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-
+            <path d="M10 10L14 14M14 10L10 14" stroke="hsl(var(--primary-foreground))" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
           <span className="text-xl font-bold text-foreground">Recharge Finder</span>
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden items-center gap-3 md:flex">
+        <nav className="hidden items-center gap-1 sm:gap-2 md:flex">
           {navLinks.map(link => (
-             <Button key={link.label} asChild variant="ghost" className="text-sm font-medium text-muted-foreground hover:text-foreground">
-              <Link href={link.href}>{link.label}</Link>
+            <Button key={link.label} asChild variant="ghost" className="text-sm sm:text-base px-2 sm:px-3">
+              {
+                <Link href={link.href} className="flex items-center">
+                  {link.icon}
+                  <span className="hidden sm:inline">{link.label}</span>
+                </Link>
+              }
             </Button>
           ))}
         </nav>
@@ -77,7 +80,8 @@ export function Header() {
                   <span className="text-xl font-bold text-foreground">Recharge Finder</span>
                 </Link>
                 {navLinks.map(link => (
-                   <Link key={link.label} href={link.href} className="text-muted-foreground hover:text-foreground py-2">
+                   <Link key={link.label} href={link.href} className="text-muted-foreground hover:text-foreground py-2 flex items-center">
+                    {React.cloneElement(link.icon, { className: 'h-5 w-5 mr-3' })} {/* Ensure mobile icons are consistently sized */}
                     {link.label}
                   </Link>
                 ))}

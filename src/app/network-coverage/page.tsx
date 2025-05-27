@@ -9,7 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MapPinned, Search, ShieldAlert, Wifi, Smartphone, Tower } from 'lucide-react';
+import { MapPinned, Search, ShieldAlert, Wifi, Smartphone, Settings2 } from 'lucide-react';
 
 const OPERATORS = [
   { id: 'jio', name: 'Jio' },
@@ -65,7 +65,7 @@ export default function NetworkCoveragePage() {
       <Card className="w-full lg:w-1/3 lg:max-w-sm shadow-xl">
         <CardHeader>
           <CardTitle className="flex items-center text-xl">
-            <Tower className="mr-2 h-6 w-6 text-primary" />
+            <Settings2 className="mr-2 h-6 w-6 text-primary" />
             Coverage Filters
           </CardTitle>
         </CardHeader>

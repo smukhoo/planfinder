@@ -12,33 +12,33 @@ body {
 
 @layer base {
   :root {
-    --background: 220 20% 96.1%; /* Light Greyish Blue */
-    --foreground: 220 15% 20%; /* Dark Greyish Blue */
+    --background: 210 30% 98%; /* Very Light Cool Gray */
+    --foreground: 220 15% 25%; /* Dark Greyish Blue */
 
     --card: 0 0% 100%; /* White */
-    --card-foreground: 220 15% 20%; /* Dark Greyish Blue */
+    --card-foreground: 220 15% 25%; /* Dark Greyish Blue */
 
     --popover: 0 0% 100%; /* White */
-    --popover-foreground: 220 15% 20%; /* Dark Greyish Blue */
+    --popover-foreground: 220 15% 25%; /* Dark Greyish Blue */
 
-    --primary: 217 91% 67%; /* Muted Blue (Tailwind blue-400) */
+    --primary: 145 63% 42%; /* Muted Green (for buttons, accents) */
     --primary-foreground: 0 0% 100%; /* White */
 
-    --secondary: 145 63% 59%; /* Muted Green (Tailwind green-400) */
-    --secondary-foreground: 220 15% 20%; /* Dark Greyish Blue */
+    --secondary: 210 20% 94%; /* Lighter Cool Gray for secondary backgrounds */
+    --secondary-foreground: 220 15% 30%; /* Dark Greyish Blue */
 
     --muted: 220 15% 90%; /* Lighter Greyish Blue for muted elements */
     --muted-foreground: 220 10% 45%; /* Greyish Blue for muted text */
 
-    --accent: 180 100% 25.1%; /* Teal (#008080) */
+    --accent: 145 63% 42%; /* Muted Green (same as primary for this theme) */
     --accent-foreground: 0 0% 100%; /* White */
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 220 15% 85%; /* Greyish Blue border */
-    --input: 220 15% 88%; /* Greyish Blue input background */
-    --ring: 217 91% 67%; /* Muted Blue (same as primary for focus rings) */
+    --border: 220 15% 88%; /* Greyish Blue border */
+    --input: 220 15% 92%; /* Slightly darker input background */
+    --ring: 145 63% 49%; /* Muted Green for focus rings */
 
     --chart-1: 12 76% 61%;
     --chart-2: 173 58% 39%;
@@ -50,12 +50,12 @@ body {
     /* Sidebar specific colors - can be adjusted if sidebar is extensively used */
     --sidebar-background: 220 20% 98%;
     --sidebar-foreground: 220 15% 26.1%;
-    --sidebar-primary: 217 91% 60%;
+    --sidebar-primary: 145 63% 42%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 220 15% 92%;
     --sidebar-accent-foreground: 220 15% 20%;
     --sidebar-border: 220 15% 88%;
-    --sidebar-ring: 217 91% 59.8%;
+    --sidebar-ring: 145 63% 49%;
   }
 
   .dark {
@@ -68,16 +68,16 @@ body {
     --popover: 220 15% 10%; /* Dark Blue */
     --popover-foreground: 0 0% 98%; /* White */
 
-    --primary: 217 91% 67%; /* Muted Blue (Tailwind blue-400) */
-    --primary-foreground: 220 15% 10%; /* Dark Blue for text on primary */
+    --primary: 145 63% 52%; /* Lighter Muted Green for dark mode */
+    --primary-foreground: 0 0% 10%; /* Dark for text on primary */
 
-    --secondary: 145 63% 59%; /* Muted Green (Tailwind green-400) */
-    --secondary-foreground: 0 0% 98%; /* White */
+    --secondary: 220 15% 20%; /* Darker Cool Gray */
+    --secondary-foreground: 0 0% 95%; /* Light text */
 
     --muted: 220 15% 25%; /* Darker Muted Blue */
     --muted-foreground: 220 10% 65%; /* Lighter Muted Blue Text */
 
-    --accent: 180 80% 35%; /* Slightly lighter Teal for dark mode */
+    --accent: 145 63% 52%; /* Lighter Muted Green for dark mode */
     --accent-foreground: 0 0% 100%; /* White */
 
     --destructive: 0 62.8% 30.6%;
@@ -85,7 +85,7 @@ body {
 
     --border: 220 15% 30%; /* Darker Border */
     --input: 220 15% 25%; /* Darker Input Background */
-    --ring: 217 91% 67%; /* Muted Blue */
+    --ring: 145 63% 55%; /* Lighter Muted Green */
 
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
@@ -95,12 +95,12 @@ body {
 
     --sidebar-background: 220 15% 12%;
     --sidebar-foreground: 0 0% 95%;
-    --sidebar-primary: 217 91% 60%;
+    --sidebar-primary: 145 63% 52%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 220 15% 20%;
     --sidebar-accent-foreground: 0 0% 95%;
     --sidebar-border: 220 15% 28%;
-    --sidebar-ring: 217 91% 59.8%;
+    --sidebar-ring: 145 63% 55%;
   }
 }
 

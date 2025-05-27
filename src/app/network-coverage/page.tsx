@@ -2,7 +2,7 @@
 // src/app/network-coverage/page.tsx
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -28,7 +28,8 @@ export default function NetworkCoveragePage() {
   const [selectedOperators, setSelectedOperators] = useState<string[]>([]);
   const [selectedTechnologies, setSelectedTechnologies] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [mapMessage, setMapMessage] = useState('Select operators and technologies to see coverage. Map functionality is illustrative.');
+  const [mapMessage, setMapMessage] = useState('Select operators, technologies, and search for a location to see illustrative coverage information. Map functionality is a placeholder.');
+  const [currentLocationLoading, setCurrentLocationLoading] = useState(false);
 
   const handleOperatorToggle = (operatorId: string) => {
     setSelectedOperators(prev =>
@@ -46,18 +47,75 @@ export default function NetworkCoveragePage() {
     );
   };
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    // In a real map, this would trigger a geocoding and map pan/zoom
+  const handleSearch = (e?: React.FormEvent) => {
+    e?.preventDefault();
+    let message = 'Illustrative: ';
     if (searchTerm) {
-        setMapMessage(`Illustrative: Searching for "${searchTerm}" with selected filters. Actual map integration needed.`);
+      message += `Searching for "${searchTerm}"`;
     } else {
-        setMapMessage('Select operators and technologies to see coverage. Map functionality is illustrative.');
+      message += `Displaying general coverage`;
     }
+    if (selectedOperators.length > 0 || selectedTechnologies.length > 0) {
+      message += ` with filters: `;
+      if (selectedOperators.length > 0) {
+        message += `Operators (${selectedOperators.map(opId => OPERATORS.find(o => o.id === opId)?.name).join(', ')}) `;
+      }
+      if (selectedTechnologies.length > 0) {
+        message += `Technologies (${selectedTechnologies.map(techId => TECHNOLOGIES.find(t => t.id === techId)?.name).join(', ')})`;
+      }
+    }
+    message += `. Actual map integration needed.`;
+    setMapMessage(message);
     console.log('Search term:', searchTerm);
     console.log('Selected Operators:', selectedOperators);
     console.log('Selected Technologies:', selectedTechnologies);
   };
+  
+  // Update message when filters change without an explicit search submission
+  useEffect(() => {
+    if (!searchTerm) { // Only update if no active search term to avoid overwriting search-specific messages
+      let baseMessage = "Select operators, technologies, and optionally search for a location.";
+      if (selectedOperators.length > 0 || selectedTechnologies.length > 0) {
+        baseMessage = `Illustrative: Viewing coverage for`;
+        if (selectedOperators.length > 0) {
+          baseMessage += ` ${selectedOperators.map(opId => OPERATORS.find(o => o.id === opId)?.name).join(', ')}`;
+        }
+        if (selectedTechnologies.length > 0) {
+          baseMessage += ` using ${selectedTechnologies.map(techId => TECHNOLOGIES.find(t => t.id === techId)?.name).join(', ')}`;
+        }
+        baseMessage += `. Map functionality is a placeholder.`;
+      }
+      setMapMessage(baseMessage);
+    }
+  }, [selectedOperators, selectedTechnologies, searchTerm]);
+
+
+  const handleUseCurrentLocation = () => {
+    setCurrentLocationLoading(true);
+    setMapMessage("Attempting to get current location...");
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          // In a real app, you'd use these coords. For now, mock a search term.
+          setSearchTerm(`Coords: ${latitude.toFixed(2)}, ${longitude.toFixed(2)}`);
+          setMapMessage(`Illustrative: Current location identified. Search for "${searchTerm}" or apply filters. Actual map integration needed.`);
+          setCurrentLocationLoading(false);
+           // Automatically trigger search with new "coordinates"
+          handleSearch(); 
+        },
+        (error) => {
+          console.error("Error getting location:", error);
+          setMapMessage("Could not get current location. Please enter manually or check permissions.");
+          setCurrentLocationLoading(false);
+        }
+      );
+    } else {
+      setMapMessage("Geolocation is not supported by your browser.");
+      setCurrentLocationLoading(false);
+    }
+  };
+
 
   return (
     <div className="container mx-auto px-4 py-8 md:px-6 flex flex-col lg:flex-row gap-8">
@@ -86,8 +144,14 @@ export default function NetworkCoveragePage() {
                   <Search className="h-5 w-5" />
                 </Button>
               </div>
-              <Button type="button" variant="outline" className="w-full mt-2 text-sm" onClick={() => { /* TODO: Implement current location */ alert("Current location feature not implemented yet."); }}>
-                Use My Current Location
+              <Button 
+                type="button" 
+                variant="outline" 
+                className="w-full mt-2 text-sm" 
+                onClick={handleUseCurrentLocation}
+                disabled={currentLocationLoading}
+              >
+                {currentLocationLoading ? "Locating..." : "Use My Current Location"}
               </Button>
             </div>
           </form>
@@ -123,6 +187,9 @@ export default function NetworkCoveragePage() {
               ))}
             </div>
           </div>
+           <Button onClick={() => handleSearch()} className="w-full bg-primary text-primary-foreground hover:bg-primary/90 mt-4">
+            Apply Filters & View Map
+          </Button>
         </CardContent>
       </Card>
 
@@ -149,15 +216,41 @@ export default function NetworkCoveragePage() {
           </CardHeader>
           <CardContent>
             <div 
-              className="w-full h-[400px] md:h-[500px] bg-muted rounded-md flex items-center justify-center border border-dashed border-border"
+              className="w-full h-[400px] md:h-[500px] bg-muted rounded-md flex flex-col items-center justify-center border border-dashed border-border p-4"
               aria-label="Network coverage map placeholder"
             >
-              <div className="text-center text-muted-foreground p-4">
-                <MapPinned className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                <p className="font-semibold">Interactive Map Area</p>
-                <p className="text-sm mt-1">{mapMessage}</p>
-                <p className="text-xs mt-2">A developer will need to integrate a mapping library (e.g., Leaflet, Mapbox, Google Maps) and data sources here.</p>
-              </div>
+              <MapPinned className="h-16 w-16 mx-auto mb-4 opacity-50 text-primary" />
+              <p className="font-semibold text-lg text-foreground">Interactive Map Area</p>
+              <p className="text-sm text-muted-foreground mt-1 max-w-md text-center">{mapMessage}</p>
+              
+              {(selectedOperators.length > 0 || selectedTechnologies.length > 0) && (
+                <div className="mt-4 text-xs border-t border-border/50 pt-3 w-full max-w-sm text-left space-y-1 bg-background/50 p-3 rounded-md">
+                  <p className="font-medium text-foreground mb-1">Illustrative Coverage Layers Applied:</p>
+                  {selectedOperators.map(opId => {
+                    const operator = OPERATORS.find(o => o.id === opId);
+                    return (
+                      <div key={opId}>
+                        <span className="font-semibold text-primary">{operator?.name}: </span>
+                        <span className="text-muted-foreground">
+                            {selectedTechnologies.length > 0 
+                                ? selectedTechnologies.map(techId => TECHNOLOGIES.find(t => t.id === techId)?.name).join(', ')
+                                : "All selected technologies"
+                            }
+                        </span>
+                      </div>
+                    );
+                  })}
+                  {selectedOperators.length === 0 && selectedTechnologies.length > 0 && (
+                     <div>
+                        <span className="font-semibold text-primary">All Selected Operators: </span>
+                        <span className="text-muted-foreground">
+                            {selectedTechnologies.map(techId => TECHNOLOGIES.find(t => t.id === techId)?.name).join(', ')}
+                        </span>
+                      </div>
+                  )}
+                </div>
+              )}
+              <p className="text-xs text-muted-foreground/70 mt-4">A developer will integrate a mapping library and data sources here.</p>
             </div>
           </CardContent>
         </Card>
@@ -165,30 +258,34 @@ export default function NetworkCoveragePage() {
         {/* Legend Placeholder */}
         <Card className="shadow-lg">
           <CardHeader>
-            <CardTitle className="text-lg">Legend</CardTitle>
+            <CardTitle className="text-lg">Legend (Illustrative)</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
-            <p className="text-muted-foreground">This section will display the legend for map colors and symbols once the map is integrated.</p>
             {selectedOperators.length > 0 && selectedTechnologies.length > 0 ? (
                 selectedOperators.map(opId => {
                     const operator = OPERATORS.find(o => o.id === opId);
                     return selectedTechnologies.map(techId => {
                         const technology = TECHNOLOGIES.find(t => t.id === techId);
+                        // Simple hash function for a pseudo-random but consistent color per combo
+                        const colorVal = (opId.charCodeAt(0) + techId.charCodeAt(0)) % 360; 
                         return (
                             <div key={`${opId}-${techId}`} className="flex items-center">
-                                <span className="w-4 h-4 rounded-sm mr-2 border" style={{backgroundColor: `hsl(${Math.random()*360}, 70%, 70%)` /* Random color for demo */}}></span>
+                                <span className="w-4 h-4 rounded-sm mr-2 border" style={{backgroundColor: `hsl(${colorVal}, 70%, 70%)`}}></span>
                                 <span>{operator?.name} - {technology?.name}</span>
                             </div>
                         )
                     })
-                })
+                }).flat() // Flatten the array of arrays
             ) : (
-                <p className="text-xs text-muted-foreground">Select an operator and technology to see example legend items.</p>
+                <p className="text-xs text-muted-foreground">Select operator(s) and technology(s) to see example legend items.</p>
+            )}
+             { (selectedOperators.length > 0 || selectedTechnologies.length > 0) && selectedOperators.length * selectedTechnologies.length === 0 && (
+                <p className="text-xs text-muted-foreground">Please select at least one operator AND one technology to populate the legend.</p>
             )}
           </CardContent>
         </Card>
         
-        <Alert className="bg-secondary/20">
+        <Alert className="bg-secondary/20 border-secondary/30">
           <ShieldAlert className="h-5 w-5 text-secondary-foreground" />
           <AlertTitle className="font-semibold text-secondary-foreground">Important Disclaimer</AlertTitle>
           <AlertDescription className="text-sm space-y-1 text-secondary-foreground/80">
@@ -204,3 +301,4 @@ export default function NetworkCoveragePage() {
     </div>
   );
 }
+

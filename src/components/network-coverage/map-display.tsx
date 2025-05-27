@@ -33,7 +33,7 @@ export default function MapDisplay({
   const mapRef = useRef<LeafletMap | null>(null);
 
   // Effect to clean up the map instance when the component unmounts
-  // or before it re-initializes due to HMR or StrictMode.
+  // or before it re-initializes due to HMR or StrictMode. comment
   useEffect(() => {
     const mapInstance = mapRef.current;
     return () => {

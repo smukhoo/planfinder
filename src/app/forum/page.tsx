@@ -9,13 +9,14 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { NewThreadForm } from '@/components/forum/new-thread-form';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 // Mock data for forum threads
 const mockThreadsData = [
-  { id: '1', title: 'Best plan for unlimited data?', author: 'DataSeeker23', replies: 15, lastActivity: '2 hours ago', category: 'General Discussion' },
-  { id: '2', title: 'Jio vs Airtel - Which has better network coverage in rural areas?', author: 'ConnectivityGuru', replies: 8, lastActivity: '5 hours ago', category: 'Operator Comparison' },
-  { id: '3', title: 'How to activate international roaming on Vi?', author: 'TravelerTom', replies: 3, lastActivity: '1 day ago', category: 'Support Questions' },
-  { id: '4', title: 'New yearly plan announced by Airtel - thoughts?', author: 'PlanWatcher', replies: 22, lastActivity: '30 minutes ago', category: 'News & Announcements' },
+  { id: '1', title: 'Best plan for unlimited data?', author: 'DataSeeker23', replies: 15, lastActivity: '2 hours ago', category: 'General Discussion', avatarSrc: 'https://placehold.co/40x40.png', avatarFallback: 'DS', avatarHint: 'user avatar' },
+  { id: '2', title: 'Jio vs Airtel - Which has better network coverage in rural areas?', author: 'ConnectivityGuru', replies: 8, lastActivity: '5 hours ago', category: 'Operator Comparison', avatarSrc: 'https://placehold.co/40x40.png', avatarFallback: 'CG', avatarHint: 'user avatar' },
+  { id: '3', title: 'How to activate international roaming on Vi?', author: 'TravelerTom', replies: 3, lastActivity: '1 day ago', category: 'Support Questions', avatarSrc: 'https://placehold.co/40x40.png', avatarFallback: 'TT', avatarHint: 'user avatar' },
+  { id: '4', title: 'New yearly plan announced by Airtel - thoughts?', author: 'PlanWatcher', replies: 22, lastActivity: '30 minutes ago', category: 'News & Announcements', avatarSrc: 'https://placehold.co/40x40.png', avatarFallback: 'PW', avatarHint: 'user avatar' },
 ];
 
 export type ForumThread = typeof mockThreadsData[0];
@@ -37,7 +38,11 @@ function ThreadListItem({ thread }: { thread: ForumThread }) {
         {/* Placeholder for thread content preview if needed, e.g., first few lines */}
       </CardContent>
       <CardFooter className="flex flex-wrap justify-between items-center text-xs text-muted-foreground pt-4 gap-2 sm:gap-4">
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2">
+          <Avatar className="h-6 w-6">
+            <AvatarImage src={thread.avatarSrc} alt={thread.author} data-ai-hint={thread.avatarHint} />
+            <AvatarFallback>{thread.avatarFallback}</AvatarFallback>
+          </Avatar>
           <User className="h-3 w-3" />
           <span>{thread.author}</span>
         </div>
@@ -68,7 +73,10 @@ export default function ForumPage() {
         author: 'CurrentUser', // Replace with actual user in a real app
         replies: 0,
         lastActivity: 'Just now',
-        category: 'General Discussion' // Default or from form
+        category: 'General Discussion', // Default or from form
+        avatarSrc: 'https://placehold.co/40x40.png', // Placeholder for new user
+        avatarFallback: 'CU',
+        avatarHint: 'user avatar'
     };
     setThreads(prevThreads => [newThread, ...prevThreads]);
     setIsNewThreadModalOpen(false);

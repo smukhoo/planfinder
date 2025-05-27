@@ -1,9 +1,10 @@
+
 // src/components/network-coverage/map-display.tsx
 "use client";
 
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import L from 'leaflet';
-import type { LatLngExpression, Map as LeafletMapInstanceType } from 'leaflet'; // Renamed for clarity
+import L from 'leaflet'; // L is needed for L.Icon.Default
+import type { LatLngExpression, Map as LeafletMapInstanceType } from 'leaflet';
 import { useEffect, useRef } from 'react';
 
 // Fix for default Leaflet icon path issues
@@ -25,36 +26,34 @@ interface MapDisplayProps {
   mapCenter: LatLngExpression;
   mapZoom: number;
   markerPosition: LatLngExpression | null;
+  isLoadingLocation: boolean;
 }
 
-export function MapDisplay({ mapCenter, mapZoom, markerPosition }: MapDisplayProps) {
+export function MapDisplay({ mapCenter, mapZoom, markerPosition, isLoadingLocation }: MapDisplayProps) {
   const mapRef = useRef<LeafletMapInstanceType | null>(null);
   
   // Style object defined outside or memoized to prevent re-creation on every render
   const mapStyle = { height: '100%', width: '100%' };
 
   useEffect(() => {
-    // This effect's cleanup function is crucial for handling React Strict Mode's
-    // mount -> unmount -> mount behavior in development.
-    
-    // Capture the current map instance from the ref.
-    // This is the instance that this particular effect cycle is associated with.
-    const currentMap = mapRef.current;
+    // Capture the current map instance from the ref for this effect's scope.
+    // This is the instance associated with this particular effect's setup.
+    const currentMapInstance = mapRef.current;
 
     return () => {
-      // When the component unmounts (or Strict Mode simulates unmounting),
-      // remove the captured map instance.
-      if (currentMap) {
-        // console.log("Cleaning up Leaflet map instance:", currentMap);
-        currentMap.remove();
+      // This cleanup function runs when the component unmounts or before the effect re-runs (due to Strict Mode).
+      if (currentMapInstance) {
+        // console.log("Cleaning up Leaflet map instance:", currentMapInstance);
+        currentMapInstance.remove(); // Remove the specific instance this effect was tied to.
       }
-      // If mapRef.current happens to still be this exact instance, nullify it.
-      // This can help if whenCreated for a *new* instance hasn't fired yet.
-      if (mapRef.current === currentMap) {
+      // If mapRef.current still points to the instance we just removed, nullify it.
+      // This prevents issues if a new map instance was quickly created and assigned to mapRef.current
+      // by a subsequent whenCreated call before this cleanup ran for the old instance.
+      if (mapRef.current === currentMapInstance) {
         mapRef.current = null;
       }
     };
-  }, []); // Empty dependency array means this effect runs once on mount and cleanup on unmount.
+  }, []); // Empty dependency array ensures this runs on mount and cleans up on unmount.
 
   return (
     <MapContainer
@@ -64,20 +63,18 @@ export function MapDisplay({ mapCenter, mapZoom, markerPosition }: MapDisplayPro
       style={mapStyle}
       className="rounded-lg shadow-md z-0"
       whenCreated={(map: LeafletMapInstanceType) => {
-        // This callback from MapContainer gives us the created Leaflet map instance.
+        // This callback is invoked when the Leaflet map instance is created.
         // console.log("Map instance created by whenCreated:", map);
-        
-        // If a previous map instance was in the ref (e.g., from a HMR or a rapid remount
-        // where cleanup didn't fully nullify), try to remove it first.
+
+        // If mapRef.current already holds a (potentially stale) map instance
+        // and it's different from the newly created one, remove the stale one.
+        // This can happen with HMR or very rapid re-renders.
         if (mapRef.current && mapRef.current !== map) {
-            // console.log("Removing stale map instance from ref:", mapRef.current);
-            mapRef.current.remove();
+          // console.log("Removing stale map instance from ref in whenCreated:", mapRef.current);
+          mapRef.current.remove();
         }
-        mapRef.current = map; // Store the new map instance.
+        mapRef.current = map; // Store the reference to the newly created map instance.
       }}
-      // We avoid using a static 'id' prop here. MapContainer will create its own div,
-      // which React will manage (create/destroy on mount/unmount). This helps prevent
-      // Leaflet from trying to initialize on a DOM element it thinks still has a map.
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -86,10 +83,11 @@ export function MapDisplay({ mapCenter, mapZoom, markerPosition }: MapDisplayPro
       {markerPosition && (
         <Marker position={markerPosition}>
           <Popup>
-            Selected Location. <br /> (Coverage data here is illustrative)
+            {isLoadingLocation ? "Fetching location..." : `Selected Location.`}
           </Popup>
         </Marker>
       )}
     </MapContainer>
   );
 }
+

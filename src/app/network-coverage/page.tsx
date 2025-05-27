@@ -32,7 +32,9 @@ const DEFAULT_MAP_ZOOM = 5;
 // Helper component to update map view
 function ChangeMapView({ center, zoom }: { center: LatLngExpression, zoom: number }) {
   const map = useMap();
-  map.setView(center, zoom);
+  useEffect(() => { // useMap should be called within a MapContainer child, so this effect will run after map is ready
+    map.setView(center, zoom);
+  }, [map, center, zoom]);
   return null;
 }
 
@@ -46,8 +48,13 @@ export default function NetworkCoveragePage() {
   const [mapCenter, setMapCenter] = useState<LatLngExpression>(DEFAULT_MAP_CENTER);
   const [mapZoom, setMapZoom] = useState<number>(DEFAULT_MAP_ZOOM);
   const [markerPosition, setMarkerPosition] = useState<LatLngExpression | null>(null);
+  const [isClient, setIsClient] = useState(false);
 
   const mapRef = useRef<LeafletMap | null>(null);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const handleOperatorToggle = (operatorId: string) => {
     setSelectedOperators(prev =>
@@ -96,18 +103,23 @@ export default function NetworkCoveragePage() {
   useEffect(() => {
     // Update message when filters change without an explicit search submission
     let baseMessage = "Map: Viewing general map.";
-    if (selectedOperators.length > 0 || selectedTechnologies.length > 0) {
-      baseMessage = `Map: Viewing for`;
-      if (selectedOperators.length > 0) {
-        baseMessage += ` ${selectedOperators.map(opId => OPERATORS.find(o => o.id === opId)?.name).join(', ')}`;
-      }
-      if (selectedTechnologies.length > 0) {
-        baseMessage += ` using ${selectedTechnologies.map(techId => TECHNOLOGIES.find(t => t.id === techId)?.name).join(', ')}`;
-      }
+    let coverageLayersText = "";
+    if (selectedOperators.length > 0) {
+        coverageLayersText += ` for ${selectedOperators.map(opId => OPERATORS.find(o => o.id === opId)?.name).join(', ')}`;
     }
+    if (selectedTechnologies.length > 0) {
+        coverageLayersText += `${selectedOperators.length > 0 ? ' using' : ' for'} ${selectedTechnologies.map(techId => TECHNOLOGIES.find(t => t.id === techId)?.name).join(', ')}`;
+    }
+    
+    if (searchTerm) {
+        baseMessage = `Map: Viewing "${searchTerm}"` + coverageLayersText;
+    } else if (coverageLayersText) {
+        baseMessage = `Map: Viewing` + coverageLayersText;
+    }
+
     baseMessage += `. Actual coverage overlays not yet implemented.`;
     setMapMessage(baseMessage);
-  }, [selectedOperators, selectedTechnologies]);
+  }, [selectedOperators, selectedTechnologies, searchTerm]);
 
 
   const handleUseCurrentLocation = () => {
@@ -227,7 +239,7 @@ export default function NetworkCoveragePage() {
           <p className="mt-2 text-muted-foreground md:text-md">
             Visually explore network coverage. Select operators and technologies, then search for a location.
             <br />
-            <span className="text-xs">(Basic map integrated. Actual coverage overlays are illustrative and require data integration.)</span>
+            <span className="text-xs">(Interactive map integrated. Actual coverage overlays are illustrative and require data integration.)</span>
           </p>
         </header>
 
@@ -242,27 +254,40 @@ export default function NetworkCoveragePage() {
               className="w-full h-[400px] md:h-[500px] bg-muted rounded-md border border-border"
               aria-label="Network coverage map"
             >
-              <MapContainer 
-                center={mapCenter} 
-                zoom={mapZoom} 
-                scrollWheelZoom={true} 
-                style={{ height: "100%", width: "100%" }}
-                whenCreated={(mapInstance) => { mapRef.current = mapInstance; }}
-              >
-                <ChangeMapView center={mapCenter} zoom={mapZoom} />
-                <TileLayer
-                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                />
-                {markerPosition && (
-                  <Marker position={markerPosition}>
-                    <Popup>
-                      {searchTerm || 'Current Location'}
-                    </Popup>
-                  </Marker>
-                )}
-                {/* Placeholder for future coverage layers */}
-              </MapContainer>
+              {isClient && (
+                <MapContainer 
+                  center={mapCenter} 
+                  zoom={mapZoom} 
+                  scrollWheelZoom={true} 
+                  style={{ height: "100%", width: "100%" }}
+                  whenCreated={(mapInstance) => { mapRef.current = mapInstance; }}
+                >
+                  <ChangeMapView center={mapCenter} zoom={mapZoom} />
+                  <TileLayer
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  />
+                  {markerPosition && (
+                    <Marker position={markerPosition}>
+                      <Popup>
+                        {searchTerm || 'Current Location'}
+                      </Popup>
+                    </Marker>
+                  )}
+                  {/* Placeholder for future coverage layers */}
+                  <div className="absolute top-2 left-2 p-2 bg-background/80 rounded shadow-md text-xs z-[1000]">
+                    <p className="font-semibold">Displaying mock coverage for:</p>
+                    {selectedOperators.length > 0 ? (
+                        <p>Operators: {selectedOperators.map(opId => OPERATORS.find(o => o.id === opId)?.name).join(', ')}</p>
+                    ) : <p>No operators selected</p>}
+                    {selectedTechnologies.length > 0 ? (
+                        <p>Technologies: {selectedTechnologies.map(techId => TECHNOLOGIES.find(t => t.id === techId)?.name).join(', ')}</p>
+                    ) : <p>No technologies selected</p>}
+                    {!selectedOperators.length && !selectedTechnologies.length && <p>Select filters to see mock info.</p>}
+                </div>
+                </MapContainer>
+              )}
+              {!isClient && <p className="flex items-center justify-center h-full text-muted-foreground">Loading map...</p>}
             </div>
           </CardContent>
         </Card>
@@ -313,3 +338,4 @@ export default function NetworkCoveragePage() {
     </div>
   );
 }
+

@@ -1,73 +1,59 @@
 // src/components/network-coverage/map-display.tsx
 "use client";
 
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import L from 'leaflet'; // L is needed for L.Icon.Default
-import type { LatLngExpression, Map as LeafletMapInstanceType } from 'leaflet';
-import { useEffect, useRef } from 'react';
+import type { LatLngExpression } from 'leaflet';
+import { Loader2 } from 'lucide-react'; // Keep for loading state from parent
 
-// Fix for default Leaflet icon path issues
-// This should run once on the client side.
-if (typeof window !== 'undefined') {
-  // Add a flag to ensure this runs only once, even with HMR or Strict Mode re-evaluations
-  if (!(L.Icon.Default.prototype as any)._iconUrlsFixed) {
-    delete (L.Icon.Default.prototype as any)._getIconUrl;
-    L.Icon.Default.mergeOptions({
-      iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-      iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-      shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-    });
-    (L.Icon.Default.prototype as any)._iconUrlsFixed = true;
-  }
-}
+// Define mapStyle outside the component to prevent re-creation on every render
+const mapPlaceholderStyle: React.CSSProperties = {
+  height: '100%',
+  width: '100%',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  backgroundColor: 'hsl(var(--muted))', // Use theme color
+  border: '2px dashed hsl(var(--border))', // Use theme color
+  borderRadius: 'var(--radius)',
+  color: 'hsl(var(--muted-foreground))',
+  flexDirection: 'column',
+  textAlign: 'center',
+  padding: '20px',
+};
 
 interface MapDisplayProps {
+  // Props are kept for potential future re-integration, but not all are used by the placeholder
   mapCenter: LatLngExpression;
   mapZoom: number;
   markerPosition: LatLngExpression | null;
-  isLoadingLocation: boolean;
+  isLoadingLocation: boolean; // This can still be used to show a loading state on the placeholder
 }
 
-// Define mapStyle outside the component to prevent re-creation on every render
-const mapStyle = { height: '100%', width: '100%' };
+export function MapDisplay({ isLoadingLocation, markerPosition, mapCenter, mapZoom }: MapDisplayProps) {
+  // The Leaflet icon fix and map instance management (useRef, useEffect for cleanup) are removed
+  // as we are no longer rendering an actual Leaflet map.
 
-export function MapDisplay({ mapCenter, mapZoom, markerPosition, isLoadingLocation }: MapDisplayProps) {
-  const mapRef = useRef<LeafletMapInstanceType | null>(null);
-  
-  useEffect(() => {
-    // The cleanup function runs when the component unmounts or before the effect re-runs (due to Strict Mode).
-    return () => {
-      if (mapRef.current) {
-        // console.log("Cleaning up Leaflet map instance from useEffect:", mapRef.current);
-        mapRef.current.remove(); // Tell Leaflet to clean up the map instance
-        mapRef.current = null;   // Clear our reference
-      }
-    };
-  }, []); // Empty dependency array ensures this runs once on mount and cleans up on unmount.
+  if (isLoadingLocation) {
+    return (
+      <div style={mapPlaceholderStyle}>
+        <Loader2 className="h-10 w-10 animate-spin text-primary mb-3" />
+        <p>Fetching location for map...</p>
+      </div>
+    );
+  }
 
   return (
-    <MapContainer
-      center={mapCenter}
-      zoom={mapZoom}
-      scrollWheelZoom={true}
-      style={mapStyle}
-      className="rounded-lg shadow-md z-0"
-      whenCreated={(mapInstance: LeafletMapInstanceType) => {
-        // console.log("Map instance created by whenCreated:", mapInstance);
-        mapRef.current = mapInstance; // Store the map instance in the ref
-      }}
-    >
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
+    <div style={mapPlaceholderStyle}>
+      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-map mb-3 text-primary opacity-70">
+        <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" x2="9" y1="3" y2="18"/><line x1="15" x2="15" y1="6" y2="21"/>
+      </svg>
+      <h3 className="text-lg font-semibold mb-1 text-foreground">Interactive Map Placeholder</h3>
+      <p className="text-sm">
+        The interactive map will be displayed here.
+      </p>
       {markerPosition && (
-        <Marker position={markerPosition}>
-          <Popup>
-            {isLoadingLocation ? "Fetching location..." : `Selected Location.`}
-          </Popup>
-        </Marker>
+        <p className="text-xs mt-2">Marker at: {JSON.stringify(markerPosition)}</p>
       )}
-    </MapContainer>
+       <p className="text-xs mt-1">Center: {JSON.stringify(mapCenter)}, Zoom: {mapZoom}</p>
+    </div>
   );
 }

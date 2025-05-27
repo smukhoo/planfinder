@@ -1,20 +1,41 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { Smartphone, Search, Globe, UserCircle, Menu, Users, Settings, HelpCircle } from 'lucide-react';
+import { Smartphone, Settings, Globe, Users, HelpCircle, Menu, UserCircle, Sparkles } from 'lucide-react'; // Removed Search, Added Sparkles
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+// import { Input } from '@/components/ui/input'; // Removed Input
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { cn } from '@/lib/utils';
 
-const navLinks = [
-  { href: '/plans', label: 'Plans', icon: <Smartphone className="h-4 w-4 sm:mr-1" /> },
-  { href: '#', label: 'Offers', icon: <Settings className="h-4 w-4 sm:mr-1" /> }, // Placeholder, using Settings as example
-  { href: '/roaming-advisor', label: 'Roaming', icon: <Globe className="h-4 w-4 sm:mr-1" /> },
-  { href: '/forum', label: 'Forum', icon: <Users className="h-4 w-4 sm:mr-1" /> },
-  { href: '#', label: 'Help', icon: <HelpCircle className="h-4 w-4 sm:mr-1" /> },   // Placeholder
-];
+interface NavLinkItem {
+  href: string;
+  label: string;
+  icon: JSX.Element;
+  action?: () => void;
+  isAnimated?: boolean;
+}
 
-export function Header() {
+interface HeaderProps {
+  isChatOpen: boolean;
+  setIsChatOpen: (isOpen: boolean) => void;
+}
+
+export function Header({ setIsChatOpen }: HeaderProps) {
+  const navLinks: NavLinkItem[] = [
+    { href: '/plans', label: 'Plans', icon: <Smartphone className="h-4 w-4 sm:mr-1" /> },
+    { href: '#', label: 'Offers', icon: <Settings className="h-4 w-4 sm:mr-1" /> },
+    { href: '/roaming-advisor', label: 'Roaming', icon: <Globe className="h-4 w-4 sm:mr-1" /> },
+    { href: '/forum', label: 'Forum', icon: <Users className="h-4 w-4 sm:mr-1" /> },
+    { 
+      href: '#', 
+      label: 'Ask AI', 
+      icon: <Sparkles className="h-4 w-4 sm:mr-1" />, 
+      action: () => setIsChatOpen(true),
+      isAnimated: true 
+    },
+    { href: '#', label: 'Help', icon: <HelpCircle className="h-4 w-4 sm:mr-1" /> },
+  ];
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-card shadow-sm">
       <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
@@ -29,31 +50,32 @@ export function Header() {
 
         {/* Desktop Navigation */}
         <nav className="hidden items-center gap-1 sm:gap-2 md:flex">
-          {navLinks.map(link => (
-            <Button key={link.label} asChild variant="ghost" className="text-sm sm:text-base px-2 sm:px-3">
-              {
+          {navLinks.map(link => {
+            const buttonClasses = cn(
+              "text-sm sm:text-base px-2 sm:px-3",
+              link.isAnimated && "animate-pulse-glow"
+            );
+            if (link.action) {
+              return (
+                <Button key={link.label} variant="ghost" className={buttonClasses} onClick={link.action}>
+                  {link.icon}
+                  <span className="hidden sm:inline">{link.label}</span>
+                </Button>
+              );
+            }
+            return (
+              <Button key={link.label} asChild variant="ghost" className={buttonClasses}>
                 <Link href={link.href} className="flex items-center">
                   {link.icon}
                   <span className="hidden sm:inline">{link.label}</span>
                 </Link>
-              }
-            </Button>
-          ))}
+              </Button>
+            );
+          })}
         </nav>
 
         <div className="hidden items-center gap-3 md:flex">
-          <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search..."
-              className="h-9 w-full rounded-md bg-muted pl-8 pr-2 md:w-[200px] lg:w-[250px]"
-            />
-          </div>
-          <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
-            <Globe className="h-5 w-5" />
-            <span className="sr-only">Language</span>
-          </Button>
+          {/* Search bar and Globe icon removed */}
           <Button variant="ghost" size="icon" className="rounded-full text-muted-foreground hover:text-foreground">
             <UserCircle className="h-6 w-6" />
             <span className="sr-only">User Profile</span>
@@ -79,24 +101,30 @@ export function Header() {
                    </svg>
                   <span className="text-xl font-bold text-foreground">Recharge Finder</span>
                 </Link>
-                {navLinks.map(link => (
-                   <Link key={link.label} href={link.href} className="text-muted-foreground hover:text-foreground py-2 flex items-center">
-                    {React.cloneElement(link.icon, { className: 'h-5 w-5 mr-3' })}
-                    {link.label}
-                  </Link>
-                ))}
-                 <div className="relative mt-4">
-                  <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    type="search"
-                    placeholder="Search..."
-                    className="h-9 w-full rounded-md bg-muted pl-8 pr-2"
-                  />
-                </div>
+                {navLinks.map(link => {
+                  if (link.action) {
+                    return (
+                      <Button
+                        key={link.label}
+                        variant="ghost"
+                        onClick={link.action}
+                        className={cn("text-muted-foreground hover:text-foreground py-2 flex items-center justify-start text-base", link.isAnimated && "animate-pulse-glow")}
+                      >
+                        {React.cloneElement(link.icon, { className: 'h-5 w-5 mr-3' })}
+                        {link.label}
+                      </Button>
+                    );
+                  }
+                  return (
+                    <Link key={link.label} href={link.href} className="text-muted-foreground hover:text-foreground py-2 flex items-center text-base">
+                      {React.cloneElement(link.icon, { className: 'h-5 w-5 mr-3' })}
+                      {link.label}
+                    </Link>
+                  );
+                })}
+                {/* Search input removed from mobile menu */}
                 <div className="flex items-center gap-2 mt-4 pt-4 border-t">
-                   <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground flex-1 justify-start">
-                    <Globe className="mr-2 h-5 w-5" /> Language
-                  </Button>
+                   {/* Globe icon for language removed from mobile menu */}
                   <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground flex-1 justify-start">
                     <UserCircle className="mr-2 h-5 w-5" /> Profile
                   </Button>

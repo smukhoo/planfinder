@@ -1,13 +1,14 @@
+
 "use client";
 
-import { useState, useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react'; // Added useState
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Bot, MessageSquare, Send, User, X, Loader2 } from 'lucide-react';
+import { Bot, Send, User, X, Loader2 } from 'lucide-react';
 import { recommendPlan, RecommendPlanInput, RecommendPlanOutput } from '@/ai/flows/plan-recommendation';
-import { useRouter } from 'next/navigation'; // Corrected import
+import { useRouter } from 'next/navigation';
 import type { TelecomPlan } from '@/services/telecom-plans';
 
 interface Message {
@@ -17,11 +18,15 @@ interface Message {
   plans?: TelecomPlan[];
 }
 
-export function ChatWidget() {
-  const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [inputValue, setInputValue] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+interface ChatWidgetProps {
+  isOpen: boolean;
+  setIsOpen: (isOpen: boolean) => void;
+}
+
+export function ChatWidget({ isOpen, setIsOpen }: ChatWidgetProps) {
+  const [messages, setMessages] = useState<Message[]>([]); // Changed from React.useState
+  const [inputValue, setInputValue] = useState(''); // Changed from React.useState
+  const [isLoading, setIsLoading] = useState(false); // Changed from React.useState
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
@@ -55,18 +60,9 @@ export function ChatWidget() {
         id: (Date.now() + 1).toString(), 
         type: 'bot', 
         text: aiResponse.planRecommendation,
-        plans: aiResponse.plans as TelecomPlan[] // Assuming plans is part of the output
+        plans: aiResponse.plans as TelecomPlan[]
       };
       setMessages(prev => [...prev, botMessage]);
-
-      // If plans are returned and a specific operator is identified, navigate to plans page
-      if (aiResponse.plans && aiResponse.plans.length > 0) {
-        const firstPlanOperator = (aiResponse.plans[0] as TelecomPlan).operator;
-        if (firstPlanOperator) {
-           // Let's keep the chat open and suggest navigation.
-           // router.push(`/plans?q=${encodeURIComponent(aiInput.query)}&operator=${encodeURIComponent(firstPlanOperator)}`);
-        }
-      }
 
     } catch (error) {
       console.error("AI recommendation error:", error);
@@ -78,10 +74,8 @@ export function ChatWidget() {
   };
 
   const handlePlanClick = (plan: TelecomPlan) => {
-    // Navigate to the plan details or a filtered plan list
-    // For now, we'll just try to filter by operator on the plans page
     router.push(`/plans?operator=${encodeURIComponent(plan.operator)}&price=${plan.price}`);
-    setIsOpen(false); // Close chat widget after navigating
+    setIsOpen(false); 
   };
 
   if (!isOpen) {
@@ -125,7 +119,7 @@ export function ChatWidget() {
                   {msg.plans && msg.plans.length > 0 && (
                     <div className="mt-2 space-y-1">
                       <p className="text-xs font-medium">Here are some plans I found:</p>
-                      {msg.plans.slice(0, 3).map((plan, index) => ( // Show up to 3 plans
+                      {msg.plans.slice(0, 3).map((plan, index) => (
                         <Button 
                           key={index} 
                           variant="outline" 

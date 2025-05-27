@@ -1,6 +1,8 @@
 // src/components/roaming/roaming-advisor-form.tsx
 "use client";
 
+import { useState } from "react";
+import Image from "next/image";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -9,7 +11,6 @@ import { Calendar } from "@/components/ui/calendar";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -30,9 +31,9 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { CalendarIcon, PlaneTakeoff, Search } from "lucide-react";
+import { CalendarIcon, Search } from "lucide-react"; // Removed PlaneTakeoff as it's not used
 import type { RoamingAdvisorInput } from "@/types/roaming";
-import { mockCountries } from "@/services/international-roaming"; // Using mockCountries from the service
+import { mockCountries } from "@/services/international-roaming";
 
 const formSchema = z.object({
   destinationCountry: z.string().min(1, { message: "Please select a destination country." }),
@@ -59,6 +60,8 @@ interface RoamingAdvisorFormProps {
 }
 
 export function RoamingAdvisorForm({ onSubmit, isLoading }: RoamingAdvisorFormProps) {
+  const [selectedCountryLabel, setSelectedCountryLabel] = useState<string | null>(null);
+
   const form = useForm<RoamingAdvisorFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -73,6 +76,21 @@ export function RoamingAdvisorForm({ onSubmit, isLoading }: RoamingAdvisorFormPr
     onSubmit(values as RoamingAdvisorInput);
   }
 
+  const handleCountryChange = (value: string) => {
+    form.setValue("destinationCountry", value); // Update form state
+    if (value) {
+      const country = mockCountries.find(c => c.value === value);
+      setSelectedCountryLabel(country ? country.label : null);
+    } else {
+      setSelectedCountryLabel(null);
+    }
+  };
+  
+  const getDataAiHint = (label: string | null): string => {
+    if (!label) return "";
+    return label.split(' ').slice(0, 2).join(' ').toLowerCase();
+  }
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-8">
@@ -82,7 +100,7 @@ export function RoamingAdvisorForm({ onSubmit, isLoading }: RoamingAdvisorFormPr
           render={({ field }) => (
             <FormItem>
               <FormLabel>Which country are you visiting?</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select onValueChange={handleCountryChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Select a country" />
@@ -100,6 +118,21 @@ export function RoamingAdvisorForm({ onSubmit, isLoading }: RoamingAdvisorFormPr
             </FormItem>
           )}
         />
+
+        {selectedCountryLabel && (
+          <div className="mt-6 text-center">
+            <div className="relative w-full max-w-sm mx-auto aspect-[3/2] rounded-lg shadow-md overflow-hidden">
+              <Image
+                src={`https://placehold.co/600x400.png`} // Using a larger placeholder and letting next/image handle sizing
+                alt={`Placeholder image for ${selectedCountryLabel}`}
+                layout="fill"
+                objectFit="cover"
+                className="rounded-lg"
+                data-ai-hint={getDataAiHint(selectedCountryLabel)}
+              />
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <FormField
@@ -132,7 +165,7 @@ export function RoamingAdvisorForm({ onSubmit, isLoading }: RoamingAdvisorFormPr
                       mode="single"
                       selected={field.value}
                       onSelect={field.onChange}
-                      disabled={(date) => date < new Date(new Date().setHours(0,0,0,0)) } // Disable past dates
+                      disabled={(date) => date < new Date(new Date().setHours(0,0,0,0)) }
                       initialFocus
                     />
                   </PopoverContent>

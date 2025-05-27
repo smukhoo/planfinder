@@ -1,6 +1,7 @@
 
+import * as React from 'react';
 import Link from 'next/link';
-import { Smartphone, Search, Globe, UserCircle, Menu, Users, Settings, HelpCircle, MapPin } from 'lucide-react'; // Added Users, Settings, HelpCircle, MapPin
+import { Smartphone, Search, Globe, UserCircle, Menu, Users, Settings, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -9,7 +10,6 @@ const navLinks = [
   { href: '/plans', label: 'Plans', icon: <Smartphone className="h-4 w-4 sm:mr-1" /> },
   { href: '#', label: 'Offers', icon: <Settings className="h-4 w-4 sm:mr-1" /> }, // Placeholder, using Settings as example
   { href: '/roaming-advisor', label: 'Roaming', icon: <Globe className="h-4 w-4 sm:mr-1" /> },
-  // { href: '/network-coverage', label: 'Coverage', icon: <MapPin className="h-4 w-4 sm:mr-1" /> }, // Removed
   { href: '/forum', label: 'Forum', icon: <Users className="h-4 w-4 sm:mr-1" /> },
   { href: '#', label: 'Help', icon: <HelpCircle className="h-4 w-4 sm:mr-1" /> },   // Placeholder
 ];
@@ -81,7 +81,7 @@ export function Header() {
                 </Link>
                 {navLinks.map(link => (
                    <Link key={link.label} href={link.href} className="text-muted-foreground hover:text-foreground py-2 flex items-center">
-                    {React.cloneElement(link.icon, { className: 'h-5 w-5 mr-3' })} {/* Ensure mobile icons are consistently sized */}
+                    {React.cloneElement(link.icon, { className: 'h-5 w-5 mr-3' })}
                     {link.label}
                   </Link>
                 ))}

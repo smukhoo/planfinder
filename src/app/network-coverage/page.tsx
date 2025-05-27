@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { MapPin, Search, ShieldAlert, Wifi, Smartphone, Settings2, Loader2, LocateFixed } from 'lucide-react';
 import type { LatLngExpression } from 'leaflet';
 
@@ -256,10 +257,10 @@ export default function NetworkCoveragePage() {
 
       <Alert variant="destructive" className="mt-12 bg-secondary/20 border-secondary/50 text-secondary-foreground">
         <ShieldAlert className="h-5 w-5 text-secondary-foreground" />
-        <h5 className="font-semibold">Disclaimer</h5>
-        <div className="text-sm text-secondary-foreground/80">
+        <AlertTitle className="font-semibold">Disclaimer</AlertTitle>
+        <AlertDescription className="text-sm text-secondary-foreground/80">
           Coverage maps provide approximate outdoor coverage. Actual network experience may vary due to factors like terrain, weather, buildings, network congestion, device type, and indoor locations. Data is illustrative and users are advised to verify with operators for critical needs.
-        </div>
+        </AlertDescription>
       </Alert>
     </div>
   );

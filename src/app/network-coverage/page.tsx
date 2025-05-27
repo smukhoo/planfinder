@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MapPinned, Search, ShieldAlert, Wifi, Smartphone, Settings2, Loader2 } from 'lucide-react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'; // Removed useMap
 import type { LatLngExpression, Map as LeafletMap } from 'leaflet'; // Import LeafletMap type
 
 const OPERATORS = [
@@ -29,14 +29,14 @@ const TECHNOLOGIES = [
 const DEFAULT_MAP_CENTER: LatLngExpression = [20.5937, 78.9629]; // Approx center of India
 const DEFAULT_MAP_ZOOM = 5;
 
-// Helper component to update map view
-function ChangeMapView({ center, zoom }: { center: LatLngExpression, zoom: number }) {
-  const map = useMap();
-  useEffect(() => { // useMap should be called within a MapContainer child, so this effect will run after map is ready
-    map.setView(center, zoom);
-  }, [map, center, zoom]);
-  return null;
-}
+// Removed ChangeMapView component
+// function ChangeMapView({ center, zoom }: { center: LatLngExpression, zoom: number }) {
+//   const map = useMap();
+//   useEffect(() => { 
+//     map.setView(center, zoom);
+//   }, [map, center, zoom]);
+//   return null;
+// }
 
 
 export default function NetworkCoveragePage() {
@@ -261,8 +261,9 @@ export default function NetworkCoveragePage() {
                   scrollWheelZoom={true} 
                   style={{ height: "100%", width: "100%" }}
                   whenCreated={(mapInstance) => { mapRef.current = mapInstance; }}
+                  // ChangeMapView component removed, MapContainer will use center/zoom props
                 >
-                  <ChangeMapView center={mapCenter} zoom={mapZoom} />
+                  {/* <ChangeMapView center={mapCenter} zoom={mapZoom} /> // Removed */}
                   <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

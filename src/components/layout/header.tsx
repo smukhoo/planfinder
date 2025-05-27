@@ -1,6 +1,6 @@
 
 import Link from 'next/link';
-import { Smartphone, MessageSquareText, Plane } from 'lucide-react';
+import { Smartphone, MessageSquareText, Plane, Map } from 'lucide-react'; // Added Map icon
 import { Button } from '@/components/ui/button';
 
 export function Header() {
@@ -13,19 +13,31 @@ export function Header() {
         </Link>
         <nav className="flex items-center gap-1 sm:gap-2">
           <Button asChild variant="ghost" className="text-sm sm:text-base px-2 sm:px-3">
-            <Link href="/plans">Find Plans</Link>
+            { <Link href="/plans">Find Plans</Link> }
           </Button>
           <Button asChild variant="ghost" className="text-sm sm:text-base px-2 sm:px-3">
-            <Link href="/roaming-advisor" className="flex items-center">
-              <Plane className="h-4 w-4 sm:mr-1" />
-              <span>Roaming</span>
-            </Link>
+            { 
+              <Link href="/roaming-advisor" className="flex items-center">
+                <Plane className="h-4 w-4 sm:mr-1" />
+                <span>Roaming</span>
+              </Link>
+            }
           </Button>
           <Button asChild variant="ghost" className="text-sm sm:text-base px-2 sm:px-3">
-            <Link href="/forum" className="flex items-center">
-              <MessageSquareText className="h-4 w-4 sm:mr-1" />
-              <span>Forum</span>
-            </Link>
+            {
+              <Link href="/network-coverage" className="flex items-center">
+                <Map className="h-4 w-4 sm:mr-1" />
+                <span>Coverage</span>
+              </Link>
+            }
+          </Button>
+          <Button asChild variant="ghost" className="text-sm sm:text-base px-2 sm:px-3">
+            {
+              <Link href="/forum" className="flex items-center">
+                <MessageSquareText className="h-4 w-4 sm:mr-1" />
+                <span>Forum</span>
+              </Link>
+            }
           </Button>
         </nav>
       </div>

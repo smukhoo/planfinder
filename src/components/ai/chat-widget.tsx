@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useRef, useEffect, useState } from 'react'; // Added useState
+import { useRef, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -24,16 +24,16 @@ interface ChatWidgetProps {
 }
 
 export function ChatWidget({ isOpen, setIsOpen }: ChatWidgetProps) {
-  const [messages, setMessages] = useState<Message[]>([]); // Changed from React.useState
-  const [inputValue, setInputValue] = useState(''); // Changed from React.useState
-  const [isLoading, setIsLoading] = useState(false); // Changed from React.useState
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [inputValue, setInputValue] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
   useEffect(() => {
     if (isOpen && messages.length === 0) {
       setMessages([
-        { id: 'greeting', type: 'bot', text: "Hi! I'm your ConnectPlan AI assistant. How can I help you find a plan today? (e.g., 'I need a Jio plan under ₹500 with good data for 3 months')" }
+        { id: 'greeting', type: 'bot', text: "Hi! I'm your ConnectPlan AI assistant, powered by Gemini. How can I help you find a plan today? (e.g., 'I need a Jio plan under ₹500 with good data for 3 months')" }
       ]);
     }
   }, [isOpen, messages.length]);

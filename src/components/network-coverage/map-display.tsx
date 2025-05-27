@@ -2,8 +2,9 @@
 "use client";
 
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import type { LatLngExpression, Map as LeafletMap } from 'leaflet';
-import { useRef } from 'react';
+import type { LatLngExpression } from 'leaflet';
+// Removed: import { useRef } from 'react'; - No longer needed here
+// Removed: import type { Map as LeafletMap } from 'leaflet'; - mapRef removed
 
 // Define Operator and Technology types for props
 interface Operator { id: string; name: string; }
@@ -30,7 +31,7 @@ export default function MapDisplay({
   operators,
   technologies,
 }: MapDisplayProps) {
-  const mapRef = useRef<LeafletMap | null>(null);
+  // Removed: const mapRef = useRef<LeafletMap | null>(null);
 
   return (
     <MapContainer
@@ -38,7 +39,7 @@ export default function MapDisplay({
       zoom={mapZoom}
       scrollWheelZoom={true}
       style={{ height: "100%", width: "100%" }}
-      whenCreated={(mapInstance) => { mapRef.current = mapInstance; }}
+      // Removed: whenCreated={(mapInstance) => { mapRef.current = mapInstance; }}
       className="rounded-md border border-border"
     >
       <TileLayer

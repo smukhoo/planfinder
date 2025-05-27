@@ -1,12 +1,13 @@
 
 "use client";
 
+import * as React from 'react'; // Ensure React is imported for useState, useEffect, useRef
 import { useRef, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Bot, Send, User, X, Loader2 } from 'lucide-react';
+import { Bot, Send, User, X, Loader2, ExternalLink } from 'lucide-react';
 import { recommendPlan, RecommendPlanInput, RecommendPlanOutput } from '@/ai/flows/plan-recommendation';
 import { useRouter } from 'next/navigation';
 import type { TelecomPlan } from '@/services/telecom-plans';
@@ -22,6 +23,13 @@ interface ChatWidgetProps {
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
 }
+
+const suggestions = [
+    "Jio plans under ₹300",
+    "Airtel 1.5GB/day",
+    "Vi 84 days validity",
+    "Plans with Hotstar"
+];
 
 export function ChatWidget({ isOpen, setIsOpen }: ChatWidgetProps) {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -44,23 +52,26 @@ export function ChatWidget({ isOpen, setIsOpen }: ChatWidgetProps) {
     }
   }, [messages]);
 
-  const handleSendMessage = async () => {
-    if (inputValue.trim() === '') return;
+  const handleSendMessage = async (forcedQuery?: string) => {
+    const currentQuery = (forcedQuery || inputValue).trim();
+    if (currentQuery === '') return;
 
-    const userMessage: Message = { id: Date.now().toString(), type: 'user', text: inputValue };
+    const userMessage: Message = { id: Date.now().toString(), type: 'user', text: currentQuery };
     setMessages(prev => [...prev, userMessage]);
-    setInputValue('');
+    if (!forcedQuery) {
+      setInputValue('');
+    }
     setIsLoading(true);
 
     try {
-      const aiInput: RecommendPlanInput = { query: userMessage.text! };
+      const aiInput: RecommendPlanInput = { query: currentQuery };
       const aiResponse: RecommendPlanOutput = await recommendPlan(aiInput);
       
       const botMessage: Message = { 
         id: (Date.now() + 1).toString(), 
         type: 'bot', 
         text: aiResponse.planRecommendation,
-        plans: aiResponse.plans as TelecomPlan[]
+        plans: aiResponse.plans as TelecomPlan[] // Ensure plans are typed correctly
       };
       setMessages(prev => [...prev, botMessage]);
 
@@ -74,8 +85,15 @@ export function ChatWidget({ isOpen, setIsOpen }: ChatWidgetProps) {
   };
 
   const handlePlanClick = (plan: TelecomPlan) => {
-    router.push(`/plans?operator=${encodeURIComponent(plan.operator)}&price=${plan.price}`);
-    setIsOpen(false); 
+    if (plan.rechargeUrl) {
+      window.open(plan.rechargeUrl, '_blank', 'noopener,noreferrer');
+    } else {
+      // Fallback: navigate to a generic plans page for that operator if direct URL is missing
+      // This could be enhanced to show a specific plan if your /plans page supports it
+      router.push(`/plans?operator=${encodeURIComponent(plan.operator)}`);
+      // Potentially show a toast message that direct recharge link is unavailable
+    }
+    // Decide if chat should close: setIsOpen(false);
   };
 
   if (!isOpen) {
@@ -124,10 +142,12 @@ export function ChatWidget({ isOpen, setIsOpen }: ChatWidgetProps) {
                           key={index} 
                           variant="outline" 
                           size="sm" 
-                          className="w-full justify-start text-left h-auto py-1 px-2 text-xs"
+                          className="w-full justify-start text-left h-auto py-1 px-2 text-xs items-center"
                           onClick={() => handlePlanClick(plan)}
+                          title={`Recharge ${plan.operator} ₹${plan.price} plan`}
                         >
                           {plan.operator} ₹{plan.price} - {plan.data}, {plan.validity} days
+                          <ExternalLink className="ml-auto h-3 w-3 text-muted-foreground/70" />
                         </Button>
                       ))}
                        {msg.plans.length > 3 && (
@@ -147,6 +167,24 @@ export function ChatWidget({ isOpen, setIsOpen }: ChatWidgetProps) {
                   <p className="text-sm">Finding plans...</p>
                 </div>
               </div>
+            )}
+            { !isLoading && (
+                <div className="mt-4 pt-4 border-t border-border/30">
+                    <p className="text-xs text-muted-foreground mb-2 text-center">Quick suggestions:</p>
+                    <div className="flex flex-wrap gap-2 justify-center">
+                        {suggestions.map((suggestion, index) => (
+                            <Button
+                                key={index}
+                                variant="outline"
+                                size="sm"
+                                className="text-xs h-auto py-1 px-2 bg-background hover:bg-muted/80"
+                                onClick={() => handleSendMessage(suggestion)}
+                            >
+                                {suggestion}
+                            </Button>
+                        ))}
+                    </div>
+                </div>
             )}
           </div>
         </ScrollArea>
@@ -177,3 +215,4 @@ export function ChatWidget({ isOpen, setIsOpen }: ChatWidgetProps) {
     </Card>
   );
 }
+

@@ -1,9 +1,8 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { Smartphone, Settings, Globe, Users, HelpCircle, Menu, UserCircle, Sparkles } from 'lucide-react'; // Removed Search, Added Sparkles
+import { Smartphone, Settings, Globe, Users, HelpCircle, Menu, UserCircle, Sparkles, Map } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-// import { Input } from '@/components/ui/input'; // Removed Input
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 
@@ -23,15 +22,15 @@ interface HeaderProps {
 export function Header({ setIsChatOpen }: HeaderProps) {
   const navLinks: NavLinkItem[] = [
     { href: '/plans', label: 'Plans', icon: <Smartphone className="h-4 w-4 sm:mr-1" /> },
-    { href: '#', label: 'Offers', icon: <Settings className="h-4 w-4 sm:mr-1" /> },
     { href: '/roaming-advisor', label: 'Roaming', icon: <Globe className="h-4 w-4 sm:mr-1" /> },
+    { href: '/network-coverage', label: 'Coverage', icon: <Map className="h-4 w-4 sm:mr-1" /> },
     { href: '/forum', label: 'Forum', icon: <Users className="h-4 w-4 sm:mr-1" /> },
-    { 
-      href: '#', 
-      label: 'Ask AI', 
-      icon: <Sparkles className="h-4 w-4 sm:mr-1" />, 
+    {
+      href: '#',
+      label: 'Ask AI',
+      icon: <Sparkles className="h-4 w-4 sm:mr-1" />,
       action: () => setIsChatOpen(true),
-      isAnimated: true 
+      isAnimated: true
     },
     { href: '#', label: 'Help', icon: <HelpCircle className="h-4 w-4 sm:mr-1" /> },
   ];
@@ -75,7 +74,6 @@ export function Header({ setIsChatOpen }: HeaderProps) {
         </nav>
 
         <div className="hidden items-center gap-3 md:flex">
-          {/* Search bar and Globe icon removed */}
           <Button variant="ghost" size="icon" className="rounded-full text-muted-foreground hover:text-foreground">
             <UserCircle className="h-6 w-6" />
             <span className="sr-only">User Profile</span>
@@ -107,7 +105,11 @@ export function Header({ setIsChatOpen }: HeaderProps) {
                       <Button
                         key={link.label}
                         variant="ghost"
-                        onClick={link.action}
+                        onClick={() => {
+                          link.action!();
+                          // Optionally close sheet after action
+                          // document.querySelector('[data-radix-sheet-close]')?.click();
+                        }}
                         className={cn("text-muted-foreground hover:text-foreground py-2 flex items-center justify-start text-base", link.isAnimated && "animate-pulse-glow")}
                       >
                         {React.cloneElement(link.icon, { className: 'h-5 w-5 mr-3' })}
@@ -122,9 +124,7 @@ export function Header({ setIsChatOpen }: HeaderProps) {
                     </Link>
                   );
                 })}
-                {/* Search input removed from mobile menu */}
                 <div className="flex items-center gap-2 mt-4 pt-4 border-t">
-                   {/* Globe icon for language removed from mobile menu */}
                   <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground flex-1 justify-start">
                     <UserCircle className="mr-2 h-5 w-5" /> Profile
                   </Button>

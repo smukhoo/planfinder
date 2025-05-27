@@ -14,7 +14,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 // Mock data for forum threads
 const mockThreadsData = [
   { id: '1', title: 'Best plan for unlimited data?', author: 'DataSeeker23', replies: 15, lastActivity: '2 hours ago', category: 'General Discussion', avatarSrc: '/avatars/data-seeker.png', avatarFallback: 'DS', avatarHint: 'user avatar seeker' },
-  { id: '2', title: 'Jio vs Airtel - Which has better network coverage in rural areas?', author: 'ConnectivityGuru', replies: 8, lastActivity: '5 hours ago', category: 'Operator Comparison', avatarSrc: '/avatars/connectivity-guru.png', avatarFallback: 'CG', avatarHint: 'user avatar guru' },
+  { id: '2', title: 'Jio vs Airtel - Which has better network coverage in rural areas?', author: 'ConnectivityGuru', replies: 8, lastActivity: '5 hours ago', category: 'Operator Comparison', avatarSrc: '/avatars/connectivity-guru.png', avatarFallback: 'CG', avatarHint: 'man smiling beard' },
   { id: '3', title: 'How to activate international roaming on Vi?', author: 'TravelerTom', replies: 3, lastActivity: '1 day ago', category: 'Support Questions', avatarSrc: '/avatars/traveler-tom.png', avatarFallback: 'TT', avatarHint: 'user avatar traveler' },
   { id: '4', title: 'New yearly plan announced by Airtel - thoughts?', author: 'PlanWatcher', replies: 22, lastActivity: '30 minutes ago', category: 'News & Announcements', avatarSrc: '/avatars/plan-watcher.png', avatarFallback: 'PW', avatarHint: 'user avatar watcher' },
 ];

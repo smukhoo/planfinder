@@ -2,14 +2,16 @@
 // src/app/network-coverage/page.tsx
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MapPinned, Search, ShieldAlert, Wifi, Smartphone, Settings2 } from 'lucide-react';
+import { MapPinned, Search, ShieldAlert, Wifi, Smartphone, Settings2, Loader2 } from 'lucide-react';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import type { LatLngExpression, Map as LeafletMap } from 'leaflet'; // Import LeafletMap type
 
 const OPERATORS = [
   { id: 'jio', name: 'Jio' },
@@ -24,12 +26,28 @@ const TECHNOLOGIES = [
   { id: '3g', name: '3G' },
 ];
 
+const DEFAULT_MAP_CENTER: LatLngExpression = [20.5937, 78.9629]; // Approx center of India
+const DEFAULT_MAP_ZOOM = 5;
+
+// Helper component to update map view
+function ChangeMapView({ center, zoom }: { center: LatLngExpression, zoom: number }) {
+  const map = useMap();
+  map.setView(center, zoom);
+  return null;
+}
+
+
 export default function NetworkCoveragePage() {
   const [selectedOperators, setSelectedOperators] = useState<string[]>([]);
   const [selectedTechnologies, setSelectedTechnologies] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [mapMessage, setMapMessage] = useState('Select operators, technologies, and search for a location to see illustrative coverage information. Map functionality is a placeholder.');
+  const [mapMessage, setMapMessage] = useState('Select operators, technologies, and search for a location. Map functionality is basic.');
   const [currentLocationLoading, setCurrentLocationLoading] = useState(false);
+  const [mapCenter, setMapCenter] = useState<LatLngExpression>(DEFAULT_MAP_CENTER);
+  const [mapZoom, setMapZoom] = useState<number>(DEFAULT_MAP_ZOOM);
+  const [markerPosition, setMarkerPosition] = useState<LatLngExpression | null>(null);
+
+  const mapRef = useRef<LeafletMap | null>(null);
 
   const handleOperatorToggle = (operatorId: string) => {
     setSelectedOperators(prev =>
@@ -49,11 +67,17 @@ export default function NetworkCoveragePage() {
 
   const handleSearch = (e?: React.FormEvent) => {
     e?.preventDefault();
-    let message = 'Illustrative: ';
+    let message = 'Map: ';
     if (searchTerm) {
-      message += `Searching for "${searchTerm}"`;
+      message += `Displaying map for "${searchTerm}"`;
+      // In a real app, you'd geocode searchTerm to coordinates and update mapCenter & markerPosition
+      // For now, we'll just update the message and potentially reset marker if search is general
+      setMarkerPosition(null); // Clear marker for general searches
     } else {
-      message += `Displaying general coverage`;
+      message += `Displaying general map of India`;
+      setMapCenter(DEFAULT_MAP_CENTER);
+      setMapZoom(DEFAULT_MAP_ZOOM);
+      setMarkerPosition(null);
     }
     if (selectedOperators.length > 0 || selectedTechnologies.length > 0) {
       message += ` with filters: `;
@@ -64,30 +88,26 @@ export default function NetworkCoveragePage() {
         message += `Technologies (${selectedTechnologies.map(techId => TECHNOLOGIES.find(t => t.id === techId)?.name).join(', ')})`;
       }
     }
-    message += `. Actual map integration needed.`;
+    message += `. Actual coverage overlays not yet implemented.`;
     setMapMessage(message);
-    console.log('Search term:', searchTerm);
-    console.log('Selected Operators:', selectedOperators);
-    console.log('Selected Technologies:', selectedTechnologies);
+    // TODO: Implement actual geocoding and map view update based on searchTerm
   };
   
-  // Update message when filters change without an explicit search submission
   useEffect(() => {
-    if (!searchTerm) { // Only update if no active search term to avoid overwriting search-specific messages
-      let baseMessage = "Select operators, technologies, and optionally search for a location.";
-      if (selectedOperators.length > 0 || selectedTechnologies.length > 0) {
-        baseMessage = `Illustrative: Viewing coverage for`;
-        if (selectedOperators.length > 0) {
-          baseMessage += ` ${selectedOperators.map(opId => OPERATORS.find(o => o.id === opId)?.name).join(', ')}`;
-        }
-        if (selectedTechnologies.length > 0) {
-          baseMessage += ` using ${selectedTechnologies.map(techId => TECHNOLOGIES.find(t => t.id === techId)?.name).join(', ')}`;
-        }
-        baseMessage += `. Map functionality is a placeholder.`;
+    // Update message when filters change without an explicit search submission
+    let baseMessage = "Map: Viewing general map.";
+    if (selectedOperators.length > 0 || selectedTechnologies.length > 0) {
+      baseMessage = `Map: Viewing for`;
+      if (selectedOperators.length > 0) {
+        baseMessage += ` ${selectedOperators.map(opId => OPERATORS.find(o => o.id === opId)?.name).join(', ')}`;
       }
-      setMapMessage(baseMessage);
+      if (selectedTechnologies.length > 0) {
+        baseMessage += ` using ${selectedTechnologies.map(techId => TECHNOLOGIES.find(t => t.id === techId)?.name).join(', ')}`;
+      }
     }
-  }, [selectedOperators, selectedTechnologies, searchTerm]);
+    baseMessage += `. Actual coverage overlays not yet implemented.`;
+    setMapMessage(baseMessage);
+  }, [selectedOperators, selectedTechnologies]);
 
 
   const handleUseCurrentLocation = () => {
@@ -97,12 +117,13 @@ export default function NetworkCoveragePage() {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
-          // In a real app, you'd use these coords. For now, mock a search term.
-          setSearchTerm(`Coords: ${latitude.toFixed(2)}, ${longitude.toFixed(2)}`);
-          setMapMessage(`Illustrative: Current location identified. Search for "${searchTerm}" or apply filters. Actual map integration needed.`);
+          const newCenter: LatLngExpression = [latitude, longitude];
+          setMapCenter(newCenter);
+          setMapZoom(13); // Zoom in closer for current location
+          setMarkerPosition(newCenter);
+          setSearchTerm(`My Location (${latitude.toFixed(2)}, ${longitude.toFixed(2)})`);
+          setMapMessage(`Map centered on your current location. Apply filters to see illustrative coverage info.`);
           setCurrentLocationLoading(false);
-           // Automatically trigger search with new "coordinates"
-          handleSearch(); 
         },
         (error) => {
           console.error("Error getting location:", error);
@@ -151,6 +172,7 @@ export default function NetworkCoveragePage() {
                 onClick={handleUseCurrentLocation}
                 disabled={currentLocationLoading}
               >
+                {currentLocationLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                 {currentLocationLoading ? "Locating..." : "Use My Current Location"}
               </Button>
             </div>
@@ -188,7 +210,7 @@ export default function NetworkCoveragePage() {
             </div>
           </div>
            <Button onClick={() => handleSearch()} className="w-full bg-primary text-primary-foreground hover:bg-primary/90 mt-4">
-            Apply Filters & View Map
+            Apply Filters & Update Info
           </Button>
         </CardContent>
       </Card>
@@ -205,52 +227,42 @@ export default function NetworkCoveragePage() {
           <p className="mt-2 text-muted-foreground md:text-md">
             Visually explore network coverage. Select operators and technologies, then search for a location.
             <br />
-            <span className="text-xs">(This is a UI placeholder; actual map integration is required.)</span>
+            <span className="text-xs">(Basic map integrated. Actual coverage overlays are illustrative and require data integration.)</span>
           </p>
         </header>
 
-        {/* Map Placeholder */}
+        {/* Map Area */}
         <Card className="shadow-lg">
           <CardHeader>
             <CardTitle className="text-lg">Coverage Map</CardTitle>
+             <p className="text-sm text-muted-foreground pt-1">{mapMessage}</p>
           </CardHeader>
           <CardContent>
             <div 
-              className="w-full h-[400px] md:h-[500px] bg-muted rounded-md flex flex-col items-center justify-center border border-dashed border-border p-4"
-              aria-label="Network coverage map placeholder"
+              className="w-full h-[400px] md:h-[500px] bg-muted rounded-md border border-border"
+              aria-label="Network coverage map"
             >
-              <MapPinned className="h-16 w-16 mx-auto mb-4 opacity-50 text-primary" />
-              <p className="font-semibold text-lg text-foreground">Interactive Map Area</p>
-              <p className="text-sm text-muted-foreground mt-1 max-w-md text-center">{mapMessage}</p>
-              
-              {(selectedOperators.length > 0 || selectedTechnologies.length > 0) && (
-                <div className="mt-4 text-xs border-t border-border/50 pt-3 w-full max-w-sm text-left space-y-1 bg-background/50 p-3 rounded-md">
-                  <p className="font-medium text-foreground mb-1">Illustrative Coverage Layers Applied:</p>
-                  {selectedOperators.map(opId => {
-                    const operator = OPERATORS.find(o => o.id === opId);
-                    return (
-                      <div key={opId}>
-                        <span className="font-semibold text-primary">{operator?.name}: </span>
-                        <span className="text-muted-foreground">
-                            {selectedTechnologies.length > 0 
-                                ? selectedTechnologies.map(techId => TECHNOLOGIES.find(t => t.id === techId)?.name).join(', ')
-                                : "All selected technologies"
-                            }
-                        </span>
-                      </div>
-                    );
-                  })}
-                  {selectedOperators.length === 0 && selectedTechnologies.length > 0 && (
-                     <div>
-                        <span className="font-semibold text-primary">All Selected Operators: </span>
-                        <span className="text-muted-foreground">
-                            {selectedTechnologies.map(techId => TECHNOLOGIES.find(t => t.id === techId)?.name).join(', ')}
-                        </span>
-                      </div>
-                  )}
-                </div>
-              )}
-              <p className="text-xs text-muted-foreground/70 mt-4">A developer will integrate a mapping library and data sources here.</p>
+              <MapContainer 
+                center={mapCenter} 
+                zoom={mapZoom} 
+                scrollWheelZoom={true} 
+                style={{ height: "100%", width: "100%" }}
+                whenCreated={(mapInstance) => { mapRef.current = mapInstance; }}
+              >
+                <ChangeMapView center={mapCenter} zoom={mapZoom} />
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+                {markerPosition && (
+                  <Marker position={markerPosition}>
+                    <Popup>
+                      {searchTerm || 'Current Location'}
+                    </Popup>
+                  </Marker>
+                )}
+                {/* Placeholder for future coverage layers */}
+              </MapContainer>
             </div>
           </CardContent>
         </Card>
@@ -271,7 +283,7 @@ export default function NetworkCoveragePage() {
                         return (
                             <div key={`${opId}-${techId}`} className="flex items-center">
                                 <span className="w-4 h-4 rounded-sm mr-2 border" style={{backgroundColor: `hsl(${colorVal}, 70%, 70%)`}}></span>
-                                <span>{operator?.name} - {technology?.name}</span>
+                                <span>{operator?.name} - {technology?.name} (Illustrative color)</span>
                             </div>
                         )
                     })
@@ -293,7 +305,7 @@ export default function NetworkCoveragePage() {
               Coverage maps provide approximate outdoor coverage. Actual network experience may vary due to factors like terrain, weather, buildings, network congestion, device type, and indoor locations.
             </p>
             <p>
-              When integrated, data would be sourced from official telecom operator maps or third-party providers and is subject to change. Users are advised to verify with operators for critical needs. ConnectPlan AI is not responsible for the accuracy of the external map data.
+              This map uses OpenStreetMap for base tiles. Actual coverage data for telecom operators is not yet overlaid and requires separate integration. Information presented is for illustrative purposes. Users are advised to verify with operators for critical needs.
             </p>
           </AlertDescription>
         </Alert>
@@ -301,4 +313,3 @@ export default function NetworkCoveragePage() {
     </div>
   );
 }
-

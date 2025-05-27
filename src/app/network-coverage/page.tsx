@@ -3,17 +3,16 @@
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
-import dynamic from 'next/dynamic'; // Import dynamic
+import dynamic from 'next/dynamic'; 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MapPinned, Search, ShieldAlert, Wifi, Smartphone, Settings2, Loader2 } from 'lucide-react';
-// Removed MapContainer from static imports, will be dynamically imported
-import { TileLayer, Marker, Popup } from 'react-leaflet';
-import type { LatLngExpression, Map as LeafletMap } from 'leaflet'; // Import LeafletMap type
+import { MapPinned, Search, ShieldAlert, Smartphone, Settings2, Loader2 } from 'lucide-react'; // Wifi removed as it's not used
+// Removed static react-leaflet imports: MapContainer, TileLayer, Marker, Popup
+import type { LatLngExpression, Map as LeafletMap } from 'leaflet';
 
 const OPERATORS = [
   { id: 'jio', name: 'Jio' },
@@ -31,14 +30,18 @@ const TECHNOLOGIES = [
 const DEFAULT_MAP_CENTER: LatLngExpression = [20.5937, 78.9629]; // Approx center of India
 const DEFAULT_MAP_ZOOM = 5;
 
-// Dynamically import MapContainer
-const DynamicMapContainer = dynamic(
-  () => import('react-leaflet').then((mod) => mod.MapContainer),
+const DynamicMapDisplay = dynamic(
+  () => import('@/components/network-coverage/map-display'),
   {
     ssr: false,
-    loading: () => <p className="flex items-center justify-center h-full text-muted-foreground">Initializing map...</p>,
+    loading: () => (
+      <div className="flex items-center justify-center h-full text-muted-foreground bg-muted rounded-md border border-border">
+        Initializing map...
+      </div>
+    ),
   }
 );
+
 
 export default function NetworkCoveragePage() {
   const [selectedOperators, setSelectedOperators] = useState<string[]>([]);
@@ -49,15 +52,10 @@ export default function NetworkCoveragePage() {
   const [mapCenter, setMapCenter] = useState<LatLngExpression>(DEFAULT_MAP_CENTER);
   const [mapZoom, setMapZoom] = useState<number>(DEFAULT_MAP_ZOOM);
   const [markerPosition, setMarkerPosition] = useState<LatLngExpression | null>(null);
-  // isClient state is no longer needed as next/dynamic handles SSR
-  // const [isClient, setIsClient] = useState(false);
+  
+  // mapRef is now managed within MapDisplay component
+  // const mapRef = useRef<LeafletMap | null>(null);
 
-  const mapRef = useRef<LeafletMap | null>(null);
-
-  // useEffect for setIsClient is no longer needed
-  // useEffect(() => {
-  //   setIsClient(true);
-  // }, []);
 
   const handleOperatorToggle = (operatorId: string) => {
     setSelectedOperators(prev =>
@@ -80,7 +78,11 @@ export default function NetworkCoveragePage() {
     let message = 'Map: ';
     if (searchTerm) {
       message += `Displaying map for "${searchTerm}"`;
-      setMarkerPosition(null); 
+      // Geocoding and setting mapCenter/markerPosition would happen here in a real app
+      // For now, we just update the message and clear any existing marker if it's not "My Location"
+      if (!searchTerm.startsWith("My Location")) {
+        setMarkerPosition(null); 
+      }
     } else {
       message += `Displaying general map of India`;
       setMapCenter(DEFAULT_MAP_CENTER);
@@ -151,7 +153,6 @@ export default function NetworkCoveragePage() {
 
   return (
     <div className="container mx-auto px-4 py-8 md:px-6 flex flex-col lg:flex-row gap-8">
-      {/* Sidebar for Filters and Search */}
       <Card className="w-full lg:w-1/3 lg:max-w-sm shadow-xl">
         <CardHeader>
           <CardTitle className="flex items-center text-xl">
@@ -226,7 +227,6 @@ export default function NetworkCoveragePage() {
         </CardContent>
       </Card>
 
-      {/* Main Content Area for Map and Legend */}
       <div className="flex-1 space-y-8">
         <header className="text-center lg:text-left">
           <div className="inline-flex items-center justify-center p-3 bg-primary/10 rounded-full mb-3">
@@ -242,7 +242,6 @@ export default function NetworkCoveragePage() {
           </p>
         </header>
 
-        {/* Map Area */}
         <Card className="shadow-lg">
           <CardHeader>
             <CardTitle className="text-lg">Coverage Map</CardTitle>
@@ -253,41 +252,20 @@ export default function NetworkCoveragePage() {
               className="w-full h-[400px] md:h-[500px] bg-muted rounded-md border border-border"
               aria-label="Network coverage map"
             >
-              {/* Use the dynamically imported MapContainer */}
-              <DynamicMapContainer 
-                  center={mapCenter} 
-                  zoom={mapZoom} 
-                  scrollWheelZoom={true} 
-                  style={{ height: "100%", width: "100%" }}
-                  whenCreated={(mapInstance) => { mapRef.current = mapInstance; }}
-                >
-                  <TileLayer
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                  />
-                  {markerPosition && (
-                    <Marker position={markerPosition}>
-                      <Popup>
-                        {searchTerm || 'Current Location'}
-                      </Popup>
-                    </Marker>
-                  )}
-                  <div className="absolute top-2 left-2 p-2 bg-background/80 rounded shadow-md text-xs z-[1000]">
-                    <p className="font-semibold">Displaying mock coverage for:</p>
-                    {selectedOperators.length > 0 ? (
-                        <p>Operators: {selectedOperators.map(opId => OPERATORS.find(o => o.id === opId)?.name).join(', ')}</p>
-                    ) : <p>No operators selected</p>}
-                    {selectedTechnologies.length > 0 ? (
-                        <p>Technologies: {selectedTechnologies.map(techId => TECHNOLOGIES.find(t => t.id === techId)?.name).join(', ')}</p>
-                    ) : <p>No technologies selected</p>}
-                    {!selectedOperators.length && !selectedTechnologies.length && <p>Select filters to see mock info.</p>}
-                </div>
-                </DynamicMapContainer>
+              <DynamicMapDisplay
+                mapCenter={mapCenter}
+                mapZoom={mapZoom}
+                markerPosition={markerPosition}
+                searchTerm={searchTerm}
+                selectedOperators={selectedOperators}
+                selectedTechnologies={selectedTechnologies}
+                operators={OPERATORS}
+                technologies={TECHNOLOGIES}
+              />
             </div>
           </CardContent>
         </Card>
 
-        {/* Legend Placeholder */}
         <Card className="shadow-lg">
           <CardHeader>
             <CardTitle className="text-lg">Legend (Illustrative)</CardTitle>
@@ -332,4 +310,3 @@ export default function NetworkCoveragePage() {
     </div>
   );
 }
-

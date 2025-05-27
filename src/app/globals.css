@@ -5,35 +5,35 @@
 
 @layer base {
   :root {
-    --background: 250 50% 95%; /* Light Desaturated Blue-Purple */
-    --background-gradient-start: 250 50% 98%; /* Slightly Lighter for Gradient Start */
-    --background-gradient-end: 250 50% 95%;   /* Main Background for Gradient End */
-    --foreground: 250 15% 25%; /* Dark Blue-Purple */
+    --background: 220 20% 97%; /* Very light cool grey */
+    --background-gradient-start: 220 20% 99%; /* Slightly Lighter for Gradient Start */
+    --background-gradient-end: 220 20% 97%;   /* Main Background for Gradient End */
+    --foreground: 220 10% 25%; /* Dark cool grey */
 
-    --card: 250 30% 98%; /* Very Light Blue-Purple */
-    --card-foreground: 250 15% 25%; /* Dark Blue-Purple */
+    --card: 0 0% 100%; /* White */
+    --card-foreground: 220 10% 25%; /* Dark cool grey */
 
-    --popover: 250 30% 98%; /* Very Light Blue-Purple */
-    --popover-foreground: 250 15% 25%; /* Dark Blue-Purple */
+    --popover: 0 0% 100%; /* White */
+    --popover-foreground: 220 10% 25%; /* Dark cool grey */
 
-    --primary: 280 70% 60%; /* Vibrant Purple */
-    --primary-foreground: 280 10% 95%; /* Very Light Purple/White */
+    --primary: 205 50% 50%; /* Muted Blue */
+    --primary-foreground: 205 50% 98%; /* Very Light Blue/White */
 
-    --secondary: 250 40% 90%; /* Light Blue-Purple */
-    --secondary-foreground: 250 15% 30%; /* Darker Blue-Purple */
+    --secondary: 210 30% 92%; /* Light Muted Blue/Grey */
+    --secondary-foreground: 210 30% 35%; /* Darker Blue/Grey text */
 
-    --muted: 250 30% 85%; /* Muted Blue-Purple */
-    --muted-foreground: 250 10% 50%; /* Greyish Blue-Purple */
+    --muted: 220 15% 88%; /* Light Grey */
+    --muted-foreground: 220 10% 45%; /* Medium Grey text */
 
-    --accent: 280 70% 60%; /* Vibrant Purple */
-    --accent-foreground: 280 10% 95%; /* Very Light Purple/White */
+    --accent: 174 65% 42%; /* Teal (#26A69A) */
+    --accent-foreground: 0 0% 100%; /* White */
 
-    --destructive: 0 84.2% 60.2%; /* Keeping existing red for destructive actions */
+    --destructive: 0 84.2% 60.2%; /* Keeping existing red */
     --destructive-foreground: 0 0% 98%;
 
-    --border: 250 30% 88%; /* Light Blue-Purple Border */
-    --input: 250 30% 92%; /* Slightly Darker Input Background */
-    --ring: 280 70% 65%; /* Vibrant Purple Ring */
+    --border: 220 15% 88%; /* Light Grey Border */
+    --input: 220 20% 94%; /* Slightly darker Input Background */
+    --ring: 205 50% 55%; /* Muted Blue Ring */
 
     --chart-1: 12 76% 61%;
     --chart-2: 173 58% 39%;
@@ -42,62 +42,63 @@
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
 
-    /* Sidebar specific colors - can be adjusted if sidebar is extensively used */
-    --sidebar-background: 250 45% 93%;
-    --sidebar-foreground: 250 15% 26.1%;
-    --sidebar-primary: 280 70% 60%;
-    --sidebar-primary-foreground: 280 10% 95%;
-    --sidebar-accent: 250 30% 90%;
-    --sidebar-accent-foreground: 250 15% 20%;
-    --sidebar-border: 250 30% 88%;
-    --sidebar-ring: 280 70% 65%;
+    /* Sidebar specific colors */
+    --sidebar-background: 210 30% 96%; /* Very light muted blue, slightly different from main bg */
+    --sidebar-foreground: 220 10% 25%; /* Dark cool grey */
+    --sidebar-primary: 205 50% 50%; /* Muted Blue */
+    --sidebar-primary-foreground: 205 50% 98%; /* Very Light Blue/White */
+    --sidebar-accent: 210 30% 90%; /* Lighter muted blue for sidebar active/hover */
+    --sidebar-accent-foreground: 210 30% 30%; /* Darker text for sidebar accent */
+    --sidebar-border: 210 30% 88%;
+    --sidebar-ring: 205 50% 55%; /* Muted Blue Ring */
   }
 
   .dark {
-    --background: 250 50% 15%; /* Dark Blue-Purple */
-    --background-gradient-start: 250 50% 20%; /* Slightly Lighter for Gradient Start (Dark) */
-    --background-gradient-end: 250 50% 15%;   /* Main Background for Gradient End (Dark) */
-    --foreground: 250 15% 85%; /* Light Blue-Purple Text */
+    --background: 220 15% 15%; /* Dark cool grey */
+    --background-gradient-start: 220 15% 18%; /* Slightly Lighter for Gradient Start (Dark) */
+    --background-gradient-end: 220 15% 15%;   /* Main Background for Gradient End (Dark) */
+    --foreground: 220 15% 85%; /* Light cool grey Text */
 
-    --card: 250 30% 20%; /* Darker Blue-Purple Card */
-    --card-foreground: 250 15% 85%; /* Light Blue-Purple Text */
+    --card: 220 15% 20%; /* Darker cool grey Card */
+    --card-foreground: 220 15% 85%; /* Light cool grey Text */
 
-    --popover: 250 30% 15%; /* Dark Blue-Purple Popover */
-    --popover-foreground: 250 15% 85%; /* Light Blue-Purple Text */
+    --popover: 220 15% 18%; /* Dark cool grey Popover */
+    --popover-foreground: 220 15% 85%; /* Light cool grey Text */
 
-    --primary: 280 70% 70%; /* Lighter Vibrant Purple */
-    --primary-foreground: 280 10% 15%; /* Very Dark Purple Text */
+    --primary: 205 50% 60%; /* Lighter Muted Blue */
+    --primary-foreground: 205 50% 15%; /* Dark text on primary */
 
-    --secondary: 250 40% 25%; /* Dark Blue-Purple Secondary */
-    --secondary-foreground: 250 15% 80%; /* Lighter Blue-Purple Text */
+    --secondary: 210 25% 30%; /* Darker Muted Blue/Grey */
+    --secondary-foreground: 210 25% 80%; /* Lighter text on secondary */
 
-    --muted: 250 30% 30%; /* Dark Muted Blue-Purple */
-    --muted-foreground: 250 10% 60%; /* Greyish Blue-Purple Text */
+    --muted: 220 10% 30%; /* Dark Muted Grey */
+    --muted-foreground: 220 10% 60%; /* Medium-Light Grey text */
 
-    --accent: 280 70% 70%; /* Lighter Vibrant Purple */
-    --accent-foreground: 280 10% 95%; /* Very Light Purple/White Text */
+    --accent: 174 60% 50%; /* Lighter Teal */
+    --accent-foreground: 174 100% 10%; /* Very Dark Teal/Black text */
 
-    --destructive: 0 62.8% 30.6%; /* Keeping existing red for destructive actions */
+    --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 250 30% 35%; /* Dark Blue-Purple Border */
-    --input: 250 30% 30%; /* Darker Input Background */
-    --ring: 280 70% 75%; /* Lighter Vibrant Purple Ring */
+    --border: 220 10% 35%; /* Dark Grey Border */
+    --input: 220 10% 30%; /* Darker Input Background */
+    --ring: 205 50% 65%; /* Lighter Muted Blue Ring */
 
-    --chart-1: 220 70% 50%; /* Keeping existing chart colors for now */
+    --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
 
-    --sidebar-background: 250 45% 18%;
-    --sidebar-foreground: 250 15% 80%;
-    --sidebar-primary: 280 70% 70%;
-    --sidebar-primary-foreground: 280 10% 15%;
-    --sidebar-accent: 250 30% 25%;
-    --sidebar-accent-foreground: 250 15% 80%;
-    --sidebar-border: 250 30% 33%;
-    --sidebar-ring: 280 70% 75%;
+    /* Dark Sidebar specific colors */
+    --sidebar-background: 210 20% 18%; /* Dark muted blue, distinct from main dark bg */
+    --sidebar-foreground: 220 15% 80%; /* Light cool grey text */
+    --sidebar-primary: 205 50% 60%; /* Lighter Muted Blue */
+    --sidebar-primary-foreground: 205 50% 15%; /* Dark text on primary */
+    --sidebar-accent: 210 20% 25%; /* Darker muted blue for sidebar active/hover */
+    --sidebar-accent-foreground: 210 20% 75%; /* Lighter text for sidebar accent */
+    --sidebar-border: 210 15% 28%;
+    --sidebar-ring: 205 50% 65%; /* Lighter Muted Blue Ring */
   }
 }
 
@@ -108,7 +109,7 @@
   body {
     background-color: hsl(var(--background)); /* Fallback */
     background-image: radial-gradient(ellipse at center, hsl(var(--background-gradient-start)), hsl(var(--background-gradient-end)));
-    @apply text-foreground; /* Keep this */
+    @apply text-foreground;
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   }
 }

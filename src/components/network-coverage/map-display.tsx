@@ -1,7 +1,7 @@
 // src/components/network-coverage/map-display.tsx
 "use client";
 
-import { useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react'; // Added useState
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import type { LatLngExpression, Map as LeafletMap } from 'leaflet';
@@ -18,31 +18,30 @@ interface MapDisplayProps {
   mapCenter: LatLngExpression;
   mapZoom: number;
   markerPosition: LatLngExpression | null;
-  isLoadingLocation?: boolean; // Optional prop to show loading state on map if needed
-  // In a real app, you'd pass coverage data here to draw overlays
 }
 
 export function MapDisplay({ mapCenter, mapZoom, markerPosition }: MapDisplayProps) {
   const mapRef = useRef<LeafletMap | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
 
-  // Effect to update map view if center or zoom props change from parent
   useEffect(() => {
-    if (mapRef.current) {
-      mapRef.current.setView(mapCenter, mapZoom);
-    }
-  }, [mapCenter, mapZoom]);
+    setIsMounted(true); // Component is now mounted on the client
 
-  // Effect for map instance cleanup on component unmount
-  useEffect(() => {
-    const currentMap = mapRef.current; // Capture the current map instance
+    // Cleanup function:
+    // This will be called when the component unmounts, or before the effect re-runs in Strict Mode.
     return () => {
-      // Only attempt to remove if it's the same instance this effect was for
-      if (currentMap && mapRef.current === currentMap) {
-        currentMap.remove();
-        mapRef.current = null; // Help garbage collection
+      if (mapRef.current) {
+        mapRef.current.remove(); // Explicitly destroy the Leaflet map instance
+        mapRef.current = null;   // Clear the reference
       }
     };
-  }, []); // Empty dependency array to run only on mount and unmount
+  }, []); // Empty dependency array ensures this effect runs once on mount and cleans up on unmount
+
+  if (!isMounted) {
+    // If not mounted, don't render the map. 
+    // The parent's dynamic import loading state will handle the initial placeholder.
+    return null; 
+  }
 
   return (
     <MapContainer
@@ -51,9 +50,14 @@ export function MapDisplay({ mapCenter, mapZoom, markerPosition }: MapDisplayPro
       scrollWheelZoom={true}
       style={{ height: '100%', width: '100%' }}
       whenCreated={(mapInstance: LeafletMap) => {
+        // If a map instance already exists in the ref (e.g., from a previous Strict Mode render),
+        // remove it before assigning the new one.
+        if (mapRef.current) {
+            mapRef.current.remove();
+        }
         mapRef.current = mapInstance;
       }}
-      className="rounded-lg shadow-md z-0" // Ensure map is behind UI elements if overlapping
+      className="rounded-lg shadow-md z-0"
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -61,10 +65,11 @@ export function MapDisplay({ mapCenter, mapZoom, markerPosition }: MapDisplayPro
       />
       {markerPosition && (
         <Marker position={markerPosition}>
-          <Popup>Your current/searched location.</Popup>
+          <Popup>
+            Selected Location. <br /> Coverage data display is illustrative.
+          </Popup>
         </Marker>
       )}
-      {/* Future: Add GeoJSON layers or other overlay components here based on selected filters */}
     </MapContainer>
   );
 }

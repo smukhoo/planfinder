@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
+// Removed Image import: import Image from "next/image";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -31,7 +31,7 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { CalendarIcon, Search } from "lucide-react"; // Removed PlaneTakeoff as it's not used
+import { CalendarIcon, Search } from "lucide-react";
 import type { RoamingAdvisorInput } from "@/types/roaming";
 import { mockCountries } from "@/services/international-roaming";
 
@@ -60,7 +60,8 @@ interface RoamingAdvisorFormProps {
 }
 
 export function RoamingAdvisorForm({ onSubmit, isLoading }: RoamingAdvisorFormProps) {
-  const [selectedCountryLabel, setSelectedCountryLabel] = useState<string | null>(null);
+  // Removed selectedCountryLabel state
+  // const [selectedCountryLabel, setSelectedCountryLabel] = useState<string | null>(null);
 
   const form = useForm<RoamingAdvisorFormValues>({
     resolver: zodResolver(formSchema),
@@ -76,20 +77,14 @@ export function RoamingAdvisorForm({ onSubmit, isLoading }: RoamingAdvisorFormPr
     onSubmit(values as RoamingAdvisorInput);
   }
 
+  // Simplified or removed handleCountryChange if it was only for the image
   const handleCountryChange = (value: string) => {
     form.setValue("destinationCountry", value); // Update form state
-    if (value) {
-      const country = mockCountries.find(c => c.value === value);
-      setSelectedCountryLabel(country ? country.label : null);
-    } else {
-      setSelectedCountryLabel(null);
-    }
+    // Removed logic for setting selectedCountryLabel
   };
   
-  const getDataAiHint = (label: string | null): string => {
-    if (!label) return "";
-    return label.split(' ').slice(0, 2).join(' ').toLowerCase();
-  }
+  // Removed getDataAiHint function as it's no longer needed
+  // const getDataAiHint = (label: string | null): string => { ... }
 
   return (
     <Form {...form}>
@@ -119,20 +114,8 @@ export function RoamingAdvisorForm({ onSubmit, isLoading }: RoamingAdvisorFormPr
           )}
         />
 
-        {selectedCountryLabel && (
-          <div className="mt-6 text-center">
-            <div className="relative w-full max-w-sm mx-auto aspect-[3/2] rounded-lg shadow-md overflow-hidden">
-              <Image
-                src={`https://placehold.co/600x400.png`} // Using a larger placeholder and letting next/image handle sizing
-                alt={`Placeholder image for ${selectedCountryLabel}`}
-                layout="fill"
-                objectFit="cover"
-                className="rounded-lg"
-                data-ai-hint={getDataAiHint(selectedCountryLabel)}
-              />
-            </div>
-          </div>
-        )}
+        {/* Removed Image display logic */}
+        {/* {selectedCountryLabel && ( ... )} */}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <FormField

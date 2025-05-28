@@ -10,7 +10,8 @@ import { DataUsageSection } from '@/components/personalized/data-usage-section';
 import { RecommendationsSection } from '@/components/personalized/recommendations-section';
 import { Loader2, TrendingUp, ShieldAlert } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 
 
 export default function PersonalizedPage() {

@@ -5,9 +5,9 @@
 import type { MockDataStatus, MockAppConsumption, MockUsagePatternPoint } from '@/types/personalized';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { BarChart, TrendingUp, List } from 'lucide-react';
-import { ChartContainer, BarChart as ShadBarChart, ChartTooltip, ChartTooltipContent, ChartConfig } from "@/components/ui/chart"
-import { Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from "recharts"
+import { TrendingUp, List } from 'lucide-react'; // BarChart icon removed from here as it's a component name
+import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig } from "@/components/ui/chart"; // Removed BarChart as ShadBarChart
+import { Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart } from "recharts"; // Added BarChart import
 
 
 interface DataUsageSectionProps {
@@ -65,7 +65,7 @@ export function DataUsageSection({ dataStatus, appConsumption, usagePatterns }: 
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="text-xl font-semibold text-primary flex items-center">
-             <List className="mr-2 h-6 w-6" />
+             <List className="mr-2 h-6 w-6" /> {/* Changed icon from BarChart to List for clarity */}
             App Data Consumption
           </CardTitle>
           <CardDescription>How your data is being used by different apps.</CardDescription>
@@ -91,7 +91,7 @@ export function DataUsageSection({ dataStatus, appConsumption, usagePatterns }: 
             <div className="mt-4 h-[200px] w-full">
                <ChartContainer config={appConsumptionChartConfig} className="h-full w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <ShadBarChart data={appConsumption} layout="vertical" margin={{ right: 20 }}>
+                  <BarChart data={appConsumption} layout="vertical" margin={{ right: 20 }}> {/* Replaced ShadBarChart with BarChart */}
                     <CartesianGrid horizontal={false} />
                     <YAxis
                       dataKey="name"
@@ -108,7 +108,7 @@ export function DataUsageSection({ dataStatus, appConsumption, usagePatterns }: 
                       content={<ChartTooltipContent indicator="dot" />}
                     />
                     <Bar dataKey="usageGB" radius={4} fill="var(--color-usageGB)" />
-                  </ShadBarChart>
+                  </BarChart> {/* Replaced ShadBarChart with BarChart */}
                 </ResponsiveContainer>
               </ChartContainer>
             </div>
@@ -119,7 +119,8 @@ export function DataUsageSection({ dataStatus, appConsumption, usagePatterns }: 
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="text-xl font-semibold text-primary flex items-center">
-            <BarChart className="mr-2 h-6 w-6" />
+            {/* Using List icon here as well or a generic chart icon if preferred */}
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 h-6 w-6 lucide lucide-bar-chart-big"><line x1="12" x2="12" y1="20" y2="4"/><path d="M17 20V10"/><path d="M22 20V14"/><path d="M7 20V16"/><path d="M2 20V8"/></svg>
             Data Usage Patterns
           </CardTitle>
           <CardDescription>Your typical data usage over the last period.</CardDescription>
@@ -129,7 +130,7 @@ export function DataUsageSection({ dataStatus, appConsumption, usagePatterns }: 
             <div className="h-[250px] w-full">
               <ChartContainer config={dataUsagePatternChartConfig} className="h-full w-full">
                  <ResponsiveContainer width="100%" height="100%">
-                    <ShadBarChart data={usagePatterns}>
+                    <BarChart data={usagePatterns}> {/* Replaced ShadBarChart with BarChart */}
                         <CartesianGrid vertical={false} />
                         <XAxis
                         dataKey="date"
@@ -144,7 +145,7 @@ export function DataUsageSection({ dataStatus, appConsumption, usagePatterns }: 
                             content={<ChartTooltipContent indicator="dot" />} 
                         />
                         <Bar dataKey="usageGB" fill="var(--color-usageGB)" radius={4} />
-                    </ShadBarChart>
+                    </BarChart> {/* Replaced ShadBarChart with BarChart */}
                 </ResponsiveContainer>
               </ChartContainer>
             </div>

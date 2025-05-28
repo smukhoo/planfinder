@@ -99,7 +99,11 @@ export default function ForumPage() {
             <DialogHeader>
               <DialogTitle className="text-xl">Create New Discussion Thread</DialogTitle>
             </DialogHeader>
-            <NewThreadForm onSubmit={handleCreateThread} onCancel={() => setIsNewThreadModalOpen(false)} />
+            <NewThreadForm
+              key={isNewThreadModalOpen ? 'form-is-open' : 'form-is-closed'} // Added key to help with re-initialization issues
+              onSubmit={handleCreateThread}
+              onCancel={() => setIsNewThreadModalOpen(false)}
+            />
           </DialogContent>
         </Dialog>
       </div>

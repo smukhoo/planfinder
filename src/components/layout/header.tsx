@@ -1,7 +1,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { Smartphone, Settings, Globe, Users, HelpCircle, Menu, UserCircle, Sparkles, Map } from 'lucide-react';
+import { Smartphone, Users, HelpCircle, Menu, UserCircle, Sparkles, BarChartHorizontalBig, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
@@ -22,8 +22,8 @@ interface HeaderProps {
 export function Header({ setIsChatOpen }: HeaderProps) {
   const navLinks: NavLinkItem[] = [
     { href: '/plans', label: 'Plans', icon: <Smartphone className="h-4 w-4 sm:mr-1" /> },
+    { href: '/personalized', label: 'Personalized', icon: <BarChartHorizontalBig className="h-4 w-4 sm:mr-1" /> },
     { href: '/roaming-advisor', label: 'Roaming', icon: <Globe className="h-4 w-4 sm:mr-1" /> },
-    { href: '/network-coverage', label: 'Coverage', icon: <Map className="h-4 w-4 sm:mr-1" /> },
     { href: '/forum', label: 'Forum', icon: <Users className="h-4 w-4 sm:mr-1" /> },
     {
       href: '#',
@@ -107,8 +107,6 @@ export function Header({ setIsChatOpen }: HeaderProps) {
                         variant="ghost"
                         onClick={() => {
                           link.action!();
-                          // Optionally close sheet after action
-                          // document.querySelector('[data-radix-sheet-close]')?.click();
                         }}
                         className={cn("text-muted-foreground hover:text-foreground py-2 flex items-center justify-start text-base", link.isAnimated && "animate-pulse-glow")}
                       >
@@ -137,3 +135,4 @@ export function Header({ setIsChatOpen }: HeaderProps) {
     </header>
   );
 }
+

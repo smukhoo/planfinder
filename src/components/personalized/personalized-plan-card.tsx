@@ -43,7 +43,7 @@ export function PersonalizedPlanCard({ plan, ctaText = "View Plan", cardStyle }:
                 <span className="font-semibold text-foreground">{plan.sms}</span>
             </div>
         )}
-        {plan.additionalBenefits && plan.additionalBenefits.length > 0 && (
+        {plan.additionalBenefits && Array.isArray(plan.additionalBenefits) && plan.additionalBenefits.length > 0 && (
           <div className="pt-2">
             <p className="text-xs font-medium text-foreground mb-1">Key Benefits:</p>
             <ul className="space-y-1">
@@ -70,5 +70,4 @@ export function PersonalizedPlanCard({ plan, ctaText = "View Plan", cardStyle }:
     </Card>
   );
 }
-
     

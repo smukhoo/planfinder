@@ -21,7 +21,7 @@ const samplePlan1: TelecomPlan = {
   talktime: 'Unlimited',
   sms: '100/day',
   validity: 28,
-  additionalBenefits: 'Wynk Music, Free Hellotunes',
+  additionalBenefits: ['Wynk Music', 'Free Hellotunes'], // Changed to array
   rechargeUrl: 'https://www.airtel.in/prepaid-recharge/',
   id: 'airtel-299',
   category: 'Popular',
@@ -34,7 +34,7 @@ const samplePlan2: TelecomPlan = {
   talktime: 'Unlimited',
   sms: '100/day',
   validity: 84,
-  additionalBenefits: 'JioTV, JioCinema, Netflix Mobile subscription',
+  additionalBenefits: ['JioTV', 'JioCinema', 'Netflix Mobile subscription'], // Changed to array
   rechargeUrl: 'https://www.jio.com/selfcare/plans/mobility/prepaid-plans-home/',
   id: 'jio-666-netflix',
   category: 'Entertainment',
@@ -47,7 +47,7 @@ const sampleRoamingPack: TelecomPlan = {
   talktime: '100 mins Local/India',
   sms: '20 SMS',
   validity: 30,
-  additionalBenefits: 'Valid in 80+ countries including Dubai',
+  additionalBenefits: ['Valid in 80+ countries including Dubai'], // Changed to array
   rechargeUrl: 'https://www.myvi.in/international-roaming-packs',
   id: 'vi-ir-2999',
   category: 'Roaming',
@@ -128,7 +128,7 @@ const moderateUser: MockPersonalizedData = {
   costSaving: {
     averageUsageGB: 1.0, // Lower average than current plan
     potentialSavingINR: 120,
-    recommendedPlan: { ...samplePlan1, price: 199, data: '1GB/day', id: 'jio-199' },
+    recommendedPlan: { ...samplePlan1, price: 199, data: '1GB/day', id: 'jio-199', additionalBenefits: ['Free Hellotunes'] }, // Ensured benefits is array
   },
   // No OTT or travel recommendation for this user scenario
   lastUpdated: '1 hour ago',

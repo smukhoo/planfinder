@@ -3,12 +3,12 @@ import type { TelecomPlan, OttService } from '@/services/telecom-plans';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
-import { CheckCircle, ExternalLink, PlusCircle } from 'lucide-react';
+import { CheckCircle, ExternalLink, PlusCircle, Phone, MessageSquareText } from 'lucide-react';
 
 interface PlanCardProps {
   plan: TelecomPlan;
   isSelected: boolean;
-  onPlanSelect: (planId: string) => void; // Renamed from onSelectToggle
+  onPlanSelect: (planId: string) => void;
   currentLanguage: 'english' | 'hindi' | 'tamil';
 }
 
@@ -51,31 +51,22 @@ export function PlanCard({ plan, isSelected, onPlanSelect, currentLanguage }: Pl
         <div>
           <CardHeader className="p-0 mb-3">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-x-4 gap-y-2 mb-2">
+              {/* Left: Price & Plan Name */}
               <div className="flex-shrink-0">
                 <span className="text-3xl font-bold text-primary">₹{plan.price}</span>
                 <p className="text-sm font-semibold text-foreground -mt-1">{displayPlanName}</p>
               </div>
-              <div className="flex flex-col items-start sm:items-end sm:flex-row sm:items-center gap-x-3 gap-y-1 w-full sm:w-auto mt-2 sm:mt-0">
+
+              {/* Right: Key Stats (Data, Validity) & Buy Button */}
+              <div className="flex flex-col items-start sm:items-end sm:flex-row sm:items-center gap-x-4 gap-y-2 w-full sm:w-auto mt-2 sm:mt-0">
                 <div className="flex items-baseline gap-1">
-                  <p className="font-semibold text-lg text-foreground">{dataInfo.value}</p>
+                  <p className="font-semibold text-xl text-foreground">{dataInfo.value}</p>
                   <p className="text-xs text-muted-foreground">{dataInfo.unit}</p>
                 </div>
                 <div className="flex items-baseline gap-1">
-                  <p className="font-semibold text-lg text-foreground">{plan.validity}</p>
+                  <p className="font-semibold text-xl text-foreground">{plan.validity}</p>
                   <p className="text-xs text-muted-foreground">{currentLanguage === 'hindi' ? 'दिन वैधता' : 'days validity'}</p>
                 </div>
-                 {displayTalktime && displayTalktime !== "N/A" && (
-                  <div className="flex items-baseline gap-1">
-                    <p className="font-semibold text-lg text-foreground truncate max-w-[100px]">{displayTalktime}</p>
-                    <p className="text-xs text-muted-foreground">{currentLanguage === 'hindi' ? 'टॉकटाइम' : 'talktime'}</p>
-                  </div>
-                )}
-                {displaySms && displaySms !== "N/A" && (
-                    <div className="flex items-baseline gap-1">
-                        <p className="font-semibold text-lg text-foreground truncate max-w-[100px]">{displaySms}</p>
-                        <p className="text-xs text-muted-foreground">SMS</p>
-                    </div>
-                )}
                  <Button 
                     className="bg-accent text-accent-foreground hover:bg-accent/90 w-full sm:w-auto px-4 py-2 h-auto text-sm order-first sm:order-last sm:ml-2"
                     onClick={() => window.open(plan.rechargeUrl, '_blank', 'noopener,noreferrer')}
@@ -88,21 +79,40 @@ export function PlanCard({ plan, isSelected, onPlanSelect, currentLanguage }: Pl
 
           <CardContent className="p-0 text-sm text-muted-foreground space-y-2">
             <hr className="my-3"/>
-            {(plan.ottServices && plan.ottServices.length > 0) || (displayAdditionalBenefits && displayAdditionalBenefits.length > 0) ? (
+            {(displayTalktime && displayTalktime !== "N/A") || 
+             (displaySms && displaySms !== "N/A") || 
+             (plan.ottServices && plan.ottServices.length > 0) || 
+             (displayAdditionalBenefits && displayAdditionalBenefits.length > 0) ? (
               <>
                 <h4 className="text-sm font-semibold text-foreground mb-1.5 flex items-center">
                   <CheckCircle className="h-4 w-4 mr-1.5 text-green-500" />
                   {currentLanguage === 'hindi' ? 'शामिल लाभ:' : 'Benefits Included:'}
                 </h4>
-                <ul className="space-y-1 list-inside text-xs pl-2">
+                <ul className="space-y-1.5 text-xs pl-2">
+                  {displayTalktime && displayTalktime !== "N/A" && (
+                    <li className="flex items-center gap-2">
+                      <Phone className="h-4 w-4 text-primary/80 shrink-0" />
+                      <span className="text-foreground/90">
+                        <span className="font-medium">{currentLanguage === 'hindi' ? 'टॉकटाइम' : 'Talktime'}:</span> {displayTalktime}
+                      </span>
+                    </li>
+                  )}
+                  {displaySms && displaySms !== "N/A" && (
+                    <li className="flex items-center gap-2">
+                      <MessageSquareText className="h-4 w-4 text-primary/80 shrink-0" />
+                      <span className="text-foreground/90">
+                        <span className="font-medium">SMS:</span> {displaySms}
+                      </span>
+                    </li>
+                  )}
                   {plan.ottServices && plan.ottServices.map((ott, index) => (
                     <li key={`ott-${index}`} className="flex items-center gap-2">
                       <Image
-                        src={ott.logoSrc || `https://placehold.co/20x20/777/FFF.png?text=${ott.name.substring(0,1)}`}
+                        src={ott.logoSrc || `https://placehold.co/24x24/777/FFF.png?text=${ott.name.substring(0,1)}`}
                         alt={`${ott.name} logo`}
-                        width={20}
-                        height={20}
-                        className="object-contain rounded-sm"
+                        width={24}
+                        height={24}
+                        className="object-contain rounded-sm shrink-0"
                         data-ai-hint={ott.logoHint}
                       />
                       <span className="text-foreground/90">{getOttServiceName(ott)}</span>

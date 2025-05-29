@@ -6,13 +6,15 @@ import { getTelecomPlans, type TelecomPlan, type TelecomPlanFilter } from '@/ser
 import { PlanList } from '@/components/plans/plan-list';
 import { FilterBar, type AdditionalFeatures } from '@/components/plans/filter-bar';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { PlanComparisonTable } from '@/components/plans/plan-comparison-table';
 import { useSearchParams } from 'next/navigation';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogClose } from '@/components/ui/dialog';
-import { Loader2, CompareArrows } from 'lucide-react';
+import { Loader2, CompareArrows, Search as SearchIcon, ListFilter } from 'lucide-react';
 import { PaginationControls } from '@/components/plans/pagination-controls';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
 const MAX_COMPARE_PLANS = 3;
 const PLANS_PER_PAGE = 5;
@@ -25,6 +27,9 @@ export default function PlanDiscoveryPage() {
   const [allPlans, setAllPlans] = useState<TelecomPlan[]>([]);
   const [filteredPlans, setFilteredPlans] = useState<TelecomPlan[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
+
   const [filters, setFilters] = useState<TelecomPlanFilter>({
     operator: initialOperator,
     minPrice: undefined,
@@ -48,6 +53,15 @@ export default function PlanDiscoveryPage() {
   const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
 
+  const priceBrackets = [
+    { label: "Any Price", value: undefined, min: undefined, max: undefined },
+    { label: "Under ₹200", min: 0, max: 199 },
+    { label: "₹200 - ₹399", min: 200, max: 399 },
+    { label: "₹400 - ₹699", min: 400, max: 699 },
+    { label: "₹700 & Above", min: 700, max: undefined },
+  ];
+
+
   const fetchAndProcessPlans = useCallback(async () => {
     setLoading(true);
     try {
@@ -55,12 +69,25 @@ export default function PlanDiscoveryPage() {
       setAllPlans(fetchedPlans);
 
       const operators = [...new Set(fetchedPlans.map(p => p.operator))].sort();
-      const dataOptions = [...new Set(fetchedPlans.map(p => p.data.includes('/') ? p.data.split('/')[0].trim() + '/day' : 'Other'))].sort();
+      const dataOptionsSet = new Set<string>();
+      fetchedPlans.forEach(p => {
+        if (p.data?.toLowerCase().includes('/day')) {
+          dataOptionsSet.add(p.data.split('/')[0].trim() + '/day');
+        } else if (p.data) {
+          dataOptionsSet.add('Other'); // For bulk data plans
+        }
+      });
+      const dataOptions = Array.from(dataOptionsSet).sort((a,b) => {
+        if (a === 'Other') return 1;
+        if (b === 'Other') return -1;
+        return parseFloat(a) - parseFloat(b);
+      });
+
       const validityOptions = [...new Set(fetchedPlans.map(p => p.validity))].sort((a, b) => a - b);
       const maxPrice = Math.max(...fetchedPlans.map(p => p.price), 1000);
 
       setAllOperators(operators);
-      setAllDataOptions(dataOptions.filter(d => d !== 'Other').concat(['Other']));
+      setAllDataOptions(dataOptions);
       setAllValidityOptions(validityOptions);
       setMaxPricePossible(maxPrice);
 
@@ -69,27 +96,28 @@ export default function PlanDiscoveryPage() {
         currentFilters.operator = initialOperator;
         setFilters(currentFilters);
       }
-      applyFilters(fetchedPlans, currentFilters, additionalFeatures);
+      // applyFilters called by useEffect
 
     } catch (error) {
       console.error("Failed to fetch plans:", error);
     } finally {
       setLoading(false);
     }
-  }, [initialOperator]); // Removed filters and additionalFeatures from deps
+  }, [initialOperator]); // filters removed from deps as it's handled by another useEffect
 
   useEffect(() => {
     fetchAndProcessPlans();
   }, [fetchAndProcessPlans]);
   
   useEffect(() => {
-    applyFilters(allPlans, filters, additionalFeatures);
-  }, [filters, additionalFeatures, allPlans]);
+    applyFilters(allPlans, filters, additionalFeatures, searchTerm);
+  }, [filters, additionalFeatures, allPlans, searchTerm]);
 
 
-  const applyFilters = (plansToFilter: TelecomPlan[], currentFilters: TelecomPlanFilter, currentAdditionalFeatures: AdditionalFeatures) => {
+  const applyFilters = (plansToFilter: TelecomPlan[], currentFilters: TelecomPlanFilter, currentAdditionalFeatures: AdditionalFeatures, currentSearchTerm: string) => {
     let tempFilteredPlans = [...plansToFilter];
 
+    // Apply structured filters
     if (currentFilters.operator) {
       tempFilteredPlans = tempFilteredPlans.filter(plan => plan.operator === currentFilters.operator);
     }
@@ -99,17 +127,18 @@ export default function PlanDiscoveryPage() {
     if (currentFilters.maxPrice !== undefined) {
       tempFilteredPlans = tempFilteredPlans.filter(plan => plan.price <= currentFilters.maxPrice!);
     }
-     if (currentFilters.dataPerDay) {
-       if (currentFilters.dataPerDay === 'Other') {
-         tempFilteredPlans = tempFilteredPlans.filter(plan => !plan.data.toLowerCase().includes('/day'));
-       } else {
-         tempFilteredPlans = tempFilteredPlans.filter(plan => plan.data.toLowerCase().startsWith(currentFilters.dataPerDay!.toLowerCase().replace('/day','')));
-       }
+    if (currentFilters.dataPerDay) {
+      if (currentFilters.dataPerDay === 'Other') {
+        tempFilteredPlans = tempFilteredPlans.filter(plan => plan.data && !plan.data.toLowerCase().includes('/day'));
+      } else {
+        tempFilteredPlans = tempFilteredPlans.filter(plan => plan.data && plan.data.toLowerCase().startsWith(currentFilters.dataPerDay!.toLowerCase().replace('/day','')));
+      }
     }
     if (currentFilters.validity !== undefined) {
       tempFilteredPlans = tempFilteredPlans.filter(plan => plan.validity === currentFilters.validity);
     }
 
+    // Apply additional feature filters
     if (currentAdditionalFeatures.unlimitedCalls) {
         tempFilteredPlans = tempFilteredPlans.filter(plan => plan.talktime && plan.talktime.toLowerCase().includes('unlimited'));
     }
@@ -120,9 +149,28 @@ export default function PlanDiscoveryPage() {
         tempFilteredPlans = tempFilteredPlans.filter(plan => plan.additionalBenefits?.some(b => b.toLowerCase().includes('roaming')));
     }
 
+    // Apply search term filter
+    if (currentSearchTerm) {
+      const lowerSearchTerm = currentSearchTerm.toLowerCase();
+      tempFilteredPlans = tempFilteredPlans.filter(plan => {
+        return (
+          plan.operator?.toLowerCase().includes(lowerSearchTerm) ||
+          plan.price.toString().includes(lowerSearchTerm) ||
+          plan.data?.toLowerCase().includes(lowerSearchTerm) ||
+          plan.talktime?.toLowerCase().includes(lowerSearchTerm) ||
+          plan.sms?.toLowerCase().includes(lowerSearchTerm) ||
+          plan.validity.toString().includes(lowerSearchTerm) ||
+          plan.planNameDisplay?.toLowerCase().includes(lowerSearchTerm) ||
+          plan.category?.toLowerCase().includes(lowerSearchTerm) ||
+          plan.callout?.toLowerCase().includes(lowerSearchTerm) ||
+          plan.additionalBenefits?.some(b => b.toLowerCase().includes(lowerSearchTerm)) ||
+          plan.ottServices?.some(ott => ott.name.toLowerCase().includes(lowerSearchTerm))
+        );
+      });
+    }
+
     setFilteredPlans(tempFilteredPlans);
     setSelectedForCompare([]); 
-    // setIsCompareModalOpen(false); // Do not close modal on filter change if it's open
     setCurrentPage(1);
   };
 
@@ -162,24 +210,30 @@ export default function PlanDiscoveryPage() {
     }
   };
 
+  const filterBarContent = (
+    <FilterBar
+      filters={filters}
+      onFilterChange={handleFilterChange}
+      allOperators={allOperators}
+      allDataOptions={allDataOptions}
+      allValidityOptions={allValidityOptions}
+      priceBrackets={priceBrackets}
+      additionalFeatures={additionalFeatures}
+      onAdditionalFeaturesChange={handleAdditionalFeaturesChange}
+    />
+  );
+
   return (
     <div className="container mx-auto px-4 py-8 md:px-6">
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        <div className="lg:col-span-1">
-          <h2 className="text-2xl font-semibold mb-6 text-foreground">Filters</h2>
-          <FilterBar
-            initialFilters={filters}
-            onFilterChange={handleFilterChange}
-            allOperators={allOperators}
-            allDataOptions={allDataOptions}
-            allValidityOptions={allValidityOptions}
-            maxPricePossible={maxPricePossible}
-            additionalFeatures={additionalFeatures}
-            onAdditionalFeaturesChange={handleAdditionalFeaturesChange}
-          />
-        </div>
+        {/* Filter Sidebar for Large Screens */}
+        <aside className="hidden lg:block lg:col-span-1 space-y-6">
+          <h2 className="text-2xl font-semibold text-foreground">Filters</h2>
+          {filterBarContent}
+        </aside>
 
-        <div className="lg:col-span-3">
+        {/* Main Content Area */}
+        <main className="lg:col-span-3">
           <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-6 gap-4">
             <div>
               <h1 className="text-3xl font-bold tracking-tight text-foreground">
@@ -189,9 +243,23 @@ export default function PlanDiscoveryPage() {
                 Find the perfect prepaid plan for your needs.
               </p>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4">
+               {/* Filter Button for Mobile/Tablet */}
+               <Sheet open={isFilterSheetOpen} onOpenChange={setIsFilterSheetOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="outline" className="lg:hidden">
+                    <ListFilter className="mr-2 h-4 w-4" /> Filters
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="w-[300px] sm:w-[400px] p-0">
+                  <div className="p-6 space-y-4 overflow-y-auto h-full">
+                    <h2 className="text-xl font-semibold text-foreground">Filters</h2>
+                    {filterBarContent}
+                  </div>
+                </SheetContent>
+              </Sheet>
                <Select defaultValue="popularity">
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-full sm:w-[180px]">
                   <SelectValue placeholder="Sort By" />
                 </SelectTrigger>
                 <SelectContent>
@@ -237,6 +305,17 @@ export default function PlanDiscoveryPage() {
             </div>
           </div>
 
+          <div className="mb-6 relative">
+            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder="Search plans (e.g., '5gb', 'unlimited calls', 'hotstar')..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10"
+            />
+          </div>
+
           <Tabs defaultValue="english" className="mb-6" onValueChange={(value) => setCurrentLanguage(value as Language)}>
             <TabsList className="grid w-full grid-cols-3 sm:w-auto sm:inline-flex">
               <TabsTrigger value="english">English</TabsTrigger>
@@ -269,8 +348,7 @@ export default function PlanDiscoveryPage() {
               )}
             </>
           )}
-          {/* Ensure PlanComparisonTable is NOT rendered directly here again */}
-        </div>
+        </main>
       </div>
     </div>
   );

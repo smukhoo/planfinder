@@ -4,11 +4,10 @@
 import type { TelecomPlanFilter } from '@/services/telecom-plans';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Slider } from '@/components/ui/slider';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Trash2 } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox'; // Keep for additional features
+import { Trash2, XCircle } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { cn } from '@/lib/utils';
 
 export interface AdditionalFeatures {
   unlimitedCalls: boolean;
@@ -16,208 +15,191 @@ export interface AdditionalFeatures {
   internationalRoaming: boolean;
 }
 
+export interface PriceBracket {
+    label: string;
+    value?: string; // For 'Any Price'
+    min?: number;
+    max?: number;
+}
+
 interface FilterBarProps {
-  initialFilters: TelecomPlanFilter;
+  filters: TelecomPlanFilter; // Changed from initialFilters
   onFilterChange: (filters: TelecomPlanFilter) => void;
   allOperators: string[];
   allDataOptions: string[];
   allValidityOptions: number[];
-  maxPricePossible: number;
+  priceBrackets: PriceBracket[];
   additionalFeatures: AdditionalFeatures;
   onAdditionalFeaturesChange: (features: AdditionalFeatures) => void;
 }
 
-const priceBrackets = [
-  { label: "Any Price", value: undefined },
-  { label: "Under ₹200", max: 199 },
-  { label: "₹200 - ₹399", min: 200, max: 399 },
-  { label: "₹400 - ₹699", min: 400, max: 699 },
-  { label: "₹700 & Above", min: 700 },
-];
-
 export function FilterBar({
-  initialFilters,
+  filters, // Use current filters
   onFilterChange,
   allOperators,
   allDataOptions,
   allValidityOptions,
-  maxPricePossible,
+  priceBrackets,
   additionalFeatures,
   onAdditionalFeaturesChange,
 }: FilterBarProps) {
-  const [currentFilters, setCurrentFilters] = useState<TelecomPlanFilter>(initialFilters);
-  const [currentPriceRange, setCurrentPriceRange] = useState<[number, number]>([initialFilters.minPrice || 0, initialFilters.maxPrice || maxPricePossible]);
-  const [currentAdditionalFeatures, setCurrentAdditionalFeatures] = useState<AdditionalFeatures>(additionalFeatures);
 
-  useEffect(() => {
-    setCurrentFilters(initialFilters);
-    setCurrentPriceRange([initialFilters.minPrice || 0, initialFilters.maxPrice || maxPricePossible]);
-  }, [initialFilters, maxPricePossible]);
-
-  useEffect(() => {
-    setCurrentAdditionalFeatures(additionalFeatures);
-  }, [additionalFeatures]);
-
-  const handleInputChange = (field: keyof TelecomPlanFilter, value: string | number | undefined) => {
-    const newFilters = { ...currentFilters, [field]: value === 'all' || value === '' ? undefined : value };
-    setCurrentFilters(newFilters);
+  const handleChipSelect = (field: keyof TelecomPlanFilter, value: string | number | undefined) => {
+    const newFilters = { ...filters, [field]: filters[field] === value ? undefined : value };
     onFilterChange(newFilters);
   };
 
-  const handlePriceRangeCommit = (value: [number, number]) => {
-    const newFilters = { ...currentFilters, minPrice: value[0], maxPrice: value[1] };
-    setCurrentFilters(newFilters);
-    onFilterChange(newFilters);
-  };
-  
-  const handlePriceBracketChange = (selectedBracketValue: string) => {
-    const selectedBracket = priceBrackets.find(b => b.label === selectedBracketValue);
-    let newMinPrice: number | undefined = undefined;
-    let newMaxPrice: number | undefined = undefined;
-
-    if (selectedBracket && selectedBracket.value !== undefined) {
-        newMinPrice = selectedBracket.min;
-        newMaxPrice = selectedBracket.max;
-    }
-    
-    const newFilters = { ...currentFilters, minPrice: newMinPrice, maxPrice: newMaxPrice };
-    setCurrentFilters(newFilters);
-    setCurrentPriceRange([newMinPrice ?? 0, newMaxPrice ?? maxPricePossible]);
+  const handlePriceBracketSelect = (bracket: PriceBracket) => {
+    const isCurrentlySelected = filters.minPrice === bracket.min && filters.maxPrice === bracket.max;
+    const newFilters = { 
+      ...filters, 
+      minPrice: isCurrentlySelected ? undefined : bracket.min, 
+      maxPrice: isCurrentlySelected ? undefined : bracket.max 
+    };
     onFilterChange(newFilters);
   };
 
-  const handleAdditionalFeatureChange = (feature: keyof AdditionalFeatures, checked: boolean) => {
-    const newFeatures = { ...currentAdditionalFeatures, [feature]: checked };
-    setCurrentAdditionalFeatures(newFeatures);
+  const handleAdditionalFeatureToggle = (feature: keyof AdditionalFeatures) => {
+    const newFeatures = { ...additionalFeatures, [feature]: !additionalFeatures[feature] };
     onAdditionalFeaturesChange(newFeatures);
   };
+  
+  const resetSpecificFilter = (filterKey: keyof TelecomPlanFilter) => {
+    const newFilters = { ...filters, [filterKey]: undefined };
+    if (filterKey === 'minPrice' || filterKey === 'maxPrice') {
+        newFilters.minPrice = undefined;
+        newFilters.maxPrice = undefined;
+    }
+    onFilterChange(newFilters);
+  };
+
 
   const resetFilters = () => {
     const defaultFilters: TelecomPlanFilter = { operator: undefined, minPrice: undefined, maxPrice: undefined, dataPerDay: undefined, validity: undefined };
     const defaultAdditionalFeatures: AdditionalFeatures = { unlimitedCalls: false, sms: false, internationalRoaming: false };
-    setCurrentFilters(defaultFilters);
-    setCurrentPriceRange([0, maxPricePossible]);
-    setCurrentAdditionalFeatures(defaultAdditionalFeatures);
     onFilterChange(defaultFilters);
     onAdditionalFeaturesChange(defaultAdditionalFeatures);
   };
 
-  return (
-    <div className="space-y-6 p-4 bg-card rounded-lg shadow-sm">
-      <div>
-        <Label htmlFor="operator" className="text-sm font-medium">Operator</Label>
-        <Select
-          value={currentFilters.operator || 'all'}
-          onValueChange={(value) => handleInputChange('operator', value)}
-        >
-          <SelectTrigger id="operator" className="mt-1 w-full">
-            <SelectValue placeholder="All Operators" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Operators</SelectItem>
-            {allOperators.map((op) => (
-              <SelectItem key={op} value={op}>{op}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div>
-        <Label htmlFor="priceBracket" className="text-sm font-medium">Price</Label>
-         <Select
-            value={priceBrackets.find(b => b.min === currentFilters.minPrice && b.max === currentFilters.maxPrice)?.label || "Any Price"}
-            onValueChange={handlePriceBracketChange}
-        >
-            <SelectTrigger id="priceBracket" className="mt-1 w-full">
-                <SelectValue placeholder="Any Price" />
-            </SelectTrigger>
-            <SelectContent>
-                {priceBrackets.map((bracket) => (
-                    <SelectItem key={bracket.label} value={bracket.label}>
-                        {bracket.label}
-                    </SelectItem>
-                ))}
-            </SelectContent>
-        </Select>
-        {(currentFilters.minPrice === undefined && currentFilters.maxPrice === undefined) && (
-             <div className="mt-3">
-                <Slider
-                    min={0}
-                    max={maxPricePossible}
-                    step={10}
-                    value={currentPriceRange}
-                    onValueChange={setCurrentPriceRange} // Update slider visually
-                    onValueCommit={handlePriceRangeCommit} // Apply filter on commit
-                    className="mt-1"
-                    aria-label="Price range slider"
-                />
-                <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                    <span>₹{currentPriceRange[0]}</span>
-                    <span>₹{currentPriceRange[1]}</span>
-                </div>
-            </div>
+  const FilterGroup: React.FC<{ title: string; children: React.ReactNode; onClear?: () => void; hasSelection?: boolean }> = 
+    ({ title, children, onClear, hasSelection }) => (
+    <div className="space-y-2 border-b border-border pb-4 mb-4">
+      <div className="flex justify-between items-center">
+        <Label className="text-md font-semibold text-foreground">{title}</Label>
+        {onClear && hasSelection && (
+            <Button variant="ghost" size="sm" onClick={onClear} className="h-auto p-1 text-xs text-muted-foreground hover:text-destructive">
+                <XCircle className="mr-1 h-3 w-3"/> Clear
+            </Button>
         )}
       </div>
-
-      <div>
-        <Label htmlFor="dataPerDay" className="text-sm font-medium">Data (GB)</Label>
-        <Select
-          value={currentFilters.dataPerDay || 'all'}
-          onValueChange={(value) => handleInputChange('dataPerDay', value)}
-        >
-          <SelectTrigger id="dataPerDay" className="mt-1 w-full">
-            <SelectValue placeholder="Any Data" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Any Data</SelectItem>
-            {allDataOptions.map((data) => (
-              <SelectItem key={data} value={data}>{data}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      <div className="flex flex-wrap gap-2">
+        {children}
       </div>
+    </div>
+  );
 
-      <div>
-        <Label htmlFor="validity" className="text-sm font-medium">Validity (Days)</Label>
-        <Select
-          value={currentFilters.validity?.toString() || 'all'}
-          onValueChange={(value) => handleInputChange('validity', value === 'all' ? undefined : Number(value))}
+  return (
+    <div className="space-y-6 bg-card rounded-lg p-0 sm:p-4"> {/* Removed padding for sheet view */}
+      <FilterGroup title="Operator" onClear={() => resetSpecificFilter('operator')} hasSelection={!!filters.operator}>
+        <Button
+            variant={!filters.operator ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => handleChipSelect('operator', undefined)}
+            className={cn("text-xs h-auto py-1 px-2", !filters.operator && "bg-primary text-primary-foreground")}
         >
-          <SelectTrigger id="validity" className="mt-1 w-full">
-            <SelectValue placeholder="Any Validity" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Any Validity</SelectItem>
-            {allValidityOptions.map((days) => (
-              <SelectItem key={days} value={days.toString()}>{days} Days</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+            All
+        </Button>
+        {allOperators.map((op) => (
+          <Button
+            key={op}
+            variant={filters.operator === op ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => handleChipSelect('operator', op)}
+            className={cn("text-xs h-auto py-1 px-2", filters.operator === op && "bg-primary text-primary-foreground")}
+          >
+            {op}
+          </Button>
+        ))}
+      </FilterGroup>
 
-      <div>
-        <Label className="text-sm font-medium">Additional Features</Label>
-        <div className="mt-2 space-y-2">
-          {Object.keys(additionalFeatures).map((key) => (
-            <div key={key} className="flex items-center space-x-2">
-              <Checkbox
-                id={`feature-${key}`}
-                checked={currentAdditionalFeatures[key as keyof AdditionalFeatures]}
-                onCheckedChange={(checked) => handleAdditionalFeatureChange(key as keyof AdditionalFeatures, !!checked)}
-              />
-              <Label htmlFor={`feature-${key}`} className="font-normal text-sm">
-                {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())} 
-              </Label>
-            </div>
+      <FilterGroup title="Price" onClear={() => {resetSpecificFilter('minPrice'); resetSpecificFilter('maxPrice');}} hasSelection={filters.minPrice !== undefined || filters.maxPrice !== undefined}>
+        {priceBrackets.map((bracket) => (
+          <Button
+            key={bracket.label}
+            variant={(filters.minPrice === bracket.min && filters.maxPrice === bracket.max) || (bracket.value === undefined && filters.minPrice === undefined && filters.maxPrice === undefined) ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => handlePriceBracketSelect(bracket)}
+            className={cn("text-xs h-auto py-1 px-2", ((filters.minPrice === bracket.min && filters.maxPrice === bracket.max) || (bracket.value === undefined && filters.minPrice === undefined && filters.maxPrice === undefined)) && "bg-primary text-primary-foreground")}
+          >
+            {bracket.label}
+          </Button>
+        ))}
+      </FilterGroup>
+
+      <FilterGroup title="Data (Per Day / Bulk)" onClear={() => resetSpecificFilter('dataPerDay')} hasSelection={!!filters.dataPerDay}>
+         <Button
+            variant={!filters.dataPerDay ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => handleChipSelect('dataPerDay', undefined)}
+            className={cn("text-xs h-auto py-1 px-2", !filters.dataPerDay && "bg-primary text-primary-foreground")}
+        >
+            Any
+        </Button>
+        {allDataOptions.map((data) => (
+          <Button
+            key={data}
+            variant={filters.dataPerDay === data ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => handleChipSelect('dataPerDay', data)}
+            className={cn("text-xs h-auto py-1 px-2", filters.dataPerDay === data && "bg-primary text-primary-foreground")}
+          >
+            {data}
+          </Button>
+        ))}
+      </FilterGroup>
+
+      <FilterGroup title="Validity (Days)" onClear={() => resetSpecificFilter('validity')} hasSelection={filters.validity !== undefined}>
+        <Button
+            variant={filters.validity === undefined ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => handleChipSelect('validity', undefined)}
+            className={cn("text-xs h-auto py-1 px-2", filters.validity === undefined && "bg-primary text-primary-foreground")}
+        >
+            Any
+        </Button>
+        {allValidityOptions.map((days) => (
+          <Button
+            key={days}
+            variant={filters.validity === days ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => handleChipSelect('validity', days)}
+            className={cn("text-xs h-auto py-1 px-2", filters.validity === days && "bg-primary text-primary-foreground")}
+          >
+            {days} Days
+          </Button>
+        ))}
+      </FilterGroup>
+      
+      <div className="space-y-2 border-b border-border pb-4 mb-4">
+        <Label className="text-md font-semibold text-foreground">Additional Features</Label>
+        <div className="flex flex-wrap gap-2">
+          {(Object.keys(additionalFeatures) as Array<keyof AdditionalFeatures>).map((key) => (
+            <Button
+              key={key}
+              variant={additionalFeatures[key] ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => handleAdditionalFeatureToggle(key)}
+              className={cn("text-xs h-auto py-1 px-2", additionalFeatures[key] && "bg-primary text-primary-foreground")}
+            >
+              {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+            </Button>
           ))}
         </div>
       </div>
         
-      <Button onClick={resetFilters} variant="outline" className="w-full mt-4">
+      <Button onClick={resetFilters} variant="destructive" className="w-full mt-4 text-sm">
         <Trash2 className="mr-2 h-4 w-4" /> Reset All Filters
       </Button>
     </div>
   );
 }
-
-    

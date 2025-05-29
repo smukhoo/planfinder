@@ -8,11 +8,11 @@ import { CheckCircle, ExternalLink, PlusCircle } from 'lucide-react';
 interface PlanCardProps {
   plan: TelecomPlan;
   isSelected: boolean;
-  onSelectToggle: (planId: string) => void;
+  onPlanSelect: (planId: string) => void; // Renamed from onSelectToggle
   currentLanguage: 'english' | 'hindi' | 'tamil';
 }
 
-export function PlanCard({ plan, isSelected, onSelectToggle, currentLanguage }: PlanCardProps) {
+export function PlanCard({ plan, isSelected, onPlanSelect, currentLanguage }: PlanCardProps) {
   const displayPlanName = currentLanguage === 'hindi' && plan.planNameDisplay_hi ? plan.planNameDisplay_hi : (plan.planNameDisplay || `${plan.operator} Plan`);
   const displayData = currentLanguage === 'hindi' && plan.data_hi ? plan.data_hi : plan.data;
   const displayTalktime = currentLanguage === 'hindi' && plan.talktime_hi ? plan.talktime_hi : plan.talktime;
@@ -127,7 +127,7 @@ export function PlanCard({ plan, isSelected, onSelectToggle, currentLanguage }: 
           <Button
             variant={isSelected ? "default" : "outline"}
             size="sm"
-            onClick={() => onSelectToggle(plan.id || plan.rechargeUrl)}
+            onClick={() => onPlanSelect(plan.id || plan.rechargeUrl)}
             className="w-full"
           >
             <PlusCircle className="mr-2 h-4 w-4" />

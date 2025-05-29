@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2 } from 'lucide-react';
 
-const MAX_COMPARE_PLANS = 3; // As per image, showing 3 plans in comparison
+const MAX_COMPARE_PLANS = 3;
 type Language = 'english' | 'hindi' | 'tamil';
 
 export default function PlanDiscoveryPage() {
@@ -46,7 +46,7 @@ export default function PlanDiscoveryPage() {
   const fetchAndProcessPlans = useCallback(async () => {
     setLoading(true);
     try {
-      const fetchedPlans = await getTelecomPlans({}); // Fetch all initially
+      const fetchedPlans = await getTelecomPlans({}); 
       setAllPlans(fetchedPlans);
 
       const operators = [...new Set(fetchedPlans.map(p => p.operator))].sort();
@@ -55,12 +55,12 @@ export default function PlanDiscoveryPage() {
       const maxPrice = Math.max(...fetchedPlans.map(p => p.price), 1000);
 
       setAllOperators(operators);
-      setAllDataOptions(dataOptions.filter(d => d !== 'Other').concat(['Other'])); // Ensure 'Other' is last
+      setAllDataOptions(dataOptions.filter(d => d !== 'Other').concat(['Other'])); 
       setAllValidityOptions(validityOptions);
       setMaxPricePossible(maxPrice);
       
       let currentFilters = { ...filters };
-      if (initialOperator && !currentFilters.operator) { // Apply initial operator only if not already set
+      if (initialOperator && !currentFilters.operator) { 
         currentFilters.operator = initialOperator;
         setFilters(currentFilters); 
       }
@@ -71,7 +71,7 @@ export default function PlanDiscoveryPage() {
     } finally {
       setLoading(false);
     }
-  }, [initialOperator]); // filters and additionalFeatures removed to apply them explicitly via handlers
+  }, [initialOperator]); 
 
   useEffect(() => {
     fetchAndProcessPlans();
@@ -101,13 +101,12 @@ export default function PlanDiscoveryPage() {
     }
 
     if (currentAdditionalFeatures.unlimitedCalls) {
-        tempFilteredPlans = tempFilteredPlans.filter(plan => plan.talktime.toLowerCase().includes('unlimited'));
+        tempFilteredPlans = tempFilteredPlans.filter(plan => plan.talktime && plan.talktime.toLowerCase().includes('unlimited'));
     }
     if (currentAdditionalFeatures.sms) {
-        tempFilteredPlans = tempFilteredPlans.filter(plan => parseInt(plan.sms) > 0 || plan.sms.toLowerCase().includes('unlimited') || plan.sms.toLowerCase().includes('/day') );
+        tempFilteredPlans = tempFilteredPlans.filter(plan => plan.sms && (parseInt(plan.sms) > 0 || plan.sms.toLowerCase().includes('unlimited') || plan.sms.toLowerCase().includes('/day')) );
     }
     if (currentAdditionalFeatures.internationalRoaming) {
-        // This is a mock filter; real data would need a specific flag.
         tempFilteredPlans = tempFilteredPlans.filter(plan => plan.additionalBenefits?.some(b => b.toLowerCase().includes('roaming')));
     }
 
@@ -124,7 +123,7 @@ export default function PlanDiscoveryPage() {
     applyFilters(allPlans, filters, newAdditionalFeatures);
   };
 
-  const handlePlanSelectToggle = (planId: string) => {
+  const handlePlanSelection = (planId: string) => {
     setSelectedForCompare(prev => {
       if (prev.includes(planId)) {
         return prev.filter(id => id !== planId);
@@ -132,7 +131,6 @@ export default function PlanDiscoveryPage() {
         if (prev.length < MAX_COMPARE_PLANS) {
           return [...prev, planId];
         }
-        // TODO: Show toast notification for max compare limit
         alert(`You can compare up to ${MAX_COMPARE_PLANS} plans.`);
         return prev;
       }
@@ -202,7 +200,7 @@ export default function PlanDiscoveryPage() {
               plans={filteredPlans}
               loading={loading}
               selectedForCompare={selectedForCompare}
-              onPlanSelectToggle={handlePlanSelectToggle}
+              onPlanSelect={handlePlanSelection}
               currentLanguage={currentLanguage}
             />
           )}

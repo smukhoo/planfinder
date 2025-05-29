@@ -7,11 +7,11 @@ interface PlanListProps {
   plans: TelecomPlan[];
   loading: boolean;
   selectedForCompare: string[];
-  onPlanSelectToggle: (planId: string) => void;
+  onPlanSelect: (planId: string) => void; // Renamed from onPlanSelectToggle
   currentLanguage: 'english' | 'hindi' | 'tamil';
 }
 
-export function PlanList({ plans, loading, selectedForCompare, onPlanSelectToggle, currentLanguage }: PlanListProps) {
+export function PlanList({ plans, loading, selectedForCompare, onPlanSelect, currentLanguage }: PlanListProps) {
   if (loading) {
     return (
       <div className="grid grid-cols-1 gap-6">
@@ -38,10 +38,10 @@ export function PlanList({ plans, loading, selectedForCompare, onPlanSelectToggl
     <div className="grid grid-cols-1 gap-4">
       {plans.map((plan) => (
         <PlanCard
-          key={`${plan.operator}-${plan.price}-${plan.validity}-${plan.data}-${plan.id}`} // More robust key
+          key={`${plan.operator}-${plan.price}-${plan.validity}-${plan.data}-${plan.id}`}
           plan={plan}
           isSelected={selectedForCompare.includes(plan.id || plan.rechargeUrl)}
-          onPlanSelectToggle={onPlanSelectToggle}
+          onPlanSelect={onPlanSelect} // Renamed from onSelectToggle
           currentLanguage={currentLanguage}
         />
       ))}
@@ -67,7 +67,6 @@ function CardSkeleton() {
 }
 
 function ImageSkeleton() {
-    // You can use an actual SVG or a more styled div for a better empty state visual
     return (
         <svg className="mx-auto h-20 w-20 text-muted-foreground opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />

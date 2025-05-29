@@ -32,7 +32,7 @@ export interface TelecomPlan {
   talktime_hi?: string;
   sms: string;
   sms_hi?: string;
-  validity: number;
+  validity: number; // Always in days
   additionalBenefits?: string[];
   additionalBenefits_hi?: string[];
   rechargeUrl: string;
@@ -60,7 +60,7 @@ export const TelecomPlanSchema = z.object({
   validity: z.number().describe("The validity period of the plan in days."),
   additionalBenefits: z.array(z.string()).optional().describe("Any additional benefits offered by the plan as a list of strings."),
   additionalBenefits_hi: z.array(z.string()).optional(),
-  rechargeUrl: z.string().describe("URL where the plan can be purchased."),
+  rechargeUrl: z.string().describe("URL where the plan can be purchased."), // Kept as string for flexibility
   id: z.string().optional().describe("Plan ID from the source data."),
   category: z.string().optional().describe("Category of the plan."),
   callout: z.string().nullable().optional().describe("Callout text for the plan."),
@@ -81,7 +81,8 @@ export interface TelecomPlanFilter {
   validity?: number;
 }
 
-const newNewMockPlansData: any[] = [ // Using any for simplicity with added _hi fields
+// Using the simpler mock data as requested
+const newNewMockPlansData: any[] = [
   {
     "id": "51",
     "category": "Recommended Packs",
@@ -92,18 +93,19 @@ const newNewMockPlansData: any[] = [ // Using any for simplicity with added _hi 
     "data": "1.5GB",
     "data_hi": "1.5जीबी",
     "callout": "Bestseller",
-    "callout_hi": "बेस्टसेलर"
+    "ottServices_raw": []
   },
   {
     "id": "15",
     "category": "Recommended Packs",
     "name": "Data : 5GB | Validity : 30 days | Added benefit : JioHotstar Mobile Subscription for 30 days. Enjoy extra benefits with RC100 instead of RC77",
-    "name_hi": "डेटा : 5जीबी | वैधता : 30 दिन | अतिरिक्त लाभ : 30 दिनों के लिए JioHotstar मोबाइल सब्सक्रिप्शन। RC100 के साथ अतिरिक्त लाभों का आनंद लें RC77 के बजाय",
+    "name_hi": "डेटा : 5जीबी | वैधता : 30 दिन | अतिरिक्त लाभ : JioHotstar मोबाइल सब्सक्रिप्शन 30 दिनों के लिए।",
     "price": 100,
     "validity": "30 days",
     "data": "5GB",
     "data_hi": "5जीबी",
-    "callout": "New! Favorite Cricket Pack!"
+    "callout": "New! Favorite Cricket Pack!",
+    "ottServices_raw": [{ "id": "hotstar", "name": "Disney+ Hotstar", "name_hi": "डिज्नी+ हॉटस्टार", "logoSrc": "https://placehold.co/60x20/1E88E5/FFFFFF.png?text=D+H", "logoHint": "Disney Hotstar logo" }]
   },
   {
     "id": "22",
@@ -114,28 +116,25 @@ const newNewMockPlansData: any[] = [ // Using any for simplicity with added _hi 
     "validity": "1 day",
     "data": "2GB",
     "data_hi": "2जीबी",
-    "callout": "Bestseller"
+    "callout": "Bestseller",
+    "ottServices_raw": []
   },
   {
     "id": "14",
     "category": "Recommended Packs",
     "name": "Data : Unlimited | Validity : 1 day",
-    "name_hi": "डेटा : अनलिमिटेड | वैधता : 1 दिन",
     "price": 49,
     "validity": "1 day",
     "data": "Unlimited",
-    "data_hi": "अनलिमिटेड",
     "callout": "Best Value"
   },
   {
     "id": "48",
     "category": "Recommended Packs",
     "name": "Data : 5GB | Validity : 7 days",
-    "name_hi": "डेटा : 5जीबी | वैधता : 7 दिन",
     "price": 77,
     "validity": "7 days",
     "data": "5GB",
-    "data_hi": "5जीबी",
     "callout": "New! Benefits revised"
   },
   {
@@ -159,101 +158,250 @@ const newNewMockPlansData: any[] = [ // Using any for simplicity with added _hi 
     "validity": "28 days",
     "data": "1.5GB/day",
     "data_hi": "1.5जीबी/दिन",
-    "callout": "LAST RECHARGE"
+    "callout": "LAST RECHARGE",
+    "isMostPopular" : true,
+    "ottServices_raw": []
   },
   {
     "id": "27",
     "category": "Recommended Packs",
     "name": "Calls : Unlimited | Data : 2GB/day | SMS : 100/day | Validity : 84 days | Added benefit : Unlimited 5G available",
-    "name_hi": "कॉल्स : अनलिमिटेड | डेटा : 2जीबी/दिन | SMS : 100/दिन | वैधता : 84 दिन | अतिरिक्त लाभ : अनलिमिटेड 5जी उपलब्ध",
     "price": 859,
     "validity": "84 days",
     "data": "2GB/day",
-    "data_hi": "2जीबी/दिन",
     "callout": "Only ~Rs. 286/month"
   },
   {
     "id": "59",
     "category": "Recommended Packs",
     "name": "Calls : Unlimited | Data : 1.5GB/day | SMS : 100/day | Validity : 84 days",
-    "name_hi": "कॉल्स : अनलिमिटेड | डेटा : 1.5जीबी/दिन | SMS : 100/दिन | वैधता : 84 दिन",
     "price": 799,
     "validity": "84 days",
     "data": "1.5GB/day",
-    "data_hi": "1.5जीबी/दिन",
     "callout": "Only ~₹224/month"
   },
-  // Simplified Data category for brevity
   {
-    "id": "18_data",
+    "id": "data-22", // Made ID unique
+    "category": "Data",
+    "name": "Data : 2GB | Validity : 1 day",
+    "price": 33,
+    "validity": "1 day",
+    "data": "2GB",
+    "callout": "Bestseller"
+  },
+  {
+    "id": "data-51", // Made ID unique
+    "category": "Data",
+    "name": "Data : 1.5GB | Validity : 1 day",
+    "price": 26,
+    "validity": "1 day",
+    "data": "1.5GB",
+    "callout": "Bestseller"
+  },
+  {
+    "id": "data-14", // Made ID unique
+    "category": "Data",
+    "name": "Data : Unlimited | Validity : 1 day",
+    "price": 49,
+    "validity": "1 day",
+    "data": "Unlimited",
+    "callout": "Best Value"
+  },
+  {
+    "id": "data-48", // Made ID unique
+    "category": "Data",
+    "name": "Data : 5GB | Validity : 7 days",
+    "price": 77,
+    "validity": "7 days",
+    "data": "5GB",
+    "callout": "New! Benefits revised"
+  },
+  {
+    "id": "18",
     "category": "Data",
     "name": "Data: 15GB | Validity: 30 days | Details: 20+ OTTs with Airtel Xstream Play for 30 days",
-    "name_hi": "डेटा: 15जीबी | वैधता: 30 दिन | विवरण: 20+ ओटीटी एयरटेल एक्सस्ट्रीम प्ले के साथ 30 दिनों के लिए",
     "price": 181,
     "validity": "30 days",
     "data": "15GB",
-    "data_hi": "15जीबी",
     "callout": "Free 20+ OTTs",
-    "ottServices_raw": [{ "id": "xstream", "name": "Airtel Xstream Play", "name_hi": "एयरटेल एक्सस्ट्रीम प्ले", "logoSrc": "https://placehold.co/60x20/FF0000/FFFFFF.png?text=Xstream", "logoHint": "Airtel Xstream logo" }]
+    "ottServices_raw": [{ "id": "xstream", "name": "Airtel Xstream Play", "logoSrc": "https://placehold.co/60x20/FF0000/FFFFFF.png?text=Xstream", "logoHint": "Airtel Xstream logo" }]
   },
   {
-    "id": "70_data_ott",
+    "id": "data-15", // Made ID unique for data category
     "category": "Data",
-    "name": "Data : 1GB | Details :  Netflix, JioHotstar, Airtel Xstream Play & Zee5 for 1 month.",
-    "name_hi": "डेटा : 1जीबी | विवरण : नेटफ्लिक्स, जियोहॉटस्टार, एयरटेल एक्सस्ट्रीम प्ले और ज़ी5 1 महीने के लिए।",
-    "price": 279,
-    "validity": "1 month",
-    "data": "1GB",
-    "data_hi": "1जीबी",
-    "callout": "All OTT Bundle",
-    "ottServices_raw": [
-        { "id": "netflix", "name": "Netflix", "name_hi": "नेटफ्लिक्स", "logoSrc": "https://placehold.co/60x20/E50914/FFFFFF.png?text=Netflix", "logoHint": "Netflix logo" },
-        { "id": "hotstar", "name": "Disney+ Hotstar", "name_hi": "डिज्नी+ हॉटस्टार", "logoSrc": "https://placehold.co/60x20/1E88E5/FFFFFF.png?text=D+H", "logoHint": "Disney Hotstar logo" },
-        { "id": "xstream", "name": "Airtel Xstream Play", "name_hi": "एयरटेल एक्सस्ट्रीम प्ले", "logoSrc": "https://placehold.co/60x20/FF0000/FFFFFF.png?text=Xstream", "logoHint": "Airtel Xstream logo" },
-        { "id": "zee5", "name": "ZEE5", "name_hi": "ज़ी5", "logoSrc": "https://placehold.co/60x20/7D287D/FFFFFF.png?text=ZEE5", "logoHint": "ZEE5 logo" }
-    ]
+    "name": "Data : 5GB | Validity : 30 days | Added benefit : JioHotstar Mobile Subscription for 30 days. Enjoy extra benefits with RC100 instead of RC77",
+    "price": 100,
+    "validity": "30 days",
+    "data": "5GB",
+    "callout": "New! Favorite Cricket Pack!",
+    "ottServices_raw": [{ "id": "hotstar", "name": "Disney+ Hotstar", "logoSrc": "https://placehold.co/60x20/1E88E5/FFFFFF.png?text=D+H", "logoHint": "Disney Hotstar logo" }]
   },
   {
-    "id": "cp_hotstar_90d",
-    "category": "Cricket Packs",
-    "name": "Data : 15GB | Details : JioHotstar Mobile subscription for 3 Months",
-    "name_hi": "डेटा : 15जीबी | विवरण : जियोहॉटस्टार मोबाइल सब्सक्रिप्शन 3 महीने के लिए",
+    "id": "31",
+    "category": "Data",
+    "name": "Data : Unlimited | Details: Revised price for Rs 79 pack",
+    "price": 99,
+    "validity": "2 days",
+    "data": "Unlimited",
+    "callout": "NEW! Unlimited Data"
+  },
+  {
+    "id": "39",
+    "category": "Data",
+    "name": "Data : 1GB | Details: 1GB data valid for the same day till midnight, Revised price for Rs 19 pack",
+    "price": 22,
+    "validity": "1 Day", // Note: "Day" will be parsed to "day"
+    "data": "1GB",
+    "callout": null
+  },
+  {
+    "id": "33",
+    "category": "Data",
+    "name": "Data: 12 GB | Validity: 30 days",
+    "price": 161,
+    "validity": "30 days",
+    "data": "12 GB",
+    "callout": null
+  },
+  {
+    "id": "65",
+    "category": "Data",
+    "name": "Data : 15GB | Details : JioHotstar Mobile subscription for 3 Months; Upgrade from Rs. 161 or Rs. 181 pack to enjoy extra benefits",
     "price": 195,
     "validity": "90 days",
     "data": "15GB",
-    "data_hi": "15जीबी",
     "callout": "New! Best Cricket Pack!",
-    "ottServices_raw": [{ "id": "hotstar", "name": "Disney+ Hotstar", "name_hi": "डिज्नी+ हॉटस्टार", "logoSrc": "https://placehold.co/60x20/1E88E5/FFFFFF.png?text=D+H", "logoHint": "Disney Hotstar logo" }]
+    "ottServices_raw": [{ "id": "hotstar", "name": "Disney+ Hotstar", "logoSrc": "https://placehold.co/60x20/1E88E5/FFFFFF.png?text=D+H", "logoHint": "Disney Hotstar logo" }]
+  },
+  {
+    "id": "35",
+    "category": "Data",
+    "name": "Data : 1GB/day | Details: Revised price for Rs 181 pack",
+    "price": 211,
+    "validity": "30 days",
+    "data": "1GB/day",
+    "callout": null
+  },
+  {
+    "id": "68",
+    "category": "Data",
+    "name": "Data : 50GB | Details : JioHotstar Mobile subscription for 3 Months",
+    "price": 451,
+    "validity": "30 days",
+    "data": "50GB",
+    "callout": "New! Best cricket season pack!",
+     "ottServices_raw": [{ "id": "hotstar", "name": "Disney+ Hotstar", "logoSrc": "https://placehold.co/60x20/1E88E5/FFFFFF.png?text=D+H", "logoHint": "Disney Hotstar logo" }]
+  },
+  {
+    "id": "data-49", // Made ID unique
+    "category": "Data",
+    "name": "Data: 50GB | Validity: 30 days",
+    "price": 361,
+    "validity": "30 days",
+    "data": "50GB",
+    "callout": null
+  },
+  {
+    "id": "34",
+    "category": "Data",
+    "name": "Data : Unlimited",
+    "price": 11,
+    "validity": "1 hour",
+    "data": "Unlimited",
+    "callout": "NEW! Unlimited Data!"
+  },
+  {
+    "id": "50",
+    "category": "Data",
+    "name": "Data: 6GB | Validity: 30 days",
+    "price": 121,
+    "validity": "30 days",
+    "data": "6GB",
+    "callout": null
+  },
+  {
+    "id": "46",
+    "category": "Data",
+    "name": "Data : 3GB | Details: Unlimited 5G data",
+    "price": 51,
+    "validity": "Current Pack Validity",
+    "data": "3GB",
+    "callout": "New! UL 5G Add-on"
+  },
+  {
+    "id": "17",
+    "category": "Data",
+    "name": "Data : 1GB | Details : 20+ OTTs with Airtel Xstream Play for 30 days",
+    "price": 149,
+    "validity": "Current Pack Validity",
+    "data": "1GB",
+    "callout": "FREE 20+ OTTs",
+    "ottServices_raw": [{ "id": "xstream", "name": "Airtel Xstream Play", "logoSrc": "https://placehold.co/60x20/FF0000/FFFFFF.png?text=Xstream", "logoHint": "Airtel Xstream logo" }]
+  },
+  {
+    "id": "70",
+    "category": "Data",
+    "name": "Data : 1GB | Details :  Netflix, JioHotstar, Airtel Xstream Play & Zee5 for 1 month.",
+    "price": 279,
+    "validity": "1 month",
+    "data": "1GB",
+    "callout": null,
+    "ottServices_raw": [
+        { "id": "netflix", "name": "Netflix", "logoSrc": "https://placehold.co/60x20/E50914/FFFFFF.png?text=Netflix", "logoHint": "Netflix logo" },
+        { "id": "hotstar", "name": "Disney+ Hotstar", "logoSrc": "https://placehold.co/60x20/1E88E5/FFFFFF.png?text=D+H", "logoHint": "Disney Hotstar logo" },
+        { "id": "xstream", "name": "Airtel Xstream Play", "logoSrc": "https://placehold.co/60x20/FF0000/FFFFFF.png?text=Xstream", "logoHint": "Airtel Xstream logo" },
+        { "id": "zee5", "name": "ZEE5", "logoSrc": "https://placehold.co/60x20/7D287D/FFFFFF.png?text=ZEE5", "logoHint": "ZEE5 logo" }
+    ]
+  },
+  {
+    "id": "cp_15", // Made ID unique
+    "category": "Cricket Packs",
+    "name": "Data : 5GB | Validity : 30 days | Added benefit : JioHotstar Mobile Subscription for 30 days. Enjoy extra benefits with RC100 instead of RC77",
+    "price": 100,
+    "validity": "30 days",
+    "data": "5GB",
+    "callout": "New! Favorite Cricket Pack!",
+    "ottServices_raw": [{ "id": "hotstar", "name": "Disney+ Hotstar", "logoSrc": "https://placehold.co/60x20/1E88E5/FFFFFF.png?text=D+H", "logoHint": "Disney Hotstar logo" }]
+  },
+  {
+    "id": "cp_65", // Made ID unique
+    "category": "Cricket Packs",
+    "name": "Data : 15GB | Details : JioHotstar Mobile subscription for 3 Months; Upgrade from Rs. 161 or Rs. 181 pack to enjoy extra benefits",
+    "price": 195,
+    "validity": "90 days",
+    "data": "15GB",
+    "callout": "New! Best Cricket Pack!",
+    "ottServices_raw": [{ "id": "hotstar", "name": "Disney+ Hotstar", "logoSrc": "https://placehold.co/60x20/1E88E5/FFFFFF.png?text=D+H", "logoHint": "Disney Hotstar logo" }]
+  },
+  {
+    "id": "cp_14", // Made ID unique
+    "category": "Cricket Packs",
+    "name": "Data : Unlimited | Validity : 1 day",
+    "price": 49,
+    "validity": "1 day",
+    "data": "Unlimited",
+    "callout": "Best Value"
   }
 ];
 
 
 function parseValidity(validityStr?: string): number {
-  if (!validityStr) return 0;
+  if (!validityStr || typeof validityStr !== 'string') return 0;
   const lowerValidityStr = validityStr.toLowerCase();
 
-  if (lowerValidityStr.includes("current pack validity")) {
-    // This is tricky as "current pack validity" depends on another active pack.
-    // For simplicity in mock data, let's set it to a short, non-zero duration like 1 day,
-    // or 0 if it means it uses the main pack's validity without adding its own.
-    // For now, 0 implies it inherits, which might be fine for filtering if not explicitly searched.
-    return 0; 
-  }
+  if (lowerValidityStr.includes("current pack validity")) return 0; // Or a specific flag if needed
+  
   const parts = lowerValidityStr.split(" ");
   const duration = parseInt(parts[0]);
   if (isNaN(duration)) return 0;
 
-  if (parts[1].startsWith("day")) {
-    return duration;
-  } else if (parts[1].startsWith("month")) {
-    return duration * 30; // Approximate
-  } else if (parts[1].startsWith("hour")) {
-    return Math.max(1, Math.ceil(duration / 24)); // Convert hours to days, min 1 day
-  }
-  return 0;
+  if (parts[1].startsWith("day")) return duration;
+  if (parts[1].startsWith("month")) return duration * 30; // Approximate
+  if (parts[1].startsWith("hour")) return Math.max(1, Math.ceil(duration / 24)); // Convert hours to days, min 1 day
+  
+  return duration; // Fallback if unit is missing but number exists
 }
 
-// Helper to extract specific details from the plan name string
 function extractFromPlanName(planName: string, keyword: string): string {
   const lowerPlanName = planName.toLowerCase();
   const lowerKeyword = keyword.toLowerCase();
@@ -262,122 +410,77 @@ function extractFromPlanName(planName: string, keyword: string): string {
   if (keywordIndex === -1) return "N/A";
 
   let substringAfterKeyword = planName.substring(keywordIndex + keyword.length);
-  // Remove leading colon or space, and trailing colon or space
   substringAfterKeyword = substringAfterKeyword.replace(/^[:\s]+/, '').replace(/[:\s]+$/, '');
-
-
+  
   const nextPipeIndex = substringAfterKeyword.indexOf("|");
-  if (nextPipeIndex === -1) {
-    return substringAfterKeyword.trim();
-  }
-  return substringAfterKeyword.substring(0, nextPipeIndex).trim();
+  return (nextPipeIndex === -1 ? substringAfterKeyword : substringAfterKeyword.substring(0, nextPipeIndex)).trim();
 }
-
 
 function transformRawPlanToTelecomPlan(rawPlan: any): TelecomPlan {
   const operator = "Airtel"; // Assuming Airtel for this dataset
-  const planId = String(rawPlan.id || `${operator}-${rawPlan.price}-${rawPlan.data?.replace(/\s/g, '')}`);
-
+  const planId = String(rawPlan.id || `${operator}-${rawPlan.price}-${rawPlan.data?.replace(/\s/g, '') || 'unknown'}`);
+  
+  let planNameDisplay = `${operator} ${rawPlan.price}`; // Default plan name
   let talktime = "N/A";
   let sms = "N/A";
-  let planNameDisplay = rawPlan.planNameDisplay || `${operator} Plan`;
-  let additionalBenefitsArray: string[] = [];
-  let benefitSourceString = "";
-  let nameParts: string[] = [];
+  const additionalBenefitsArray: string[] = [];
+  const ottServices: OttService[] = rawPlan.ottServices_raw || [];
 
   if (rawPlan.name && typeof rawPlan.name === 'string') {
-    nameParts = rawPlan.name.split('|').map(p => p.trim());
+    const nameParts = rawPlan.name.split('|').map(p => p.trim());
     const firstPart = nameParts[0];
 
-    if (firstPart && !firstPart.toLowerCase().startsWith("data") && !firstPart.toLowerCase().startsWith("calls") && !firstPart.toLowerCase().startsWith("sms") && !firstPart.toLowerCase().startsWith("talktime")) {
-      planNameDisplay = firstPart;
+    // Attempt to find a better plan name
+    if (firstPart && !firstPart.toLowerCase().startsWith("data :") && !firstPart.toLowerCase().startsWith("calls :") && !firstPart.toLowerCase().startsWith("sms :")) {
+        planNameDisplay = firstPart;
     } else if (rawPlan.category) {
-      planNameDisplay = `${operator} ${rawPlan.category}`;
-    } else {
-       planNameDisplay = `${operator} ${rawPlan.price}`;
+        planNameDisplay = `${operator} ${rawPlan.category}`;
     }
-    if(planNameDisplay.includes(String(rawPlan.price)) || planNameDisplay.length < 5) {
-        planNameDisplay = `${operator} ${rawPlan.price}`;
-    }
-
-
+    
+    // Extract talktime
     if (rawPlan.name.toLowerCase().includes("calls : unlimited")) {
       talktime = "Unlimited Calls";
     } else if (rawPlan.name.toLowerCase().includes("talktime :")) {
       talktime = extractFromPlanName(rawPlan.name, "Talktime :");
     }
 
+    // Extract SMS
     if (rawPlan.name.toLowerCase().includes("sms :")) {
       sms = extractFromPlanName(rawPlan.name, "SMS :");
     }
 
-    const detailsMatch = rawPlan.name.match(/Details\s*:\s*(.*)/i);
-    const addedBenefitMatch = rawPlan.name.match(/Added benefit\s*:\s*(.*)/i);
-
+    // Extract Additional Benefits from 'Details' or 'Added benefit'
+    const detailsMatch = rawPlan.name.match(/(?:Details|Added benefit)\s*:\s*(.*)/i);
     if (detailsMatch && detailsMatch[1]) {
-      benefitSourceString = detailsMatch[1].trim();
-    } else if (addedBenefitMatch && addedBenefitMatch[1]) {
-      benefitSourceString = addedBenefitMatch[1].trim();
+      const benefitsString = detailsMatch[1].split('|')[0].trim(); // Take content before next pipe if any
+      additionalBenefitsArray.push(...benefitsString.split(/,|\s+and\s+/i).map(b => b.trim()).filter(Boolean));
     }
   }
-  
-  if (!benefitSourceString && nameParts.length > 1) {
-      const potentialBenefitPart = nameParts.find(part => part.toLowerCase().includes("details :") || part.toLowerCase().includes("added benefit :"));
-      if (potentialBenefitPart) {
-          benefitSourceString = potentialBenefitPart.split(/details\s*:|added benefit\s*:/i)[1]?.trim() || "";
-      } else {
-          // Fallback: use parts of the name not directly related to data/calls/sms/validity
-          const nonCoreParts = nameParts.filter(part => 
-              !part.toLowerCase().startsWith("data") &&
-              !part.toLowerCase().startsWith("calls") &&
-              !part.toLowerCase().startsWith("sms") &&
-              !part.toLowerCase().startsWith("validity") &&
-              !part.toLowerCase().startsWith("talktime") &&
-              part !== planNameDisplay // Avoid repeating the plan name itself
-          );
-          if (nonCoreParts.length > 0) {
-              benefitSourceString = nonCoreParts.join(' | ');
-          }
-      }
-  }
 
-
-  if (benefitSourceString) {
-    additionalBenefitsArray = benefitSourceString
-      .split(/\s*\|\s*|\s*&\s*|,\s*(?![^()]*\))|\.\s*(?=[A-Z])|\s+and\s+/gi)
-      .map(b => b.trim().replace(/\.$/, '').replace(/^Rs\s*\d+/i, '').trim())
-      .filter(b => b && b.length > 3 && !b.toLowerCase().includes("validity") && !b.toLowerCase().includes("talktime"));
-  }
-
-  if (rawPlan.callout && rawPlan.callout.trim() !== "" && !additionalBenefitsArray.some(b => b.toLowerCase().includes(rawPlan.callout!.toLowerCase().trim()))) {
+  if (rawPlan.callout && typeof rawPlan.callout === 'string' && rawPlan.callout.trim() !== "") {
     additionalBenefitsArray.push(rawPlan.callout.trim());
   }
   
-  const ottServices: OttService[] = rawPlan.ottServices_raw || [];
-  ottServices.forEach(ott => {
-    additionalBenefitsArray = additionalBenefitsArray.filter(benefit => !benefit.toLowerCase().includes(ott.name.toLowerCase()));
-  });
-  additionalBenefitsArray = [...new Set(additionalBenefitsArray)];
-
+  const uniqueBenefits = [...new Set(additionalBenefitsArray.filter(b => b.length > 3))];
 
   return {
     id: planId,
     operator: operator,
     price: rawPlan.price,
-    data: rawPlan.data || "N/A",
-    data_hi: rawPlan.data_hi || rawPlan.data || "लागू नहीं",
+    data: typeof rawPlan.data === 'string' ? rawPlan.data : "N/A",
+    data_hi: typeof rawPlan.data_hi === 'string' ? rawPlan.data_hi : (typeof rawPlan.data === 'string' ? rawPlan.data : "लागू नहीं"),
     talktime: talktime,
     talktime_hi: rawPlan.name_hi && rawPlan.name_hi.toLowerCase().includes("कॉल्स : अनलिमिटेड") ? "अनलिमिटेड कॉल्स" : talktime,
     sms: sms,
     sms_hi: rawPlan.name_hi && rawPlan.name_hi.toLowerCase().includes("sms :") ? extractFromPlanName(rawPlan.name_hi, "SMS :") : sms,
     validity: parseValidity(rawPlan.validity),
-    additionalBenefits: additionalBenefitsArray.length > 0 ? additionalBenefitsArray : undefined,
-    additionalBenefits_hi: rawPlan.additionalBenefits_hi_raw || (additionalBenefitsArray.length > 0 ? additionalBenefitsArray.map(b => `${b} (अनुवादित)`) : undefined),
+    additionalBenefits: uniqueBenefits.length > 0 ? uniqueBenefits : undefined,
+    additionalBenefits_hi: uniqueBenefits.length > 0 ? uniqueBenefits.map(b => `${b} (अनु.)`) : undefined, // Placeholder translation
     category: rawPlan.category,
     callout: rawPlan.callout || null,
-    rechargeUrl: `https://www.airtel.in/prepaid-recharge/?packId=${planId}`, // Using a template, as full URLs aren't in this data
+    rechargeUrl: `https://www.airtel.in/prepaid-recharge/?packId=${planId}`, // Example URL
     ottServices: ottServices.length > 0 ? ottServices : undefined,
-    isMostPopular: !!(rawPlan.callout && (rawPlan.callout.toLowerCase().includes("most popular") || rawPlan.callout.toLowerCase().includes("bestseller"))),
+    isMostPopular: !!(rawPlan.callout && typeof rawPlan.callout === 'string' && (rawPlan.callout.toLowerCase().includes("most popular") || rawPlan.callout.toLowerCase().includes("bestseller"))),
     planNameDisplay: planNameDisplay,
     planNameDisplay_hi: rawPlan.name_hi ? rawPlan.name_hi.split('|')[0].trim() : planNameDisplay,
   };
@@ -385,7 +488,32 @@ function transformRawPlanToTelecomPlan(rawPlan: any): TelecomPlan {
 
 
 export async function getTelecomPlans(filters: TelecomPlanFilter): Promise<TelecomPlan[]> {
-  const allTransformedPlans: TelecomPlan[] = newNewMockPlansData.map(rawPlan => transformRawPlanToTelecomPlan(rawPlan));
+  // const result = TelecomPlanListSchema.safeParse(newNewMockPlansData);
+  // if (!result.success) {
+  //   console.error("Mock data validation failed:", result.error.flatten());
+  //   return []; // Return empty if primary data is invalid
+  // }
+  // const validRawPlans = result.data;
+
+  const allTransformedPlans: TelecomPlan[] = newNewMockPlansData
+    .map(rawPlan => {
+      try {
+        // More robust transformation or pre-validation of rawPlan fields if necessary
+        const transformed = transformRawPlanToTelecomPlan(rawPlan);
+        // Validate each transformed plan against the schema
+        const validation = TelecomPlanSchema.safeParse(transformed);
+        if (validation.success) {
+          return validation.data;
+        } else {
+          // console.warn(`Plan dropped due to validation error (ID: ${rawPlan.id}):`, validation.error.flatten());
+          return null;
+        }
+      } catch (e) {
+        // console.error(`Error transforming plan (ID: ${rawPlan.id}):`, e);
+        return null;
+      }
+    })
+    .filter((plan): plan is TelecomPlan => plan !== null);
   
   let filteredPlans = [...allTransformedPlans];
 
@@ -399,25 +527,17 @@ export async function getTelecomPlans(filters: TelecomPlanFilter): Promise<Telec
     filteredPlans = filteredPlans.filter(plan => plan.price <= filters.maxPrice!);
   }
   if (filters.dataPerDay) {
-    if (filters.dataPerDay.toLowerCase() === 'other') {
-      filteredPlans = filteredPlans.filter(plan => !plan.data.toLowerCase().includes('/day'));
+    const dataPerDayLower = filters.dataPerDay.toLowerCase();
+    if (dataPerDayLower === 'other') {
+      filteredPlans = filteredPlans.filter(plan => plan.data && !plan.data.toLowerCase().includes('/day'));
     } else {
-      const dataAmount = filters.dataPerDay.toLowerCase().replace('/day','').replace('gb','').trim();
-      filteredPlans = filteredPlans.filter(plan => plan.data.toLowerCase().startsWith(dataAmount));
+      const dataAmount = dataPerDayLower.replace('/day','').trim();
+      filteredPlans = filteredPlans.filter(plan => plan.data && plan.data.toLowerCase().startsWith(dataAmount));
     }
   }
   if (filters.validity !== undefined) {
     filteredPlans = filteredPlans.filter(plan => plan.validity === filters.validity);
   }
-
-  // For debugging: console.log all plans that *passed* transformation before filtering
-  // console.log("Transformed plans before filtering:", allTransformedPlans.length);
-  // console.log("Filtered plans count:", filteredPlans.length);
-  // if(filteredPlans.length === 0 && allTransformedPlans.length > 0) {
-  //   console.log("All plans were filtered out. First transformed plan for inspection:", allTransformedPlans[0]);
-  // }
-
-
+  
   return filteredPlans;
 }
-

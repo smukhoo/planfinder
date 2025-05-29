@@ -14,7 +14,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogClose } from '@/components/ui/dialog';
 import { Loader2, CompareArrows, Search as SearchIcon, ListFilter } from 'lucide-react';
 import { PaginationControls } from '@/components/plans/pagination-controls';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 
 const MAX_COMPARE_PLANS = 3;
 const PLANS_PER_PAGE = 5;
@@ -46,13 +46,7 @@ export default function PlanDiscoveryPage() {
   const [allOperators, setAllOperators] = useState<string[]>([]);
   const [allDataOptions, setAllDataOptions] = useState<string[]>([]);
   const [allValidityOptions, setAllValidityOptions] = useState<number[]>([]);
-  const [maxPricePossible, setMaxPricePossible] = useState<number>(1000);
-
-  const [selectedForCompare, setSelectedForCompare] = useState<string[]>([]);
-  const [currentLanguage, setCurrentLanguage] = useState<Language>('english');
-  const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-
+  
   const priceBrackets = [
     { label: "Any Price", value: undefined, min: undefined, max: undefined },
     { label: "Under ₹200", min: 0, max: 199 },
@@ -61,6 +55,10 @@ export default function PlanDiscoveryPage() {
     { label: "₹700 & Above", min: 700, max: undefined },
   ];
 
+  const [selectedForCompare, setSelectedForCompare] = useState<string[]>([]);
+  const [currentLanguage, setCurrentLanguage] = useState<Language>('english');
+  const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const fetchAndProcessPlans = useCallback(async () => {
     setLoading(true);
@@ -73,51 +71,49 @@ export default function PlanDiscoveryPage() {
       fetchedPlans.forEach(p => {
         if (p.data?.toLowerCase().includes('/day')) {
           dataOptionsSet.add(p.data.split('/')[0].trim() + '/day');
-        } else if (p.data) {
-          dataOptionsSet.add('Other'); // For bulk data plans
+        } else if (p.data && p.data.toLowerCase() !== "n/a" && p.data.trim() !== "") {
+          dataOptionsSet.add('Other');
         }
       });
       const dataOptions = Array.from(dataOptionsSet).sort((a,b) => {
         if (a === 'Other') return 1;
         if (b === 'Other') return -1;
-        return parseFloat(a) - parseFloat(b);
+        const numA = parseFloat(a);
+        const numB = parseFloat(b);
+        if (isNaN(numA) && isNaN(numB)) return a.localeCompare(b);
+        if (isNaN(numA)) return 1;
+        if (isNaN(numB)) return -1;
+        return numA - numB;
       });
 
-      const validityOptions = [...new Set(fetchedPlans.map(p => p.validity))].sort((a, b) => a - b);
-      const maxPrice = Math.max(...fetchedPlans.map(p => p.price), 1000);
-
+      const validityOptions = [...new Set(fetchedPlans.map(p => p.validity))].filter(v => v > 0).sort((a, b) => a - b);
+      
       setAllOperators(operators);
       setAllDataOptions(dataOptions);
       setAllValidityOptions(validityOptions);
-      setMaxPricePossible(maxPrice);
 
       let currentFilters = { ...filters };
       if (initialOperator && !currentFilters.operator) {
         currentFilters.operator = initialOperator;
-        setFilters(currentFilters);
+        setFilters(currentFilters); // This will trigger the other useEffect for filtering
       }
-      // applyFilters called by useEffect
-
     } catch (error) {
       console.error("Failed to fetch plans:", error);
+      // Potentially set an error state to display to the user
     } finally {
       setLoading(false);
     }
-  }, [initialOperator]); // filters removed from deps as it's handled by another useEffect
+  }, [initialOperator]); // Removed filters from here to avoid loops
 
-  useEffect(() => {
-    fetchAndProcessPlans();
-  }, [fetchAndProcessPlans]);
-  
-  useEffect(() => {
-    applyFilters(allPlans, filters, additionalFeatures, searchTerm);
-  }, [filters, additionalFeatures, allPlans, searchTerm]);
-
-
-  const applyFilters = (plansToFilter: TelecomPlan[], currentFilters: TelecomPlanFilter, currentAdditionalFeatures: AdditionalFeatures, currentSearchTerm: string) => {
+  // This function contains the core filtering logic.
+  const performFiltering = useCallback((
+    plansToFilter: TelecomPlan[],
+    currentFilters: TelecomPlanFilter,
+    currentAdditionalFeatures: AdditionalFeatures,
+    currentSearchTerm: string
+  ): TelecomPlan[] => {
     let tempFilteredPlans = [...plansToFilter];
 
-    // Apply structured filters
     if (currentFilters.operator) {
       tempFilteredPlans = tempFilteredPlans.filter(plan => plan.operator === currentFilters.operator);
     }
@@ -128,51 +124,70 @@ export default function PlanDiscoveryPage() {
       tempFilteredPlans = tempFilteredPlans.filter(plan => plan.price <= currentFilters.maxPrice!);
     }
     if (currentFilters.dataPerDay) {
-      if (currentFilters.dataPerDay === 'Other') {
+      const dataPerDayLower = currentFilters.dataPerDay.toLowerCase();
+      if (dataPerDayLower === 'other') {
         tempFilteredPlans = tempFilteredPlans.filter(plan => plan.data && !plan.data.toLowerCase().includes('/day'));
       } else {
-        tempFilteredPlans = tempFilteredPlans.filter(plan => plan.data && plan.data.toLowerCase().startsWith(currentFilters.dataPerDay!.toLowerCase().replace('/day','')));
+        const dataAmount = dataPerDayLower.replace('/day','').trim();
+        tempFilteredPlans = tempFilteredPlans.filter(plan => plan.data && plan.data.toLowerCase().startsWith(dataAmount));
       }
     }
     if (currentFilters.validity !== undefined) {
       tempFilteredPlans = tempFilteredPlans.filter(plan => plan.validity === currentFilters.validity);
     }
 
-    // Apply additional feature filters
     if (currentAdditionalFeatures.unlimitedCalls) {
         tempFilteredPlans = tempFilteredPlans.filter(plan => plan.talktime && plan.talktime.toLowerCase().includes('unlimited'));
     }
     if (currentAdditionalFeatures.sms) {
-        tempFilteredPlans = tempFilteredPlans.filter(plan => plan.sms && (parseInt(plan.sms) > 0 || plan.sms.toLowerCase().includes('unlimited') || plan.sms.toLowerCase().includes('/day')) );
+        tempFilteredPlans = tempFilteredPlans.filter(plan => {
+            if (!plan.sms) return false;
+            const smsLower = plan.sms.toLowerCase();
+            if (smsLower.includes('unlimited') || smsLower.includes('/day')) return true;
+            const smsCount = parseInt(plan.sms); // parseInt will handle cases like "100 SMS" by returning 100
+            return !isNaN(smsCount) && smsCount > 0;
+        });
     }
     if (currentAdditionalFeatures.internationalRoaming) {
-        tempFilteredPlans = tempFilteredPlans.filter(plan => plan.additionalBenefits?.some(b => b.toLowerCase().includes('roaming')));
+        tempFilteredPlans = tempFilteredPlans.filter(plan => plan.additionalBenefits?.some(b => typeof b === 'string' && b.toLowerCase().includes('roaming')));
     }
 
-    // Apply search term filter
     if (currentSearchTerm) {
       const lowerSearchTerm = currentSearchTerm.toLowerCase();
       tempFilteredPlans = tempFilteredPlans.filter(plan => {
+        const checkString = (s: string | number | undefined | null) => s ? String(s).toLowerCase().includes(lowerSearchTerm) : false;
         return (
-          plan.operator?.toLowerCase().includes(lowerSearchTerm) ||
-          plan.price.toString().includes(lowerSearchTerm) ||
-          plan.data?.toLowerCase().includes(lowerSearchTerm) ||
-          plan.talktime?.toLowerCase().includes(lowerSearchTerm) ||
-          plan.sms?.toLowerCase().includes(lowerSearchTerm) ||
-          plan.validity.toString().includes(lowerSearchTerm) ||
-          plan.planNameDisplay?.toLowerCase().includes(lowerSearchTerm) ||
-          plan.category?.toLowerCase().includes(lowerSearchTerm) ||
-          plan.callout?.toLowerCase().includes(lowerSearchTerm) ||
-          plan.additionalBenefits?.some(b => b.toLowerCase().includes(lowerSearchTerm)) ||
-          plan.ottServices?.some(ott => ott.name.toLowerCase().includes(lowerSearchTerm))
+          checkString(plan.operator) ||
+          checkString(plan.price) ||
+          checkString(plan.data) ||
+          checkString(plan.talktime) ||
+          checkString(plan.sms) ||
+          checkString(plan.validity) ||
+          checkString(plan.planNameDisplay) ||
+          checkString(plan.category) ||
+          checkString(plan.callout) ||
+          (plan.additionalBenefits?.some(b => typeof b === 'string' && b.toLowerCase().includes(lowerSearchTerm))) ||
+          (plan.ottServices?.some(ott => typeof ott.name === 'string' && ott.name.toLowerCase().includes(lowerSearchTerm)))
         );
       });
     }
+    return tempFilteredPlans;
+  }, []);
 
-    setFilteredPlans(tempFilteredPlans);
-    setSelectedForCompare([]); 
+
+  useEffect(() => {
+    fetchAndProcessPlans();
+  }, [fetchAndProcessPlans]);
+  
+  useEffect(() => {
+    const newFiltered = performFiltering(allPlans, filters, additionalFeatures, searchTerm);
+    setFilteredPlans(newFiltered);
+    // Reset pagination and comparison only if the actual filter criteria or source data changed
+    // This prevents resetting when filteredPlans itself changes due to this effect
+    setSelectedForCompare([]);
     setCurrentPage(1);
-  };
+  }, [allPlans, filters, additionalFeatures, searchTerm, performFiltering]);
+
 
   const handleFilterChange = (newFilters: TelecomPlanFilter) => {
     setFilters(newFilters);
@@ -226,13 +241,11 @@ export default function PlanDiscoveryPage() {
   return (
     <div className="container mx-auto px-4 py-8 md:px-6">
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        {/* Filter Sidebar for Large Screens */}
-        <aside className="hidden lg:block lg:col-span-1 space-y-6">
+        <aside className="hidden lg:block lg:col-span-1 space-y-6 sticky top-24 h-fit">
           <h2 className="text-2xl font-semibold text-foreground">Filters</h2>
           {filterBarContent}
         </aside>
 
-        {/* Main Content Area */}
         <main className="lg:col-span-3">
           <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-6 gap-4">
             <div>
@@ -244,16 +257,17 @@ export default function PlanDiscoveryPage() {
               </p>
             </div>
             <div className="flex items-center gap-2 sm:gap-4">
-               {/* Filter Button for Mobile/Tablet */}
                <Sheet open={isFilterSheetOpen} onOpenChange={setIsFilterSheetOpen}>
                 <SheetTrigger asChild>
                   <Button variant="outline" className="lg:hidden">
                     <ListFilter className="mr-2 h-4 w-4" /> Filters
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="left" className="w-[300px] sm:w-[400px] p-0">
-                  <div className="p-6 space-y-4 overflow-y-auto h-full">
-                    <h2 className="text-xl font-semibold text-foreground">Filters</h2>
+                <SheetContent side="left" className="w-[300px] sm:w-[400px] p-0 overflow-y-auto">
+                  <SheetHeader className="p-6 pb-2">
+                    <SheetTitle className="text-xl">Filters</SheetTitle>
+                  </SheetHeader>
+                  <div className="p-6 pt-0 space-y-4">
                     {filterBarContent}
                   </div>
                 </SheetContent>

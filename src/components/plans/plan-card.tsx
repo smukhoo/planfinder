@@ -41,17 +41,17 @@ export function PlanCard({ plan, isSelected, onPlanSelect, currentLanguage }: Pl
   };
 
   return (
-    <Card className="relative flex flex-col shadow-sm hover:shadow-lg transition-shadow duration-200 ease-in-out rounded-lg border overflow-hidden bg-amber-50 dark:bg-amber-950/30">
+    <Card className="relative flex flex-col shadow-sm hover:shadow-lg transition-shadow duration-200 ease-in-out rounded-lg border overflow-hidden">
       {plan.isMostPopular && (
         <div className="absolute top-0 left-0 bg-yellow-400 text-yellow-900 text-xs font-semibold px-2 py-1 rounded-br-lg z-10">
           {currentLanguage === 'hindi' ? 'सबसे लोकप्रिय' : 'Most Popular'}
         </div>
       )}
-      {/* Main inner content wrapper - increased top padding here */}
+      {/* Main inner content wrapper - pt-7 for "Most Popular" tag spacing */}
       <div className="px-3 pb-3 pt-7 flex-1 flex flex-col justify-between"> 
         <div> {/* Content top part */}
           <CardHeader className="p-0 mb-2">
-            <div className="flex flex-col sm:flex-row justify-start sm:items-center gap-x-6 gap-y-1 mb-2">
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-x-4 gap-y-1 mb-2">
               {/* Left: Price & Plan Name */}
               <div className="flex-shrink-0">
                 <span className="text-3xl font-bold text-primary">₹{plan.price}</span>
@@ -59,7 +59,7 @@ export function PlanCard({ plan, isSelected, onPlanSelect, currentLanguage }: Pl
               </div>
 
               {/* Right: Key Stats & Buy Button */}
-              <div className="flex flex-col items-start sm:items-end sm:flex-row sm:items-center gap-x-4 gap-y-2 w-full sm:w-auto mt-2 sm:mt-0">
+              <div className="flex items-baseline gap-x-3 gap-y-2">
                 <div className="flex items-baseline gap-1">
                   <p className="font-semibold text-xl text-foreground">{dataInfo.value}</p>
                   <p className="text-xs text-muted-foreground">{dataInfo.unit}</p>
@@ -69,7 +69,7 @@ export function PlanCard({ plan, isSelected, onPlanSelect, currentLanguage }: Pl
                   <p className="text-xs text-muted-foreground">{currentLanguage === 'hindi' ? 'दिन वैधता' : 'days validity'}</p>
                 </div>
                  <Button 
-                    className="bg-accent text-accent-foreground hover:bg-accent/90 w-full sm:w-auto px-4 py-2 h-auto text-sm order-first sm:order-last sm:ml-2"
+                    className="bg-accent text-accent-foreground hover:bg-accent/90 px-4 py-2 h-auto text-sm"
                     onClick={() => window.open(plan.rechargeUrl, '_blank', 'noopener,noreferrer')}
                   >
                     {currentLanguage === 'hindi' ? 'प्लान खरीदें' : 'Buy Plan'} <ExternalLink className="ml-2 h-4 w-4" />
@@ -118,13 +118,13 @@ export function PlanCard({ plan, isSelected, onPlanSelect, currentLanguage }: Pl
                       <span className="text-foreground/90">{getOttServiceName(ott)}</span>
                     </li>
                   ))}
-                  {displayAdditionalBenefits && displayAdditionalBenefits.slice(0, 2).map((benefit, index) => (
+                  {displayAdditionalBenefits && Array.isArray(displayAdditionalBenefits) && displayAdditionalBenefits.slice(0, 2).map((benefit, index) => (
                     <li key={`benefit-${index}`} className="flex items-start text-left ml-0.5">
                        <ChevronRight className="mr-1 h-3.5 w-3.5 text-primary/70 shrink-0 relative top-0.5" /> 
                        <span className="text-foreground/90">{benefit.length > 60 ? benefit.substring(0,57) + "..." : benefit}</span>
                     </li>
                   ))}
-                  {displayAdditionalBenefits && displayAdditionalBenefits.length > 2 && (
+                  {displayAdditionalBenefits && Array.isArray(displayAdditionalBenefits) && displayAdditionalBenefits.length > 2 && (
                     <li className="text-xs text-primary hover:underline cursor-pointer pl-4">...see more benefits</li>
                   )}
                 </ul>

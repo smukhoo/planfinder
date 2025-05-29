@@ -12,11 +12,17 @@ export default function HomePage() {
   const [dataParamValue, setDataParamValue] = useState<string | null>(null);
 
   useEffect(() => {
-    const dataValue = searchParams.get('data');
-    if (dataValue) {
-      setDataParamValue(dataValue);
-      // You can also log it here if needed, though your layout.tsx script already does.
-      // console.log('Data from query parameter (HomePage):', dataValue);
+    const encodedDataValue = searchParams.get('data');
+    if (encodedDataValue) {
+      try {
+        const decodedValue = atob(encodedDataValue);
+        setDataParamValue(decodedValue);
+      } catch (error) {
+        console.error("Failed to decode base64 data from query parameter:", error);
+        setDataParamValue("Error: Could not decode data.");
+      }
+    } else {
+      setDataParamValue(null); // Reset if the param is not present
     }
   }, [searchParams]);
 
@@ -29,7 +35,7 @@ export default function HomePage() {
         <section className="w-full py-8 md:py-12 bg-background">
           <div className="container mx-auto px-4 md:px-6 text-center">
             <h3 className="text-2xl font-semibold text-foreground mb-3">
-              Information from URL:
+              Decoded Information from URL:
             </h3>
             <div className="p-4 border rounded-lg bg-card shadow-sm">
               <p className="text-md text-muted-foreground">

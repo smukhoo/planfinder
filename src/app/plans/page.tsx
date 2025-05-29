@@ -76,14 +76,13 @@ export default function PlanDiscoveryPage() {
     } finally {
       setLoading(false);
     }
-  }, [initialOperator]); // Removed filters and additionalFeatures to prevent re-fetch loop, applyFilters handles their changes
+  }, [initialOperator]); // Removed filters and additionalFeatures from deps
 
   useEffect(() => {
     fetchAndProcessPlans();
   }, [fetchAndProcessPlans]);
   
   useEffect(() => {
-    // Apply filters whenever filters or additionalFeatures change
     applyFilters(allPlans, filters, additionalFeatures);
   }, [filters, additionalFeatures, allPlans]);
 
@@ -123,18 +122,16 @@ export default function PlanDiscoveryPage() {
 
     setFilteredPlans(tempFilteredPlans);
     setSelectedForCompare([]); 
-    setIsCompareModalOpen(false);
-    setCurrentPage(1); // Reset to page 1 on filter change
+    // setIsCompareModalOpen(false); // Do not close modal on filter change if it's open
+    setCurrentPage(1);
   };
 
   const handleFilterChange = (newFilters: TelecomPlanFilter) => {
     setFilters(newFilters);
-    // applyFilters(allPlans, newFilters, additionalFeatures); // applyFilters is now called by useEffect
   };
 
   const handleAdditionalFeaturesChange = (newAdditionalFeatures: AdditionalFeatures) => {
     setAdditionalFeatures(newAdditionalFeatures);
-    // applyFilters(allPlans, filters, newAdditionalFeatures); // applyFilters is now called by useEffect
   };
 
   const handlePlanSelectionForCompare = (planId: string) => {
@@ -153,7 +150,6 @@ export default function PlanDiscoveryPage() {
 
   const plansToCompare = allPlans.filter(plan => selectedForCompare.includes(plan.id || plan.rechargeUrl));
 
-  // Pagination logic
   const totalPages = Math.ceil(filteredPlans.length / PLANS_PER_PAGE);
   const startIndex = (currentPage - 1) * PLANS_PER_PAGE;
   const endIndex = startIndex + PLANS_PER_PAGE;
@@ -273,7 +269,7 @@ export default function PlanDiscoveryPage() {
               )}
             </>
           )}
-          {/* Ensure PlanComparisonTable is NOT rendered directly here */}
+          {/* Ensure PlanComparisonTable is NOT rendered directly here again */}
         </div>
       </div>
     </div>

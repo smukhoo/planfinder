@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { MapPin, Search, ShieldAlert, Wifi, Smartphone, Settings2, Loader2, LocateFixed } from 'lucide-react';
-import type { LatLngExpression } from 'leaflet';
+import type { LatLngExpression } from 'leaflet'; // Keep type for potential future use
 
 const OPERATORS = [
   { id: 'jio', name: 'Jio', color: 'hsl(var(--chart-1))' },
@@ -23,7 +23,7 @@ const OPERATORS = [
 const TECHNOLOGIES = [
   { id: '5g', name: '5G', icon: <Wifi className="h-4 w-4" /> },
   { id: '4g', name: '4G/LTE', icon: <Smartphone className="h-4 w-4" /> },
-  { id: '3g', name: '3G', icon: <Settings2 className="h-4 w-4" /> }, // Using Settings2 as a placeholder
+  { id: '3g', name: '3G', icon: <Settings2 className="h-4 w-4" /> },
 ];
 
 const DynamicMapDisplay = dynamic(() =>
@@ -33,53 +33,49 @@ const DynamicMapDisplay = dynamic(() =>
     loading: () => (
       <div className="flex h-full items-center justify-center bg-muted/50 rounded-lg">
         <Loader2 className="h-10 w-10 animate-spin text-primary" />
-        <p className="ml-3 text-muted-foreground">Initializing map...</p>
+        <p className="ml-3 text-muted-foreground">Loading map viewer...</p>
       </div>
     ),
   }
 );
 
 export default function NetworkCoveragePage() {
+  // mapCenter and markerPosition types remain LatLngExpression for potential future Leaflet re-integration
   const [mapCenter, setMapCenter] = useState<LatLngExpression>([20.5937, 78.9629]); // Default to India
   const [mapZoom, setMapZoom] = useState<number>(5);
   const [markerPosition, setMarkerPosition] = useState<LatLngExpression | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [mapMessage, setMapMessage] = useState('Pan and zoom to explore coverage.');
+  const [mapMessage, setMapMessage] = useState('Currently displaying Airtel\'s official coverage map. Use filters to refine your legend.');
 
-  const [selectedOperators, setSelectedOperators] = useState<string[]>([]);
+  const [selectedOperators, setSelectedOperators] = useState<string[]>(['airtel']); // Default to airtel as we're showing their map
   const [selectedTechnologies, setSelectedTechnologies] = useState<string[]>([]);
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
 
   const handleSearch = () => {
     if (!searchTerm) {
-      setMapMessage('Please enter a location to search.');
+      setMapMessage('Please enter a location to search. The map view is currently showing Airtel\'s official map.');
       return;
     }
-    // In a real app, use a geocoding service to get lat/lng from searchTerm
-    // For now, just update the message and set a mock marker
-    const mockLat = 28.6139; // Delhi
-    const mockLng = 77.2090;
-    setMapCenter([mockLat, mockLng]);
-    setMarkerPosition([mockLat, mockLng]);
-    setMapZoom(12);
-    setMapMessage(`Showing results for "${searchTerm}". Filters: ${selectedOperators.join(', ') || 'All Operators'}, ${selectedTechnologies.join(', ') || 'All Technologies'}`);
+    // For iframe, actual map search is handled by the embedded page.
+    // This just updates our local message.
+    setMapMessage(`Search for "${searchTerm}" on Airtel's map. Filters: ${selectedOperators.join(', ') || 'All Operators'}, ${selectedTechnologies.join(', ') || 'All Technologies'}`);
   };
 
   const handleUseCurrentLocation = () => {
     setIsLoadingLocation(true);
-    setMapMessage('Fetching your location...');
+    setMapMessage('Attempting to use current location. Please allow location access on the map if prompted.');
+    // For iframe, geolocation is handled by the embedded page.
+    // This mock updates our local message.
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
-        setMapCenter([latitude, longitude]);
-        setMarkerPosition([latitude, longitude]);
-        setMapZoom(13);
-        setMapMessage('Showing your current location.');
+        // We can't directly set the iframe's location, but we can inform the user.
+        setMapMessage('Location fetched. The map below is interactive; please use its search or pan to your location.');
         setIsLoadingLocation(false);
       },
       (error) => {
         console.error("Error getting location:", error);
-        setMapMessage('Could not fetch your location. Please enable location services or search manually.');
+        setMapMessage('Could not fetch your location. Please enable location services or search manually on Airtel\'s map.');
         setIsLoadingLocation(false);
       }
     );
@@ -89,44 +85,37 @@ export default function NetworkCoveragePage() {
     setSelectedOperators(prev =>
       checked ? [...prev, operatorId] : prev.filter(id => id !== operatorId)
     );
+    // Update message to reflect that we're always showing Airtel map, but legend changes
+    setMapMessage(`Currently displaying Airtel's official coverage map. Legend reflects: ${checked ? [...selectedOperators, operatorId].join(', ') : selectedOperators.filter(id => id !== operatorId).join(', ') || 'All Operators'}, ${selectedTechnologies.join(', ') || 'All Technologies'}`);
   };
 
   const handleTechnologyChange = (techId: string, checked: boolean) => {
     setSelectedTechnologies(prev =>
       checked ? [...prev, techId] : prev.filter(id => id !== techId)
     );
+     setMapMessage(`Currently displaying Airtel's official coverage map. Legend reflects: ${selectedOperators.join(', ') || 'All Operators'}, ${checked ? [...selectedTechnologies, techId].join(', ') : selectedTechnologies.filter(id => id !== techId).join(', ') || 'All Technologies'}`);
   };
 
   const legendItems = useMemo(() => {
     if (selectedOperators.length === 0 && selectedTechnologies.length === 0) {
-      return [];
+      return [{name: "Select operators/technologies to see legend", color: 'hsl(var(--muted))', icon: <Wifi className="h-4 w-4" />}];
     }
-    if (selectedOperators.length === 0) {
-      return TECHNOLOGIES.filter(tech => selectedTechnologies.includes(tech.id)).map(tech => ({
-        name: `All Operators - ${tech.name}`,
-        color: 'hsl(var(--muted-foreground))', // Generic color for all operators
-        icon: tech.icon,
-      }));
-    }
-    if (selectedTechnologies.length === 0) {
-      return OPERATORS.filter(op => selectedOperators.includes(op.id)).map(op => ({
-        name: `${op.name} - All Technologies`,
-        color: op.color,
-        icon: <Smartphone className="h-4 w-4" /> // Generic icon
-      }));
-    }
-
+    // Legend is illustrative as we are embedding an external map
     return selectedOperators.flatMap(opId => {
       const operator = OPERATORS.find(op => op.id === opId);
       if (!operator) return [];
+      if (selectedTechnologies.length === 0) {
+        return [{
+          name: `${operator.name} - All Technologies`,
+          color: operator.color,
+          icon: <Smartphone className="h-4 w-4" />
+        }];
+      }
       return selectedTechnologies.map(techId => {
         const technology = TECHNOLOGIES.find(tech => tech.id === techId);
-        // Simple color variation based on operator and tech index (mock)
-        const colorShade = (OPERATORS.findIndex(op => op.id === opId) + TECHNOLOGIES.findIndex(t => t.id === techId)) % 5 + 1;
-
         return {
           name: `${operator.name} - ${technology?.name || techId}`,
-          color: `hsl(var(--chart-${colorShade as 1|2|3|4|5}))`,
+          color: operator.color, // For simplicity, use operator color for all its techs
           icon: technology?.icon || <Wifi className="h-4 w-4" />,
         };
       });
@@ -143,12 +132,11 @@ export default function NetworkCoveragePage() {
           Network Coverage Explorer
         </h1>
         <p className="mt-2 text-muted-foreground md:text-lg">
-          Visually check mobile network coverage across India.
+          Visually check mobile network coverage. Currently displaying Airtel's official map.
         </p>
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Filters and Search Panel */}
         <Card className="lg:col-span-1 shadow-xl h-fit sticky top-24">
           <CardHeader>
             <CardTitle className="text-xl flex items-center">
@@ -158,7 +146,7 @@ export default function NetworkCoveragePage() {
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="location-search">Search Location</Label>
+              <Label htmlFor="location-search">Search Location (on Airtel's map)</Label>
               <div className="flex gap-2">
                 <Input
                   id="location-search"
@@ -188,7 +176,7 @@ export default function NetworkCoveragePage() {
             </div>
 
             <div className="space-y-3">
-              <Label className="text-md font-semibold">Operators</Label>
+              <Label className="text-md font-semibold">Operators (Legend Filter)</Label>
               {OPERATORS.map(op => (
                 <div key={op.id} className="flex items-center space-x-2">
                   <Checkbox
@@ -205,7 +193,7 @@ export default function NetworkCoveragePage() {
             </div>
 
             <div className="space-y-3">
-              <Label className="text-md font-semibold">Network Technology</Label>
+              <Label className="text-md font-semibold">Network Technology (Legend Filter)</Label>
               {TECHNOLOGIES.map(tech => (
                 <div key={tech.id} className="flex items-center space-x-2">
                   <Checkbox
@@ -223,13 +211,14 @@ export default function NetworkCoveragePage() {
           </CardContent>
         </Card>
 
-        {/* Map Area */}
         <div className="lg:col-span-2 space-y-4">
             <p className="text-sm text-center text-muted-foreground bg-card p-3 rounded-md shadow">
                 {mapMessage}
             </p>
             <div className="h-[600px] w-full bg-muted rounded-lg shadow-inner overflow-hidden relative">
                 <DynamicMapDisplay
+                    // Props for iframe are mostly illustrative for the MapDisplay component,
+                    // as the iframe content is external.
                     mapCenter={mapCenter}
                     mapZoom={mapZoom}
                     markerPosition={markerPosition}
@@ -239,7 +228,7 @@ export default function NetworkCoveragePage() {
             {legendItems.length > 0 && (
                 <Card className="shadow-lg">
                     <CardHeader>
-                        <CardTitle className="text-lg">Legend</CardTitle>
+                        <CardTitle className="text-lg">Illustrative Legend</CardTitle>
                     </CardHeader>
                     <CardContent className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
                         {legendItems.map(item => (
@@ -259,7 +248,7 @@ export default function NetworkCoveragePage() {
         <ShieldAlert className="h-5 w-5 text-secondary-foreground" />
         <AlertTitle className="font-semibold">Disclaimer</AlertTitle>
         <AlertDescription className="text-sm text-secondary-foreground/80">
-          Coverage maps provide approximate outdoor coverage. Actual network experience may vary due to factors like terrain, weather, buildings, network congestion, device type, and indoor locations. Data is illustrative and users are advised to verify with operators for critical needs.
+          Coverage maps provide approximate outdoor coverage. Actual network experience may vary. The map displayed is Airtel's official coverage map. For other operators, please refer to their respective official websites. Data is illustrative and users are advised to verify with operators for critical needs.
         </AlertDescription>
       </Alert>
     </div>

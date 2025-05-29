@@ -1,21 +1,14 @@
 // src/components/network-coverage/map-display.tsx
 "use client";
 
-// Removed Leaflet imports as we are now using an iframe.
-// import L from 'leaflet';
-// import type { LatLngExpression, Map as LeafletMap } from 'leaflet';
-// import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-// import { useEffect, useRef } from 'react';
-
-// Removed Leaflet default icon path fix as it's no longer needed for an iframe.
-
 // Props are kept for potential future re-integration or if the parent component
 // still passes them, but they are not used by this iframe-only version.
 interface MapDisplayProps {
-  mapCenter: any; // LatLngExpression; - Type kept general as it's unused
+  mapCenter: any; // Type kept general as it's unused
   mapZoom: number;
-  markerPosition: any | null; // LatLngExpression | null; - Type kept general
+  markerPosition: any | null; // Type kept general
   isLoadingLocation: boolean;
+  // These props are not directly used by the iframe but might be useful for context
   searchTerm?: string;
   selectedOperators?: string[];
   selectedTechnologies?: string[];

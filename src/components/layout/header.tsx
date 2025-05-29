@@ -1,7 +1,9 @@
 
+"use client"; // Add this if it's not already a client component, needed for hooks
+
 import * as React from 'react';
 import Link from 'next/link';
-import { Smartphone, Users, HelpCircle, Menu, UserCircle, Sparkles, BarChartHorizontalBig, Globe } from 'lucide-react';
+import { Smartphone, Users, HelpCircle, Menu, UserCircle, Sparkles, BarChartHorizontalBig, Globe, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
@@ -15,21 +17,27 @@ interface NavLinkItem {
 }
 
 interface HeaderProps {
-  isChatOpen: boolean;
-  setIsChatOpen: (isOpen: boolean) => void;
+  isChatOpen: boolean; // Make sure this prop is correctly passed from layout.tsx
+  setIsChatOpen: (isOpen: boolean) => void; // Make sure this prop is correctly passed
 }
 
-export function Header({ setIsChatOpen }: HeaderProps) {
+export function Header({ setIsChatOpen }: HeaderProps) { // Removed isChatOpen from props for now if it's not passed
+  const [isMobileSheetOpen, setIsMobileSheetOpen] = React.useState(false);
+
   const navLinks: NavLinkItem[] = [
     { href: '/plans', label: 'Plans', icon: <Smartphone className="h-4 w-4 sm:mr-1" /> },
     { href: '/personalized', label: 'Personalized', icon: <BarChartHorizontalBig className="h-4 w-4 sm:mr-1" /> },
     { href: '/roaming-advisor', label: 'Roaming', icon: <Globe className="h-4 w-4 sm:mr-1" /> },
+    { href: '/network-coverage', label: 'Coverage', icon: <MapPin className="h-4 w-4 sm:mr-1" /> },
     { href: '/forum', label: 'Forum', icon: <Users className="h-4 w-4 sm:mr-1" /> },
     {
       href: '#',
       label: 'Ask AI',
       icon: <Sparkles className="h-4 w-4 sm:mr-1" />,
-      action: () => setIsChatOpen(true),
+      action: () => {
+        setIsChatOpen(true);
+        setIsMobileSheetOpen(false); // Close mobile sheet when opening chat
+      },
       isAnimated: true
     },
     { href: '#', label: 'Help', icon: <HelpCircle className="h-4 w-4 sm:mr-1" /> },
@@ -82,7 +90,7 @@ export function Header({ setIsChatOpen }: HeaderProps) {
 
         {/* Mobile Navigation Trigger */}
         <div className="md:hidden">
-          <Sheet>
+          <Sheet open={isMobileSheetOpen} onOpenChange={setIsMobileSheetOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon">
                 <Menu className="h-6 w-6" />
@@ -91,7 +99,7 @@ export function Header({ setIsChatOpen }: HeaderProps) {
             </SheetTrigger>
             <SheetContent side="right">
               <nav className="grid gap-4 p-4 text-lg font-medium">
-                <Link href="/" className="flex items-center gap-2 pb-4 border-b mb-2">
+                <Link href="/" className="flex items-center gap-2 pb-4 border-b mb-2" onClick={() => setIsMobileSheetOpen(false)}>
                    <svg width="28" height="28" viewBox="0 0 24 24" fill="hsl(var(--primary))" xmlns="http://www.w3.org/2000/svg" className="h-7 w-7">
                      <circle cx="12" cy="12" r="10" stroke="hsl(var(--primary))" strokeWidth="1.5" fill="none"/>
                      <path d="M12 6V12L16 14" stroke="hsl(var(--primary-foreground))" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -107,6 +115,7 @@ export function Header({ setIsChatOpen }: HeaderProps) {
                         variant="ghost"
                         onClick={() => {
                           link.action!();
+                          // setIsMobileSheetOpen(false); // Already handled in link.action for Ask AI
                         }}
                         className={cn("text-muted-foreground hover:text-foreground py-2 flex items-center justify-start text-base", link.isAnimated && "animate-pulse-glow")}
                       >
@@ -116,14 +125,14 @@ export function Header({ setIsChatOpen }: HeaderProps) {
                     );
                   }
                   return (
-                    <Link key={link.label} href={link.href} className="text-muted-foreground hover:text-foreground py-2 flex items-center text-base">
+                    <Link key={link.label} href={link.href} className="text-muted-foreground hover:text-foreground py-2 flex items-center text-base" onClick={() => setIsMobileSheetOpen(false)}>
                       {React.cloneElement(link.icon, { className: 'h-5 w-5 mr-3' })}
                       {link.label}
                     </Link>
                   );
                 })}
                 <div className="flex items-center gap-2 mt-4 pt-4 border-t">
-                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground flex-1 justify-start">
+                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground flex-1 justify-start" onClick={() => setIsMobileSheetOpen(false)}>
                     <UserCircle className="mr-2 h-5 w-5" /> Profile
                   </Button>
                 </div>
@@ -135,4 +144,3 @@ export function Header({ setIsChatOpen }: HeaderProps) {
     </header>
   );
 }
-

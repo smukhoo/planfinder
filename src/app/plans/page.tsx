@@ -2,15 +2,16 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
-import { getTelecomPlans, TelecomPlan, TelecomPlanFilter } from '@/services/telecom-plans';
+import { getTelecomPlans, type TelecomPlan, type TelecomPlanFilter } from '@/services/telecom-plans';
 import { PlanList } from '@/components/plans/plan-list';
-import { FilterBar, AdditionalFeatures } from '@/components/plans/filter-bar';
+import { FilterBar, type AdditionalFeatures } from '@/components/plans/filter-bar';
 import { Button } from '@/components/ui/button';
 import { PlanComparisonTable } from '@/components/plans/plan-comparison-table';
 import { useSearchParams } from 'next/navigation';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogClose } from '@/components/ui/dialog';
+import { Loader2, CompareArrows } from 'lucide-react';
 
 const MAX_COMPARE_PLANS = 3;
 type Language = 'english' | 'hindi' | 'tamil';
@@ -42,11 +43,12 @@ export default function PlanDiscoveryPage() {
 
   const [selectedForCompare, setSelectedForCompare] = useState<string[]>([]);
   const [currentLanguage, setCurrentLanguage] = useState<Language>('english');
+  const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
 
   const fetchAndProcessPlans = useCallback(async () => {
     setLoading(true);
     try {
-      const fetchedPlans = await getTelecomPlans({}); 
+      const fetchedPlans = await getTelecomPlans({});
       setAllPlans(fetchedPlans);
 
       const operators = [...new Set(fetchedPlans.map(p => p.operator))].sort();
@@ -55,14 +57,14 @@ export default function PlanDiscoveryPage() {
       const maxPrice = Math.max(...fetchedPlans.map(p => p.price), 1000);
 
       setAllOperators(operators);
-      setAllDataOptions(dataOptions.filter(d => d !== 'Other').concat(['Other'])); 
+      setAllDataOptions(dataOptions.filter(d => d !== 'Other').concat(['Other']));
       setAllValidityOptions(validityOptions);
       setMaxPricePossible(maxPrice);
-      
+
       let currentFilters = { ...filters };
-      if (initialOperator && !currentFilters.operator) { 
+      if (initialOperator && !currentFilters.operator) {
         currentFilters.operator = initialOperator;
-        setFilters(currentFilters); 
+        setFilters(currentFilters);
       }
       applyFilters(fetchedPlans, currentFilters, additionalFeatures);
 
@@ -71,7 +73,7 @@ export default function PlanDiscoveryPage() {
     } finally {
       setLoading(false);
     }
-  }, [initialOperator]); 
+  }, [initialOperator]); // filters, additionalFeatures removed from dep array as they cause re-fetch loop
 
   useEffect(() => {
     fetchAndProcessPlans();
@@ -111,6 +113,8 @@ export default function PlanDiscoveryPage() {
     }
 
     setFilteredPlans(tempFilteredPlans);
+    setSelectedForCompare([]); // Reset comparison when filters change
+    setIsCompareModalOpen(false); // Close modal if open
   };
 
   const handleFilterChange = (newFilters: TelecomPlanFilter) => {
@@ -123,7 +127,7 @@ export default function PlanDiscoveryPage() {
     applyFilters(allPlans, filters, newAdditionalFeatures);
   };
 
-  const handlePlanSelection = (planId: string) => {
+  const handlePlanSelectionForCompare = (planId: string) => {
     setSelectedForCompare(prev => {
       if (prev.includes(planId)) {
         return prev.filter(id => id !== planId);
@@ -180,9 +184,42 @@ export default function PlanDiscoveryPage() {
                   <SelectItem value="validity-desc">Validity: High to Low</SelectItem>
                 </SelectContent>
               </Select>
+              <Dialog open={isCompareModalOpen} onOpenChange={setIsCompareModalOpen}>
+                <DialogTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    disabled={selectedForCompare.length < 1}
+                    className="border-primary text-primary hover:bg-primary/10 hover:text-primary"
+                  >
+                    <CompareArrows className="mr-2 h-4 w-4" />
+                    Compare ({selectedForCompare.length})
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>Plan Comparison</DialogTitle>
+                    <DialogDescription>
+                      Comparing {selectedForCompare.length} selected plan{selectedForCompare.length === 1 ? '' : 's'}. 
+                      Select up to {MAX_COMPARE_PLANS} plans to compare.
+                    </DialogDescription>
+                  </DialogHeader>
+                  {plansToCompare.length > 0 ? (
+                    <PlanComparisonTable plansToCompare={plansToCompare} currentLanguage={currentLanguage} />
+                  ) : (
+                    <p className="text-muted-foreground text-center py-8">
+                      No plans selected or available for comparison. Please select at least one plan.
+                    </p>
+                  )}
+                  <DialogClose asChild>
+                      <Button type="button" variant="outline" className="mt-4">
+                        Close
+                      </Button>
+                  </DialogClose>
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
-          
+
           <Tabs defaultValue="english" className="mb-6" onValueChange={(value) => setCurrentLanguage(value as Language)}>
             <TabsList className="grid w-full grid-cols-3 sm:w-auto sm:inline-flex">
               <TabsTrigger value="english">English</TabsTrigger>
@@ -190,7 +227,7 @@ export default function PlanDiscoveryPage() {
               <TabsTrigger value="tamil">Tamil</TabsTrigger>
             </TabsList>
           </Tabs>
-          
+
           {loading ? (
             <div className="flex justify-center items-center h-64">
               <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -200,16 +237,9 @@ export default function PlanDiscoveryPage() {
               plans={filteredPlans}
               loading={loading}
               selectedForCompare={selectedForCompare}
-              onPlanSelect={handlePlanSelection}
+              onPlanSelect={handlePlanSelectionForCompare}
               currentLanguage={currentLanguage}
             />
-          )}
-
-          {plansToCompare.length > 0 && (
-            <div className="mt-12">
-              <h2 className="text-2xl font-semibold mb-6 text-foreground">Plan Comparison</h2>
-              <PlanComparisonTable plansToCompare={plansToCompare} currentLanguage={currentLanguage} />
-            </div>
           )}
         </div>
       </div>

@@ -3,7 +3,7 @@ import type { TelecomPlan, OttService } from '@/services/telecom-plans';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
-import { Wifi, Tv2 } from 'lucide-react'; // Added Tv2 for OTT section
+import { Tv2 } from 'lucide-react'; // Added Tv2 for OTT section
 
 interface PlanCardProps {
   plan: TelecomPlan;
@@ -11,19 +11,20 @@ interface PlanCardProps {
   onSelectToggle: (planId: string) => void;
 }
 
-const operatorLogoPlaceholders: Record<string, { src: string, hint: string }> = {
-  'Jio': { src: 'https://placehold.co/120x60.png', hint: 'Jio logo blue' },
-  'Airtel': { src: 'https://placehold.co/120x60.png', hint: 'Airtel logo red' },
-  'Vi': { src: 'https://placehold.co/120x60.png', hint: 'Vi logo yellow purple' },
-  'BSNL': { src: 'https://placehold.co/120x60.png', hint: 'BSNL logo' },
-  'Default': { src: 'https://placehold.co/120x60.png', hint: 'telecom logo generic' },
-};
+// This constant is no longer used as we are removing the operator logo section
+// const operatorLogoPlaceholders: Record<string, { src: string, hint: string }> = {
+//   'Jio': { src: 'https://placehold.co/120x60.png', hint: 'Jio logo blue' },
+//   'Airtel': { src: 'https://placehold.co/120x60.png', hint: 'Airtel logo red' },
+//   'Vi': { src: 'https://placehold.co/120x60.png', hint: 'Vi logo yellow purple' },
+//   'BSNL': { src: 'https://placehold.co/120x60.png', hint: 'BSNL logo' },
+//   'Default': { src: 'https://placehold.co/120x60.png', hint: 'telecom logo generic' },
+// };
 
 export function PlanCard({ plan, isSelected, onSelectToggle }: PlanCardProps) {
-  const logoInfo = operatorLogoPlaceholders[plan.operator] || operatorLogoPlaceholders['Default'];
+  // const logoInfo = operatorLogoPlaceholders[plan.operator] || operatorLogoPlaceholders['Default']; // No longer needed
 
   return (
-    <Card className="flex flex-col sm:flex-row justify-between shadow-sm hover:shadow-md transition-shadow duration-200 ease-in-out rounded-lg border overflow-hidden">
+    <Card className="flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow duration-200 ease-in-out rounded-lg border overflow-hidden">
       <div className="flex-1 p-5">
         <CardHeader className="p-0 mb-3">
           <CardTitle className="text-xl font-semibold text-foreground">
@@ -65,8 +66,8 @@ export function PlanCard({ plan, isSelected, onSelectToggle }: PlanCardProps) {
           )}
         </CardContent>
         <CardFooter className="p-0 mt-4">
-          <Button 
-            variant={isSelected ? "default" : "outline"} 
+          <Button
+            variant={isSelected ? "default" : "outline"}
             size="sm"
             onClick={() => onSelectToggle(plan.id || plan.rechargeUrl)} // Use plan.id if available
             className="w-full sm:w-auto"
@@ -75,17 +76,7 @@ export function PlanCard({ plan, isSelected, onSelectToggle }: PlanCardProps) {
           </Button>
         </CardFooter>
       </div>
-      <div className="w-full sm:w-1/3 lg:w-2/5 xl:w-1/3 bg-muted/30 flex items-center justify-center p-4 sm:p-2 min-h-[100px] sm:min-h-0">
-        <div className="relative w-[120px] h-[60px]">
-            <Image
-                src={logoInfo.src}
-                alt={`${plan.operator} logo`}
-                layout="fill"
-                objectFit="contain"
-                data-ai-hint={logoInfo.hint}
-            />
-        </div>
-      </div>
+      {/* Removed the operator logo section */}
     </Card>
   );
 }

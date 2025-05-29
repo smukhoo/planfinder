@@ -134,31 +134,6 @@ export default function PersonalizedPage() {
           </AccordionContent>
         </AccordionItem>
         
-        <AccordionItem value="achievements" className={`${glassCardStyle} overflow-hidden`}>
-            <AccordionTrigger className={accordionTriggerStyle}>
-                 <span className="flex items-center"><Award className="mr-3 h-6 w-6" /> Your Achievements</span>
-            </AccordionTrigger>
-            <AccordionContent className={accordionContentStyle}>
-                <CardDescription className="mb-4 text-sm text-muted-foreground">Keep up the great work!</CardDescription>
-                <div className="space-y-3">
-                  <div className="flex items-center p-3 bg-primary/5 hover:bg-primary/10 rounded-lg transition-colors">
-                    <Zap className="mr-3 h-5 w-5 text-yellow-500" />
-                    <div>
-                      <p className="font-semibold text-foreground">Data Saver Pro</p>
-                      <p className="text-xs text-muted-foreground">5 days data saving streak!</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center p-3 bg-primary/5 hover:bg-primary/10 rounded-lg transition-colors">
-                    <Gift className="mr-3 h-5 w-5 text-green-500" />
-                    <div>
-                      <p className="font-semibold text-foreground">Early Bird Bonus</p>
-                      <p className="text-xs text-muted-foreground">Claimed your monthly freebie!</p>
-                    </div>
-                  </div>
-                </div>
-            </AccordionContent>
-        </AccordionItem>
-
         <AccordionItem value="data-usage" className={`${glassCardStyle} overflow-hidden`}>
             <AccordionTrigger className={accordionTriggerStyle}>
                  <span className="flex items-center"><BarChart2 className="mr-3 h-6 w-6" /> Data Usage Insights</span>

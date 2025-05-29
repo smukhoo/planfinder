@@ -8,13 +8,16 @@ import { getPersonalizedData } from '@/services/personalized-data';
 import { UserProfileSection } from '@/components/personalized/user-profile-section';
 import { DataUsageSection } from '@/components/personalized/data-usage-section';
 import { RecommendationsSection } from '@/components/personalized/recommendations-section';
-import { Loader2, TrendingUp, ShieldAlert, Award, Zap, Gift } from 'lucide-react';
+import { Loader2, TrendingUp, ShieldAlert, Award, Zap, Gift, User, BarChart2, Lightbulb } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
-// Glassmorphic card style using Tailwind utilities
 const glassCardStyle = "bg-card/60 dark:bg-card/40 backdrop-blur-lg border border-card/30 dark:border-card/20 shadow-xl rounded-xl transition-all duration-300 hover:shadow-2xl";
+const accordionTriggerStyle = "p-4 sm:p-6 hover:no-underline text-left w-full text-xl font-semibold text-primary";
+const accordionContentStyle = "p-4 sm:p-6 pt-0";
+
 
 export default function PersonalizedPage() {
   const [data, setData] = useState<MockPersonalizedData | null>(null);
@@ -120,54 +123,70 @@ export default function PersonalizedPage() {
         </div>
       </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-        {/* Left Column */}
-        <div className="lg:col-span-1 space-y-8">
-          <UserProfileSection profile={data.userProfile} cardStyle={glassCardStyle} />
-          
-          <Card className={glassCardStyle}>
-            <CardHeader>
-              <CardTitle className="text-xl flex items-center text-primary">
-                <Award className="mr-2 h-6 w-6" />
-                Your Achievements
-              </CardTitle>
-              <CardDescription>Keep up the great work!</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center p-3 bg-primary/5 hover:bg-primary/10 rounded-lg transition-colors">
-                <Zap className="mr-3 h-5 w-5 text-yellow-500" />
-                <div>
-                  <p className="font-semibold text-foreground">Data Saver Pro</p>
-                  <p className="text-xs text-muted-foreground">5 days data saving streak!</p>
+      <Accordion type="multiple" defaultValue={["profile", "recommendations"]} className="w-full space-y-6">
+        <AccordionItem value="profile" className={`${glassCardStyle} overflow-hidden`}>
+          <AccordionTrigger className={accordionTriggerStyle}>
+            <span className="flex items-center"><User className="mr-3 h-6 w-6" /> Profile Overview</span>
+          </AccordionTrigger>
+          <AccordionContent className={accordionContentStyle}>
+            {/* UserProfileSection will render its own Card, so we adjust styling to avoid card-in-card look */}
+            <UserProfileSection profile={data.userProfile} cardStyle="shadow-none border-none bg-transparent dark:bg-transparent rounded-none" />
+          </AccordionContent>
+        </AccordionItem>
+        
+        <AccordionItem value="achievements" className={`${glassCardStyle} overflow-hidden`}>
+            <AccordionTrigger className={accordionTriggerStyle}>
+                 <span className="flex items-center"><Award className="mr-3 h-6 w-6" /> Your Achievements</span>
+            </AccordionTrigger>
+            <AccordionContent className={accordionContentStyle}>
+                <CardDescription className="mb-4 text-sm text-muted-foreground">Keep up the great work!</CardDescription>
+                <div className="space-y-3">
+                  <div className="flex items-center p-3 bg-primary/5 hover:bg-primary/10 rounded-lg transition-colors">
+                    <Zap className="mr-3 h-5 w-5 text-yellow-500" />
+                    <div>
+                      <p className="font-semibold text-foreground">Data Saver Pro</p>
+                      <p className="text-xs text-muted-foreground">5 days data saving streak!</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center p-3 bg-primary/5 hover:bg-primary/10 rounded-lg transition-colors">
+                    <Gift className="mr-3 h-5 w-5 text-green-500" />
+                    <div>
+                      <p className="font-semibold text-foreground">Early Bird Bonus</p>
+                      <p className="text-xs text-muted-foreground">Claimed your monthly freebie!</p>
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center p-3 bg-primary/5 hover:bg-primary/10 rounded-lg transition-colors">
-                <Gift className="mr-3 h-5 w-5 text-green-500" />
-                <div>
-                  <p className="font-semibold text-foreground">Early Bird Bonus</p>
-                  <p className="text-xs text-muted-foreground">Claimed your monthly freebie!</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+            </AccordionContent>
+        </AccordionItem>
 
-        {/* Right Column */}
-        <div className="lg:col-span-2 space-y-8">
-          <DataUsageSection 
-            dataStatus={data.dataStatus}
-            appConsumption={data.appConsumption}
-            usagePatterns={data.usagePatterns}
-            cardStyle={glassCardStyle}
-          />
-          <RecommendationsSection
-            costSaving={data.costSaving}
-            ottRecommendation={data.ottRecommendation}
-            travelRecommendation={data.travelRecommendation}
-            cardStyle={glassCardStyle}
-          />
-        </div>
-      </div>
+        <AccordionItem value="data-usage" className={`${glassCardStyle} overflow-hidden`}>
+            <AccordionTrigger className={accordionTriggerStyle}>
+                 <span className="flex items-center"><BarChart2 className="mr-3 h-6 w-6" /> Data Usage Insights</span>
+            </AccordionTrigger>
+            <AccordionContent className={`${accordionContentStyle} space-y-0`}> {/* Remove default padding top from content and inner space */}
+                 <DataUsageSection 
+                    dataStatus={data.dataStatus}
+                    appConsumption={data.appConsumption}
+                    usagePatterns={data.usagePatterns}
+                    cardStyle="shadow-none border-none bg-transparent dark:bg-transparent rounded-none p-0" // Make internal cards blend in
+                 />
+            </AccordionContent>
+        </AccordionItem>
+
+        <AccordionItem value="recommendations" className={`${glassCardStyle} overflow-hidden`}>
+            <AccordionTrigger className={accordionTriggerStyle}>
+                 <span className="flex items-center"><Lightbulb className="mr-3 h-6 w-6" /> Smart Recommendations</span>
+            </AccordionTrigger>
+            <AccordionContent className={`${accordionContentStyle} space-y-0`}>
+                <RecommendationsSection
+                    costSaving={data.costSaving}
+                    ottRecommendation={data.ottRecommendation}
+                    travelRecommendation={data.travelRecommendation}
+                    cardStyle="shadow-none border-none bg-transparent dark:bg-transparent rounded-none p-0" // Make internal cards blend in
+                />
+            </AccordionContent>
+        </AccordionItem>
+      </Accordion>
       
       <Card className={`mt-12 ${glassCardStyle}`}>
         <CardHeader>
@@ -184,5 +203,6 @@ export default function PersonalizedPage() {
     </div>
   );
 }
+    
 
     

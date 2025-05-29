@@ -5,16 +5,17 @@
 import type { MockDataStatus, MockAppConsumption, MockUsagePatternPoint } from '@/types/personalized';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { TrendingUp, List, BarChart2, ChevronRight } from 'lucide-react';
+import { TrendingUp, List, BarChart2, ChevronRight } from 'lucide-react'; // BarChart2 used for title in page.tsx
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig } from "@/components/ui/chart";
 import { Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart as RechartsBarChart } from "recharts";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import * as React from 'react';
 
 interface DataUsageSectionProps {
   dataStatus: MockDataStatus;
   appConsumption: MockAppConsumption[];
   usagePatterns: MockUsagePatternPoint[];
-  cardStyle?: string;
+  cardStyle?: string; // Applied to individual cards within this section
 }
 
 const appConsumptionChartConfig = {
@@ -35,9 +36,15 @@ export function DataUsageSection({ dataStatus, appConsumption, usagePatterns, ca
   const dataUsedPercentage = dataStatus.totalDataGB > 0 ? ( (dataStatus.totalDataGB - dataStatus.remainingDataGB) / dataStatus.totalDataGB) * 100 : 0;
   const remainingPercentage = 100 - dataUsedPercentage;
 
+  // If cardStyle indicates transparent/no border (meaning it's inside an accordion), apply it.
+  // Otherwise, use a default card styling for standalone use.
+  const defaultInnerCardStyle = "shadow-lg";
+  const effectiveCardStyle = cardStyle && cardStyle.includes("bg-transparent") ? cardStyle : `${defaultInnerCardStyle} ${cardStyle || ''}`;
+
+
   return (
-    <div className="space-y-6">
-      <Card className={cardStyle || "shadow-lg"}>
+    <div className="space-y-6"> {/* This div is now the root, no outer Card here */}
+      <Card className={effectiveCardStyle}>
         <CardHeader>
           <CardTitle className="text-xl font-semibold text-primary flex items-center">
             <TrendingUp className="mr-2 h-6 w-6" />
@@ -73,7 +80,7 @@ export function DataUsageSection({ dataStatus, appConsumption, usagePatterns, ca
         </CardContent>
       </Card>
 
-      <Card className={cardStyle || "shadow-lg"}>
+      <Card className={effectiveCardStyle}>
         <CardHeader>
           <CardTitle className="text-xl font-semibold text-primary flex items-center">
              <List className="mr-2 h-6 w-6" />
@@ -138,7 +145,7 @@ export function DataUsageSection({ dataStatus, appConsumption, usagePatterns, ca
         </CardContent>
       </Card>
 
-      <Card className={cardStyle || "shadow-lg"}>
+      <Card className={effectiveCardStyle}>
         <CardHeader>
           <CardTitle className="text-xl font-semibold text-primary flex items-center">
             <BarChart2 className="mr-2 h-6 w-6" />
@@ -178,5 +185,6 @@ export function DataUsageSection({ dataStatus, appConsumption, usagePatterns, ca
     </div>
   );
 }
+    
 
     

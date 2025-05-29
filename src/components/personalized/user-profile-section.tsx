@@ -3,25 +3,21 @@
 "use client";
 
 import type { MockUserProfile } from '@/types/personalized';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'; // CardHeader and CardTitle might be unused if handled by AccordionTrigger
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { User, Smartphone, Signal } from 'lucide-react';
+import { Smartphone, Signal } from 'lucide-react'; // User icon removed as it's in AccordionTrigger
 
 interface UserProfileSectionProps {
   profile: MockUserProfile;
-  cardStyle?: string;
+  cardStyle?: string; // This style will be applied to the content wrapper if Card is removed
 }
 
 export function UserProfileSection({ profile, cardStyle }: UserProfileSectionProps) {
+  // The AccordionTrigger will handle the main title and icon
+  // This component now just returns the content that would go inside the card.
   return (
-    <Card className={cardStyle || "shadow-lg"}>
-      <CardHeader>
-        <CardTitle className="text-2xl font-semibold text-primary flex items-center">
-          <User className="mr-3 h-7 w-7" />
-          Profile Overview
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="pt-2">
+    <div className={cardStyle}> {/* Apply passed cardStyle or default styling for content */}
+      <CardContent className="pt-2"> {/* Adjust padding if needed */}
         <div className="flex flex-col items-center sm:flex-row sm:items-start gap-6">
           <Avatar className="h-24 w-24 border-4 border-primary/50 shadow-md">
             <AvatarImage src={profile.avatarSrc} alt={profile.name} data-ai-hint={profile.avatarHint} />
@@ -42,8 +38,9 @@ export function UserProfileSection({ profile, cardStyle }: UserProfileSectionPro
           </div>
         </div>
       </CardContent>
-    </Card>
+    </div>
   );
 }
+    
 
     

@@ -1,4 +1,3 @@
-
 "use client";
 
 import type { Metadata } from 'next';
@@ -43,7 +42,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="ConnectPlan AI" />
         <meta name="format-detection" content="telephone=no" />
         <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="msapplication-config" content="/icons/browserconfig.xml" /> 
+        <meta name="msapplication-config" content="/icons/browserconfig.xml" />
         <meta name="msapplication-TileColor" content="#4080BF" />
         <meta name="msapplication-tap-highlight" content="no" />
         <meta name="theme-color" content="#4080BF" />
@@ -57,10 +56,21 @@ export default function RootLayout({
         <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png" />
         <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png" />
         <link rel="manifest" href="/manifest.json" />
-        {/* <link rel="mask-icon" href="/icons/safari-pinned-tab.svg" color="#5bbad5" /> */}
         <link rel="shortcut icon" href="/favicon.ico" />
-        
-        {/* Omitted placeholder for site.webmanifest - manifest.json is standard */}
+
+        {/* Script to read and log the 'data' query parameter */}
+        <script>
+          {`
+            console.log("App loaded. Hello"); // Existing log
+            const urlParams = new URLSearchParams(window.location.search);
+            const dataParam = urlParams.get('data');
+            if (dataParam) {
+              console.log('Data from query parameter:', dataParam);
+              // You can add more logic here to use the dataParam
+            }
+          `}
+        </script>
+
       </head>
       <body className="flex min-h-screen flex-col antialiased">
         <Header isChatOpen={isChatOpen} setIsChatOpen={setIsChatOpen} />

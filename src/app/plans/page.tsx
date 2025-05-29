@@ -12,8 +12,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogClose } from '@/components/ui/dialog';
 import { Loader2, CompareArrows } from 'lucide-react';
+import { PaginationControls } from '@/components/plans/pagination-controls';
 
 const MAX_COMPARE_PLANS = 3;
+const PLANS_PER_PAGE = 5;
 type Language = 'english' | 'hindi' | 'tamil';
 
 export default function PlanDiscoveryPage() {
@@ -44,11 +46,12 @@ export default function PlanDiscoveryPage() {
   const [selectedForCompare, setSelectedForCompare] = useState<string[]>([]);
   const [currentLanguage, setCurrentLanguage] = useState<Language>('english');
   const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const fetchAndProcessPlans = useCallback(async () => {
     setLoading(true);
     try {
-      const fetchedPlans = await getTelecomPlans({});
+      const fetchedPlans = await getTelecomPlans({}); // Fetch all initially
       setAllPlans(fetchedPlans);
 
       const operators = [...new Set(fetchedPlans.map(p => p.operator))].sort();
@@ -73,11 +76,17 @@ export default function PlanDiscoveryPage() {
     } finally {
       setLoading(false);
     }
-  }, [initialOperator]); // filters, additionalFeatures removed from dep array as they cause re-fetch loop
+  }, [initialOperator]); // Removed filters and additionalFeatures to prevent re-fetch loop, applyFilters handles their changes
 
   useEffect(() => {
     fetchAndProcessPlans();
   }, [fetchAndProcessPlans]);
+  
+  useEffect(() => {
+    // Apply filters whenever filters or additionalFeatures change
+    applyFilters(allPlans, filters, additionalFeatures);
+  }, [filters, additionalFeatures, allPlans]);
+
 
   const applyFilters = (plansToFilter: TelecomPlan[], currentFilters: TelecomPlanFilter, currentAdditionalFeatures: AdditionalFeatures) => {
     let tempFilteredPlans = [...plansToFilter];
@@ -113,18 +122,19 @@ export default function PlanDiscoveryPage() {
     }
 
     setFilteredPlans(tempFilteredPlans);
-    setSelectedForCompare([]); // Reset comparison when filters change
-    setIsCompareModalOpen(false); // Close modal if open
+    setSelectedForCompare([]); 
+    setIsCompareModalOpen(false);
+    setCurrentPage(1); // Reset to page 1 on filter change
   };
 
   const handleFilterChange = (newFilters: TelecomPlanFilter) => {
     setFilters(newFilters);
-    applyFilters(allPlans, newFilters, additionalFeatures);
+    // applyFilters(allPlans, newFilters, additionalFeatures); // applyFilters is now called by useEffect
   };
 
   const handleAdditionalFeaturesChange = (newAdditionalFeatures: AdditionalFeatures) => {
     setAdditionalFeatures(newAdditionalFeatures);
-    applyFilters(allPlans, filters, newAdditionalFeatures);
+    // applyFilters(allPlans, filters, newAdditionalFeatures); // applyFilters is now called by useEffect
   };
 
   const handlePlanSelectionForCompare = (planId: string) => {
@@ -143,10 +153,22 @@ export default function PlanDiscoveryPage() {
 
   const plansToCompare = allPlans.filter(plan => selectedForCompare.includes(plan.id || plan.rechargeUrl));
 
+  // Pagination logic
+  const totalPages = Math.ceil(filteredPlans.length / PLANS_PER_PAGE);
+  const startIndex = (currentPage - 1) * PLANS_PER_PAGE;
+  const endIndex = startIndex + PLANS_PER_PAGE;
+  const currentPlansToDisplay = filteredPlans.slice(startIndex, endIndex);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8 md:px-6">
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        {/* Filters Column */}
         <div className="lg:col-span-1">
           <h2 className="text-2xl font-semibold mb-6 text-foreground">Filters</h2>
           <FilterBar
@@ -161,7 +183,6 @@ export default function PlanDiscoveryPage() {
           />
         </div>
 
-        {/* Plans and Comparison Column */}
         <div className="lg:col-span-3">
           <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-6 gap-4">
             <div>
@@ -233,14 +254,26 @@ export default function PlanDiscoveryPage() {
               <Loader2 className="h-12 w-12 animate-spin text-primary" />
             </div>
           ) : (
-            <PlanList
-              plans={filteredPlans}
-              loading={loading}
-              selectedForCompare={selectedForCompare}
-              onPlanSelect={handlePlanSelectionForCompare}
-              currentLanguage={currentLanguage}
-            />
+            <>
+              <PlanList
+                plans={currentPlansToDisplay} 
+                loading={loading}
+                selectedForCompare={selectedForCompare}
+                onPlanSelect={handlePlanSelectionForCompare}
+                currentLanguage={currentLanguage}
+              />
+              {filteredPlans.length > PLANS_PER_PAGE && (
+                <PaginationControls
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
+                  itemsPerPage={PLANS_PER_PAGE}
+                  totalItems={filteredPlans.length}
+                />
+              )}
+            </>
           )}
+          {/* Ensure PlanComparisonTable is NOT rendered directly here */}
         </div>
       </div>
     </div>

@@ -13,7 +13,7 @@ export interface OttService {
 export const OttServiceSchema = z.object({
   id: z.string(),
   name: z.string(),
-  logoSrc: z.string().url().or(z.string().startsWith('https://placehold.co')), // Allow placeholder URLs
+  logoSrc: z.string().url().or(z.string().startsWith('https://placehold.co')),
   logoHint: z.string(),
 });
 
@@ -22,54 +22,20 @@ export const OttServiceSchema = z.object({
  * Represents a mobile recharge plan.
  */
 export interface TelecomPlan {
-  /**
-   * The name of the operator (e.g., Airtel, Jio, Vi).
-   */
   operator: string;
-  /**
-   * The price of the plan in INR.
-   */
   price: number;
-  /**
-   * The amount of data provided by the plan (e.g., '2GB/day', 'Unlimited').
-   */
   data: string;
-  /**
-   * The talktime offered by the plan (e.g., 'Unlimited Calls', '₹200 Talktime').
-   */
   talktime: string;
-  /**
-   * The number of SMS messages included (e.g., '100/day', 'Unlimited').
-   */
   sms: string;
-  /**
-   * The validity period of the plan in days.
-   */
   validity: number;
-  /**
-   * Any additional benefits offered by the plan (e.g., 'Includes Prime Video', 'Free Wynk Music').
-   */
-  additionalBenefits?: string;
-  /**
-   * URL where the plan can be purchased
-   */
+  additionalBenefits?: string[]; // Changed to string[]
   rechargeUrl: string;
-  /**
-   * Plan ID from the source data
-   */
   id?: string;
-  /**
-   * Category of the plan
-   */
   category?: string;
-   /**
-   * Callout text for the plan
-   */
   callout?: string | null;
-  /**
-   * Array of OTT services included in the plan.
-   */
   ottServices?: OttService[];
+  isMostPopular?: boolean;
+  planNameDisplay?: string;
 }
 
 /**
@@ -82,12 +48,14 @@ export const TelecomPlanSchema = z.object({
   talktime: z.string().optional().describe("The talktime offered by the plan (e.g., 'Unlimited Calls', '₹200 Talktime')."),
   sms: z.string().optional().describe("The number of SMS messages included (e.g., '100/day', 'Unlimited')."),
   validity: z.number().describe("The validity period of the plan in days."),
-  additionalBenefits: z.string().optional().describe("Any additional benefits offered by the plan."),
-  rechargeUrl: z.string().describe("URL where the plan can be purchased."), // Relaxed from .url() for mock data flexibility
+  additionalBenefits: z.array(z.string()).optional().describe("Any additional benefits offered by the plan as a list of strings."), // Changed to array
+  rechargeUrl: z.string().describe("URL where the plan can be purchased."),
   id: z.string().optional().describe("Plan ID from the source data."),
   category: z.string().optional().describe("Category of the plan."),
   callout: z.string().nullable().optional().describe("Callout text for the plan."),
   ottServices: z.array(OttServiceSchema).optional().describe("List of OTT services included in the plan."),
+  isMostPopular: z.boolean().optional().describe("Flag indicating if the plan is most popular."),
+  planNameDisplay: z.string().optional().describe("A display-friendly name for the plan."),
 });
 
 /**
@@ -101,7 +69,7 @@ export interface TelecomPlanFilter {
   validity?: number;
 }
 
-const newMockPlansData = [
+const newNewMockPlansData = [
   {
     "id": "51",
     "category": "Recommended Packs",
@@ -114,14 +82,11 @@ const newMockPlansData = [
   {
     "id": "15",
     "category": "Recommended Packs",
-    "name": "Data : 5GB | Validity : 30 days | Added benefit : Disney+ Hotstar Mobile Subscription for 30 days. Enjoy extra benefits with RC100 instead of RC77",
+    "name": "Data : 5GB | Validity : 30 days | Added benefit : JioHotstar Mobile Subscription for 30 days. Enjoy extra benefits with RC100 instead of RC77",
     "price": 100,
     "validity": "30 days",
     "data": "5GB",
-    "callout": "New! Favorite Cricket Pack!",
-    "ottServices": [
-      { "id": "hotstar", "name": "Disney+ Hotstar", "logoSrc": "https://placehold.co/80x30.png", "logoHint": "Disney Hotstar logo" }
-    ]
+    "callout": "New! Favorite Cricket Pack!"
   },
   {
     "id": "22",
@@ -157,11 +122,7 @@ const newMockPlansData = [
     "price": 409,
     "validity": "28 days",
     "data": "2.5GB/Day",
-    "callout": "New! Free unlimited 5G",
-    "ottServices": [
-      { "id": "xstream", "name": "Airtel Xstream Play", "logoSrc": "https://placehold.co/80x30.png", "logoHint": "Airtel Xstream logo" },
-      { "id": "sonyliv", "name": "SonyLIV", "logoSrc": "https://placehold.co/80x30.png", "logoHint": "SonyLIV logo" }
-    ]
+    "callout": "New! Free unlimited 5G"
   },
   {
     "id": "61",
@@ -191,41 +152,31 @@ const newMockPlansData = [
     "callout": "Only ~₹224/month"
   },
   {
-    "id": "18",
+    "id": "18", // Data category example
     "category": "Data",
     "name": "Data: 15GB | Validity: 30 days | Details: 20+ OTTs with Airtel Xstream Play for 30 days",
     "price": 181,
     "validity": "30 days",
     "data": "15GB",
-    "callout": "Free 20+ OTTs",
-     "ottServices": [
-      { "id": "xstream", "name": "Airtel Xstream Play", "logoSrc": "https://placehold.co/80x30.png", "logoHint": "Airtel Xstream logo" }
-    ]
+    "callout": "Free 20+ OTTs"
   },
   {
-    "id": "70",
+    "id": "70", // Data category example with multiple OTTs
     "category": "Data",
-    "name": "Data : 1GB | Details :  Netflix, Disney+ Hotstar, Airtel Xstream Play & Zee5 for 1 month.",
+    "name": "Data : 1GB | Details :  Netflix, JioHotstar, Airtel Xstream Play & Zee5 for 1 month.",
     "price": 279,
     "validity": "1 month",
     "data": "1GB",
-    "callout": null,
-    "ottServices": [
-        { "id": "netflix", "name": "Netflix", "logoSrc": "https://placehold.co/80x30.png", "logoHint": "Netflix logo" },
-        { "id": "hotstar", "name": "Disney+ Hotstar", "logoSrc": "https://placehold.co/80x30.png", "logoHint": "Disney Hotstar logo" },
-        { "id": "xstream", "name": "Airtel Xstream Play", "logoSrc": "https://placehold.co/80x30.png", "logoHint": "Airtel Xstream logo" },
-        { "id": "zee5", "name": "Zee5", "logoSrc": "https://placehold.co/80x30.png", "logoHint": "Zee5 logo" }
-    ]
+    "callout": null
   }
 ];
 
-
-function parseValidity(validityStr: string): number {
+function parseValidity(validityStr?: string): number {
   if (!validityStr) return 0;
   const lowerValidityStr = validityStr.toLowerCase();
 
   if (lowerValidityStr.includes("current pack validity")) {
-    return 0; // Or specific handling if current pack validity can be determined
+    return 0; // Or a way to get current pack's remaining validity if possible
   }
   const parts = lowerValidityStr.split(" ");
   const duration = parseInt(parts[0]);
@@ -236,7 +187,7 @@ function parseValidity(validityStr: string): number {
   } else if (parts[1].startsWith("month")) {
     return duration * 30; // Approximate
   } else if (parts[1].startsWith("hour")) {
-    return 1; // Treat as 1 day for simplicity
+    return Math.max(1, Math.ceil(duration / 24)); // Convert hours to days, min 1 day
   }
   return 0;
 }
@@ -249,87 +200,124 @@ function extractFromPlanName(planName: string, keyword: string): string {
   if (keywordIndex === -1) return "N/A";
 
   let substringAfterKeyword = planName.substring(keywordIndex + keyword.length);
-  
-  // Remove leading colon or space if present
-  substringAfterKeyword = substringAfterKeyword.replace(/^[:\s]+/, '');
-
+  substringAfterKeyword = substringAfterKeyword.replace(/^[:\s]+/, ''); // Remove leading colon or space
 
   const nextPipeIndex = substringAfterKeyword.indexOf("|");
-  
   if (nextPipeIndex === -1) {
     return substringAfterKeyword.trim();
   }
   return substringAfterKeyword.substring(0, nextPipeIndex).trim();
 }
 
-
-/**
- * Transforms a raw plan object from the new data source into the standardized TelecomPlan format.
- * @param rawPlan A plan object from the new mock data.
- * @returns A TelecomPlan object.
- */
 function transformRawPlanToTelecomPlan(rawPlan: any): TelecomPlan {
   let talktime = "N/A";
-  if (rawPlan.name.toLowerCase().includes("calls : unlimited")) {
+  if (rawPlan.name && rawPlan.name.toLowerCase().includes("calls : unlimited")) {
     talktime = "Unlimited Calls";
-  } else if (rawPlan.name.toLowerCase().includes("talktime :")) {
+  } else if (rawPlan.name && rawPlan.name.toLowerCase().includes("talktime :")) {
     talktime = extractFromPlanName(rawPlan.name, "Talktime :");
   }
-  
+
   let sms = "N/A";
-  if (rawPlan.name.toLowerCase().includes("sms :")) {
+  if (rawPlan.name && rawPlan.name.toLowerCase().includes("sms :")) {
     sms = extractFromPlanName(rawPlan.name, "SMS :");
   }
 
-  let benefitsString = rawPlan.name;
-  // Remove parts already covered by other fields to avoid redundancy in additionalBenefits
-  benefitsString = benefitsString.replace(/Data\s*:\s*[^|]+\s*\|?/gi, '')
-                                     .replace(/Validity\s*:\s*[^|]+\s*\|?/gi, '')
-                                     .replace(/Calls\s*:\s*[^|]+\s*\|?/gi, '')
-                                     .replace(/SMS\s*:\s*[^|]+\s*\|?/gi, '')
-                                     .replace(/Talktime\s*:\s*[^|]+\s*\|?/gi, '')
-                                     .replace(/\|\s*$/, '') // Remove trailing pipe
-                                     .replace(/^\s*\|\s*/, '') // Remove leading pipe
-                                     .replace(/^Details\s*:\s*/i, '') // Remove "Details :" prefix
-                                     .trim();
-  
-  if (rawPlan.callout && rawPlan.callout.trim() !== "") {
-    if (benefitsString && benefitsString !== rawPlan.callout) {
-        benefitsString = `${benefitsString} | ${rawPlan.callout}`;
-    } else {
-        benefitsString = rawPlan.callout;
+  const isMostPopular = !!(rawPlan.callout && rawPlan.callout.toLowerCase().includes("most popular"));
+  const planId = String(rawPlan.id || rawPlan.price + rawPlan.data);
+
+  let planNameDisplay = rawPlan.operator || "Airtel"; // Default to Airtel
+  if (rawPlan.name) {
+      const nameParts = rawPlan.name.split('|');
+      const firstPart = nameParts[0]?.trim();
+      if (firstPart && !firstPart.toLowerCase().startsWith("data") && !firstPart.toLowerCase().startsWith("calls") && !firstPart.toLowerCase().startsWith("sms")) {
+          planNameDisplay = firstPart;
+      } else if (rawPlan.category) {
+        planNameDisplay = `${rawPlan.operator || "Airtel"} ${rawPlan.category}`
+      }
+  }
+
+
+  const ottServices: OttService[] = [];
+  if (rawPlan.name && rawPlan.name.toLowerCase().includes("jiohotstar")) {
+    ottServices.push({ id: "hotstar", name: "Disney+ Hotstar", logoSrc: "https://placehold.co/60x20/1E88E5/FFFFFF.png?text=D+H", logoHint: "Disney Hotstar logo" });
+  }
+  if (rawPlan.name && rawPlan.name.toLowerCase().includes("airtel xstream play")) {
+    ottServices.push({ id: "xstream", name: "Airtel Xstream Play", logoSrc: "https://placehold.co/60x20/FF0000/FFFFFF.png?text=Xstream", logoHint: "Airtel Xstream logo" });
+  }
+   if (rawPlan.name && rawPlan.name.toLowerCase().includes("netflix")) {
+    ottServices.push({ id: "netflix", name: "Netflix", logoSrc: "https://placehold.co/60x20/E50914/FFFFFF.png?text=Netflix", logoHint: "Netflix logo" });
+  }
+  if (rawPlan.name && rawPlan.name.toLowerCase().includes("zee5")) {
+    ottServices.push({ id: "zee5", name: "ZEE5", logoSrc: "https://placehold.co/60x20/7D287D/FFFFFF.png?text=ZEE5", logoHint: "ZEE5 logo" });
+  }
+
+
+  let benefitsArray: string[] = [];
+  let benefitSourceString = "";
+
+  if (rawPlan.name && typeof rawPlan.name === 'string') {
+    const detailsMatch = rawPlan.name.match(/Details\s*:\s*(.*)/i);
+    const addedBenefitMatch = rawPlan.name.match(/Added benefit\s*:\s*(.*)/i);
+
+    if (detailsMatch && detailsMatch[1]) {
+      benefitSourceString = detailsMatch[1].trim();
+    } else if (addedBenefitMatch && addedBenefitMatch[1]) {
+      benefitSourceString = addedBenefitMatch[1].trim();
+    }
+    
+    // Attempt to get a general description if specific details are not found
+    if (!benefitSourceString) {
+        let cleanedName = rawPlan.name;
+        // Remove already parsed parts like Data, Validity, Calls, SMS, Talktime from the name string
+        cleanedName = cleanedName.replace(/Data\s*:\s*[^|]*\|?/gi, '')
+                                .replace(/Validity\s*:\s*[^|]*\|?/gi, '')
+                                .replace(/Calls\s*:\s*[^|]*\|?/gi, '')
+                                .replace(/SMS\s*:\s*[^|]*\|?/gi, '')
+                                .replace(/Talktime\s*:\s*[^|]*\|?/gi, '')
+                                .replace(/^\|\s*/, '').replace(/\s*\|\s*$/, '').trim(); // Trim leading/trailing pipes and spaces
+        if(cleanedName && cleanedName.length > 10) { // Heuristic to avoid short/generic plan names
+            benefitSourceString = cleanedName;
+        }
     }
   }
+
+  if (benefitSourceString) {
+    benefitsArray = benefitSourceString
+      .split(/\s*\|\s*|\s*&\s*|,\s*(?![^()]*\))|\.\s*(?=[A-Z])/g) // Split by |, &, comma not in parens, or period followed by capital
+      .map(b => b.trim().replace(/\.$/,'')) // Trim and remove trailing period
+      .filter(b => b && b.length > 3); // Filter out empty or very short strings
+  }
   
-  const planId = String(rawPlan.id || rawPlan.price); // Ensure ID is a string
-  const rechargeUrl = `https://www.airtel.in/prepaid-recharge/?packId=${planId}`; // Placeholder with slight uniqueness
+  if (rawPlan.callout && rawPlan.callout.trim() !== "" && !benefitsArray.some(b => b.toLowerCase().includes(rawPlan.callout.toLowerCase().trim()))) {
+    benefitsArray.push(rawPlan.callout.trim());
+  }
+  // Ensure OTT service names are not duplicated in additionalBenefits if already covered by ottServices
+  ottServices.forEach(ott => {
+    benefitsArray = benefitsArray.filter(b => !b.toLowerCase().includes(ott.name.toLowerCase()));
+  });
+
 
   return {
     id: planId,
-    operator: "Airtel", // Assuming all data is for Airtel for now
+    operator: rawPlan.operator || "Airtel",
     price: rawPlan.price,
     data: rawPlan.data,
     talktime: talktime,
     sms: sms,
     validity: parseValidity(rawPlan.validity),
-    additionalBenefits: benefitsString || undefined,
+    additionalBenefits: benefitsArray.length > 0 ? benefitsArray : undefined,
     category: rawPlan.category,
     callout: rawPlan.callout || undefined,
-    rechargeUrl: rechargeUrl,
-    ottServices: rawPlan.ottServices || undefined, // Pass through if it exists
+    rechargeUrl: `https://www.airtel.in/prepaid-recharge/?packId=${planId}`, // More unique placeholder
+    ottServices: ottServices.length > 0 ? ottServices : undefined,
+    isMostPopular: isMostPopular,
+    planNameDisplay: planNameDisplay.includes(String(rawPlan.price)) || planNameDisplay.length < 5 ? `${rawPlan.operator || "Airtel"} ${rawPlan.price}` : planNameDisplay,
   };
 }
 
 
-/**
- * Asynchronously retrieves a list of telecom plans based on specified filters.
- *
- * @param filters An object containing filter criteria for telecom plans.
- * @returns A promise that resolves to an array of TelecomPlan objects.
- */
 export async function getTelecomPlans(filters: TelecomPlanFilter): Promise<TelecomPlan[]> {
-  const allTransformedPlans: TelecomPlan[] = newMockPlansData.map(transformRawPlanToTelecomPlan);
-
+  const allTransformedPlans: TelecomPlan[] = newNewMockPlansData.map(transformRawPlanToTelecomPlan);
   let filteredPlans = [...allTransformedPlans];
 
   if (filters.operator) {
@@ -345,18 +333,17 @@ export async function getTelecomPlans(filters: TelecomPlanFilter): Promise<Telec
     if (filters.dataPerDay.toLowerCase() === 'other') {
       filteredPlans = filteredPlans.filter(plan => !plan.data.toLowerCase().includes('/day'));
     } else {
-      // Handles cases like "1.5GB/day" matching "1.5GB"
       filteredPlans = filteredPlans.filter(plan => plan.data.toLowerCase().startsWith(filters.dataPerDay!.toLowerCase().replace('/day','')));
     }
   }
   if (filters.validity !== undefined) {
     filteredPlans = filteredPlans.filter(plan => plan.validity === filters.validity);
   }
-  
-  // For debugging, you can log the plans before and after schema validation
-  // console.log("Transformed Plans before schema validation:", filteredPlans.length, filteredPlans[0]);
 
-  // The safeParse step will be handled by the AI flow's tool definition schema
+  // For now, return all transformed plans that pass basic filtering,
+  // actual schema validation by Zod will happen at the AI flow/tool level.
   // return filteredPlans.filter(plan => TelecomPlanSchema.safeParse(plan).success);
   return filteredPlans;
 }
+
+    

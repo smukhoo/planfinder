@@ -55,51 +55,52 @@
   }
 
   .dark {
-    --background: 220 15% 15%; /* Dark cool grey */
-    --background-gradient-start: 220 15% 18%; /* Slightly Lighter for Gradient Start (Dark) */
-    --background-gradient-end: 220 15% 15%;   /* Main Background for Gradient End (Dark) */
-    --foreground: 220 15% 85%; /* Light cool grey Text */
+    /* Futuristic Dark Theme */
+    --background: 220 30% 10%; /* Deep Navy/Charcoal */
+    --background-gradient-start: 220 30% 12%; 
+    --background-gradient-end: 220 30% 9%;   
+    --foreground: 200 20% 88%; /* Light, slightly desaturated cyan/grey text */
 
-    --card: 220 15% 20%; /* Darker cool grey Card */
-    --card-foreground: 220 15% 85%; /* Light cool grey Text */
+    --card: 220 25% 15%; /* Darker slate-like blue for card base */
+    --card-foreground: 200 20% 85%; /* Lighter text on cards */
 
-    --popover: 220 15% 18%; /* Dark cool grey Popover */
-    --popover-foreground: 220 15% 85%; /* Light cool grey Text */
+    --popover: 220 25% 12%; /* Dark popover */
+    --popover-foreground: 200 20% 85%;
 
-    --primary: 205 50% 60%; /* Lighter Muted Blue */
-    --primary-foreground: 205 50% 15%; /* Dark text on primary */
+    --primary: 180 100% 50%; /* Vibrant Cyan */
+    --primary-foreground: 180 100% 10%; /* Very Dark Cyan for text on primary */
 
-    --secondary: 210 25% 30%; /* Darker Muted Blue/Grey */
-    --secondary-foreground: 210 25% 80%; /* Lighter text on secondary */
+    --secondary: 220 20% 25%; /* Darker muted blue/grey */
+    --secondary-foreground: 200 15% 75%; /* Lighter text on secondary */
 
-    --muted: 220 10% 30%; /* Dark Muted Grey */
-    --muted-foreground: 220 10% 60%; /* Medium-Light Grey text */
+    --muted: 220 15% 30%; /* Dark Muted Grey */
+    --muted-foreground: 200 10% 65%; /* Medium-Light Grey text for muted elements */
 
-    --accent: 174 60% 50%; /* Lighter Teal */
-    --accent-foreground: 174 100% 10%; /* Very Dark Teal/Black text */
+    --accent: 300 100% 65%; /* Bright Magenta */
+    --accent-foreground: 300 100% 95%; /* Very Light Magenta/White */
 
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 70% 55%; /* Slightly desaturated red for dark mode */
     --destructive-foreground: 0 0% 98%;
 
-    --border: 220 10% 35%; /* Dark Grey Border */
-    --input: 220 10% 30%; /* Darker Input Background */
-    --ring: 205 50% 65%; /* Lighter Muted Blue Ring */
+    --border: 180 50% 30%; /* Cyan-tinted border */
+    --input: 220 25% 18%; /* Dark input background */
+    --ring: 180 100% 60%; /* Cyan focus ring */
 
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    --chart-1: 180 100% 50%; /* Cyan */
+    --chart-2: 300 100% 65%; /* Magenta */
+    --chart-3: 210 80% 60%; /* Bright Blue */
+    --chart-4: 60 100% 50%;  /* Yellow */
+    --chart-5: 120 70% 55%; /* Green */
 
     /* Dark Sidebar specific colors */
-    --sidebar-background: 210 20% 18%; /* Dark muted blue, distinct from main dark bg */
-    --sidebar-foreground: 220 15% 80%; /* Light cool grey text */
-    --sidebar-primary: 205 50% 60%; /* Lighter Muted Blue */
-    --sidebar-primary-foreground: 205 50% 15%; /* Dark text on primary */
-    --sidebar-accent: 210 20% 25%; /* Darker muted blue for sidebar active/hover */
-    --sidebar-accent-foreground: 210 20% 75%; /* Lighter text for sidebar accent */
-    --sidebar-border: 210 15% 28%;
-    --sidebar-ring: 205 50% 65%; /* Lighter Muted Blue Ring */
+    --sidebar-background: 220 30% 8%; 
+    --sidebar-foreground: 200 20% 80%; 
+    --sidebar-primary: 180 100% 55%; 
+    --sidebar-primary-foreground: 180 100% 10%; 
+    --sidebar-accent: 220 25% 18%; 
+    --sidebar-accent-foreground: 180 90% 70%; 
+    --sidebar-border: 180 50% 25%;
+    --sidebar-ring: 180 100% 60%; 
   }
 }
 
@@ -115,16 +116,24 @@
   }
 }
 
+/* Apply dark theme by default if no class is present or if .dark is on html/body */
+html:not(.light) {
+  @apply dark;
+}
+
+
 @layer utilities {
   .animate-pulse-glow {
     animation: pulse-glow 2s infinite ease-in-out;
   }
   @keyframes pulse-glow {
     0%, 100% {
-      box-shadow: 0 0 3px 0px hsl(var(--primary)/0.4), 0 0 6px 0px hsl(var(--primary)/0.2);
+      box-shadow: 0 0 5px 0px hsl(var(--primary)/0.6), 0 0 10px 0px hsl(var(--primary)/0.3);
+      /* text-shadow: 0 0 3px hsl(var(--primary)/0.5); */
     }
     50% {
-      box-shadow: 0 0 8px 2px hsl(var(--primary)/0.6), 0 0 12px 3px hsl(var(--primary)/0.4);
+      box-shadow: 0 0 12px 3px hsl(var(--primary)/0.8), 0 0 18px 4px hsl(var(--primary)/0.5);
+      /* text-shadow: 0 0 6px hsl(var(--primary)/0.7); */
     }
   }
 }

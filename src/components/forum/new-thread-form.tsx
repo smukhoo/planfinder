@@ -1,3 +1,4 @@
+
 // src/components/forum/new-thread-form.tsx
 "use client";
 
@@ -50,15 +51,15 @@ export function NewThreadForm({ onSubmit, onCancel }: NewThreadFormProps) {
           name="title"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-cyan-400">Transmission Subject (Title)</FormLabel>
+              <FormLabel className="text-primary">Thread Title</FormLabel>
               <FormControl>
                 <Input 
-                  placeholder="Enter a clear subject for your transmission..." 
+                  placeholder="Enter a clear subject for your discussion..." 
                   {...field} 
-                  className="bg-slate-800/50 border-slate-700 text-slate-100 focus:ring-cyan-500 focus:border-cyan-500 placeholder:text-slate-500"
+                  className="bg-input border-input text-foreground focus-visible:ring-ring focus-visible:border-primary placeholder:text-muted-foreground"
                 />
               </FormControl>
-              <FormMessage className="text-magenta-400" />
+              <FormMessage className="text-destructive" />
             </FormItem>
           )}
         />
@@ -67,24 +68,24 @@ export function NewThreadForm({ onSubmit, onCancel }: NewThreadFormProps) {
           name="content"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-cyan-400">Your Message Matrix</FormLabel>
+              <FormLabel className="text-primary">Your Message</FormLabel>
               <FormControl>
                 <Textarea
                   placeholder="Compose your detailed message or query..."
-                  className="min-h-[150px] resize-y bg-slate-800/50 border-slate-700 text-slate-100 focus:ring-cyan-500 focus:border-cyan-500 placeholder:text-slate-500"
+                  className="min-h-[150px] resize-y bg-input border-input text-foreground focus-visible:ring-ring focus-visible:border-primary placeholder:text-muted-foreground"
                   {...field}
                 />
               </FormControl>
-              <FormMessage className="text-magenta-400" />
+              <FormMessage className="text-destructive" />
             </FormItem>
           )}
         />
         <div className="flex justify-end gap-3 pt-4">
-          <Button type="button" variant="outline" onClick={onCancel} className="border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-cyan-300">
-            Abort Transmission
+          <Button type="button" variant="outline" onClick={onCancel}>
+            Cancel
           </Button>
-          <Button type="submit" className="bg-cyan-500 hover:bg-cyan-600 text-slate-900 shadow-md shadow-cyan-500/30">
-            Broadcast Thread
+          <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-md shadow-primary/30">
+            Create Thread
           </Button>
         </div>
       </form>

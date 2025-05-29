@@ -8,17 +8,28 @@ import { getPersonalizedData } from '@/services/personalized-data';
 import { UserProfileSection } from '@/components/personalized/user-profile-section';
 import { DataUsageSection } from '@/components/personalized/data-usage-section';
 import { RecommendationsSection } from '@/components/personalized/recommendations-section';
-import { Loader2, TrendingUp, ShieldAlert } from 'lucide-react';
+import { Loader2, TrendingUp, ShieldAlert, Award, Zap, Gift } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 
+// Glassmorphic card style using Tailwind utilities
+const glassCardStyle = "bg-card/60 dark:bg-card/40 backdrop-blur-lg border border-card/30 dark:border-card/20 shadow-xl rounded-xl transition-all duration-300 hover:shadow-2xl";
 
 export default function PersonalizedPage() {
   const [data, setData] = useState<MockPersonalizedData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentScenario, setCurrentScenario] = useState<'highUsage' | 'moderateUsage' | 'newUser'>('highUsage');
+  const [greeting, setGreeting] = useState('');
+  const [userName, setUserName] = useState('');
+
+  useEffect(() => {
+    const hour = new Date().getHours();
+    if (hour < 12) setGreeting('Good morning');
+    else if (hour < 18) setGreeting('Good afternoon');
+    else setGreeting('Good evening');
+  }, []);
 
   useEffect(() => {
     async function fetchData() {
@@ -27,6 +38,9 @@ export default function PersonalizedPage() {
       try {
         const personalizedInfo = await getPersonalizedData(currentScenario);
         setData(personalizedInfo);
+        if (personalizedInfo.userProfile) {
+          setUserName(personalizedInfo.userProfile.name.split(' ')[0]); // Get first name
+        }
       } catch (err) {
         console.error("Failed to fetch personalized data:", err);
         setError("Could not load your personalized insights. Please try again later.");
@@ -41,8 +55,8 @@ export default function PersonalizedPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[calc(100vh-10rem)] p-4">
         <Loader2 className="h-16 w-16 animate-spin text-primary mb-6" />
-        <h2 className="text-2xl font-semibold text-foreground mb-2">Loading Your Personalized Dashboard...</h2>
-        <p className="text-muted-foreground">Please wait a moment.</p>
+        <h2 className="text-2xl font-semibold text-foreground mb-2">Crafting Your Personalized Dashboard...</h2>
+        <p className="text-muted-foreground">Just a moment, we're tailoring this just for you.</p>
       </div>
     );
   }
@@ -77,26 +91,25 @@ export default function PersonalizedPage() {
     scenarioDate.setHours(scenarioDate.getHours() -1 );
   }
 
-
   return (
-    <div className="container mx-auto px-4 py-8 md:px-6">
-      <header className="mb-10">
+    <div className="container mx-auto px-4 py-8 md:px-6 space-y-10">
+      <header className="mb-8">
         <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
-          Your Personalized Dashboard
+          {greeting}{userName && `, ${userName}`}!
         </h1>
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-2">
             <p className="text-md text-muted-foreground">
-                Insights and recommendations tailored just for you. Last updated: 
+                Here’s your personalized dashboard. Last updated: 
                 <span className="font-semibold text-foreground ml-1">
                     {data.lastUpdated === 'N/A' ? 'N/A' : new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeStyle: 'short' }).format(scenarioDate)}
                 </span>
             </p>
             <div className="mt-3 sm:mt-0">
                 <Select value={currentScenario} onValueChange={(value) => setCurrentScenario(value as any)}>
-                    <SelectTrigger className="w-full sm:w-[200px]">
+                    <SelectTrigger className={`w-full sm:w-[220px] ${glassCardStyle} border-primary/30 hover:border-primary/50`}>
                         <SelectValue placeholder="Select User Scenario" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className={`${glassCardStyle} border-primary/30`}>
                         <SelectItem value="highUsage">High Usage User</SelectItem>
                         <SelectItem value="moderateUsage">Moderate Usage User</SelectItem>
                         <SelectItem value="newUser">New User</SelectItem>
@@ -107,33 +120,63 @@ export default function PersonalizedPage() {
         </div>
       </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+        {/* Left Column */}
         <div className="lg:col-span-1 space-y-8">
-          <UserProfileSection profile={data.userProfile} />
+          <UserProfileSection profile={data.userProfile} cardStyle={glassCardStyle} />
+          
+          <Card className={glassCardStyle}>
+            <CardHeader>
+              <CardTitle className="text-xl flex items-center text-primary">
+                <Award className="mr-2 h-6 w-6" />
+                Your Achievements
+              </CardTitle>
+              <CardDescription>Keep up the great work!</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-center p-3 bg-primary/5 hover:bg-primary/10 rounded-lg transition-colors">
+                <Zap className="mr-3 h-5 w-5 text-yellow-500" />
+                <div>
+                  <p className="font-semibold text-foreground">Data Saver Pro</p>
+                  <p className="text-xs text-muted-foreground">5 days data saving streak!</p>
+                </div>
+              </div>
+              <div className="flex items-center p-3 bg-primary/5 hover:bg-primary/10 rounded-lg transition-colors">
+                <Gift className="mr-3 h-5 w-5 text-green-500" />
+                <div>
+                  <p className="font-semibold text-foreground">Early Bird Bonus</p>
+                  <p className="text-xs text-muted-foreground">Claimed your monthly freebie!</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
+
+        {/* Right Column */}
         <div className="lg:col-span-2 space-y-8">
           <DataUsageSection 
             dataStatus={data.dataStatus}
             appConsumption={data.appConsumption}
             usagePatterns={data.usagePatterns}
+            cardStyle={glassCardStyle}
           />
           <RecommendationsSection
             costSaving={data.costSaving}
             ottRecommendation={data.ottRecommendation}
             travelRecommendation={data.travelRecommendation}
+            cardStyle={glassCardStyle}
           />
         </div>
       </div>
       
-      <Card className="mt-12 shadow-md bg-secondary/20 border-secondary/50">
+      <Card className={`mt-12 ${glassCardStyle}`}>
         <CardHeader>
-            <CardTitle className="text-lg text-secondary-foreground">Privacy & Consent</CardTitle>
+            <CardTitle className="text-lg text-primary">Privacy & Consent</CardTitle>
         </CardHeader>
         <CardContent>
-            <p className="text-sm text-secondary-foreground/80">
+            <p className="text-sm text-muted-foreground">
                 Your personalized insights are generated based on your usage patterns and preferences to help you find the best plans. 
-                This data is handled with utmost care and privacy. For features like travel recommendations, we would (with your explicit consent) look for relevant information. 
-                You can manage your data preferences in your account settings at any time.
+                This data is handled with utmost care and privacy. You can manage your data preferences in your account settings at any time.
             </p>
         </CardContent>
       </Card>
@@ -141,3 +184,5 @@ export default function PersonalizedPage() {
     </div>
   );
 }
+
+    

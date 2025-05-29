@@ -3,40 +3,64 @@
 import type { TelecomPlan } from '@/services/telecom-plans';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { IndianRupee, CalendarDays, Database, MessageSquareText, Phone, ExternalLink } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { IndianRupee, CalendarDays, Database, MessageSquareText, Phone, ExternalLink, ChevronRight } from 'lucide-react';
 
 interface PersonalizedPlanCardProps {
   plan: TelecomPlan;
   ctaText?: string;
+  cardStyle?: string;
 }
 
-export function PersonalizedPlanCard({ plan, ctaText = "View Plan" }: PersonalizedPlanCardProps) {
+export function PersonalizedPlanCard({ plan, ctaText = "View Plan", cardStyle }: PersonalizedPlanCardProps) {
   return (
-    <Card className="bg-secondary/30 hover:shadow-md transition-shadow">
+    <Card className={`${cardStyle ? cardStyle.replace('shadow-xl', 'shadow-md').replace('rounded-xl', 'rounded-lg') : 'bg-secondary/30 shadow-md rounded-lg'} hover:shadow-lg transition-shadow`}>
       <CardHeader className="pb-3">
         <div className="flex justify-between items-start">
             <CardTitle className="text-lg font-bold text-primary">{plan.operator} - <IndianRupee className="inline h-5 w-5 relative -top-0.5"/>{plan.price}</CardTitle>
-            {plan.category && <span className="text-xs bg-accent text-accent-foreground px-2 py-0.5 rounded-full">{plan.category}</span>}
+            {plan.category && <Badge variant="outline" className="text-xs border-primary/50 text-primary">{plan.category}</Badge>}
         </div>
         {plan.callout && <CardDescription className="text-xs text-accent font-medium pt-0.5">{plan.callout}</CardDescription>}
       </CardHeader>
-      <CardContent className="text-sm space-y-1.5 text-muted-foreground">
-        <p className="flex items-center"><Database className="mr-2 h-4 w-4 text-primary/80" /> Data: <span className="text-foreground ml-1">{plan.data}</span></p>
-        <p className="flex items-center"><CalendarDays className="mr-2 h-4 w-4 text-primary/80" /> Validity: <span className="text-foreground ml-1">{plan.validity} days</span></p>
+      <CardContent className="text-sm space-y-2 text-muted-foreground pb-4">
+        <div className="flex items-center justify-between hover:bg-muted/20 p-1 rounded">
+            <span className="flex items-center"><Database className="mr-2 h-4 w-4 text-primary/80" /> Data:</span>
+            <span className="font-semibold text-foreground">{plan.data}</span>
+        </div>
+        <div className="flex items-center justify-between hover:bg-muted/20 p-1 rounded">
+            <span className="flex items-center"><CalendarDays className="mr-2 h-4 w-4 text-primary/80" /> Validity:</span>
+            <span className="font-semibold text-foreground">{plan.validity} days</span>
+        </div>
         {plan.talktime && plan.talktime !== "N/A" && (
-            <p className="flex items-center"><Phone className="mr-2 h-4 w-4 text-primary/80" /> Talktime: <span className="text-foreground ml-1">{plan.talktime}</span></p>
+            <div className="flex items-center justify-between hover:bg-muted/20 p-1 rounded">
+                <span className="flex items-center"><Phone className="mr-2 h-4 w-4 text-primary/80" /> Talktime:</span>
+                <span className="font-semibold text-foreground">{plan.talktime}</span>
+            </div>
         )}
         {plan.sms && plan.sms !== "N/A" && (
-            <p className="flex items-center"><MessageSquareText className="mr-2 h-4 w-4 text-primary/80" /> SMS: <span className="text-foreground ml-1">{plan.sms}</span></p>
+            <div className="flex items-center justify-between hover:bg-muted/20 p-1 rounded">
+                <span className="flex items-center"><MessageSquareText className="mr-2 h-4 w-4 text-primary/80" /> SMS:</span>
+                <span className="font-semibold text-foreground">{plan.sms}</span>
+            </div>
         )}
-        {plan.additionalBenefits && (
-          <p className="text-xs pt-1">Benefits: {plan.additionalBenefits.length > 100 ? plan.additionalBenefits.substring(0,97) + "..." : plan.additionalBenefits}</p>
+        {plan.additionalBenefits && plan.additionalBenefits.length > 0 && (
+          <div className="pt-2">
+            <p className="text-xs font-medium text-foreground mb-1">Key Benefits:</p>
+            <ul className="space-y-1">
+              {plan.additionalBenefits.slice(0, 2).map((benefit, index) => (
+                <li key={index} className="flex items-center text-xs hover:bg-muted/20 p-1 rounded">
+                  <ChevronRight className="mr-1.5 h-3 w-3 text-primary/70 shrink-0" /> {benefit.length > 40 ? benefit.substring(0,37) + "..." : benefit}
+                </li>
+              ))}
+              {plan.additionalBenefits.length > 2 && <li className="text-xs text-primary hover:underline cursor-pointer p-1 rounded">View all benefits...</li>}
+            </ul>
+          </div>
         )}
       </CardContent>
       <CardFooter>
         <Button 
             variant="default" 
-            className="w-full bg-accent text-accent-foreground hover:bg-accent/90"
+            className="w-full bg-accent text-accent-foreground hover:bg-accent/90 transition-transform hover:scale-105"
             onClick={() => window.open(plan.rechargeUrl, '_blank')}
         >
           {ctaText}
@@ -46,3 +70,5 @@ export function PersonalizedPlanCard({ plan, ctaText = "View Plan" }: Personaliz
     </Card>
   );
 }
+
+    

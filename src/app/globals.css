@@ -116,11 +116,6 @@
   }
 }
 
-/* Apply dark theme by default if no class is present or if .dark is on html/body */
-html:not(.light) {
-  @apply dark;
-}
-
 
 @layer utilities {
   .animate-pulse-glow {

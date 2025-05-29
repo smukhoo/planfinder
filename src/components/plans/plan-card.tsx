@@ -3,7 +3,7 @@ import type { TelecomPlan, OttService } from '@/services/telecom-plans';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
-import { Tv2 } from 'lucide-react'; // Added Tv2 for OTT section
+import { Tv2 } from 'lucide-react';
 
 interface PlanCardProps {
   plan: TelecomPlan;
@@ -11,22 +11,11 @@ interface PlanCardProps {
   onSelectToggle: (planId: string) => void;
 }
 
-// This constant is no longer used as we are removing the operator logo section
-// const operatorLogoPlaceholders: Record<string, { src: string, hint: string }> = {
-//   'Jio': { src: 'https://placehold.co/120x60.png', hint: 'Jio logo blue' },
-//   'Airtel': { src: 'https://placehold.co/120x60.png', hint: 'Airtel logo red' },
-//   'Vi': { src: 'https://placehold.co/120x60.png', hint: 'Vi logo yellow purple' },
-//   'BSNL': { src: 'https://placehold.co/120x60.png', hint: 'BSNL logo' },
-//   'Default': { src: 'https://placehold.co/120x60.png', hint: 'telecom logo generic' },
-// };
-
 export function PlanCard({ plan, isSelected, onSelectToggle }: PlanCardProps) {
-  // const logoInfo = operatorLogoPlaceholders[plan.operator] || operatorLogoPlaceholders['Default']; // No longer needed
-
   return (
-    <Card className="flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow duration-200 ease-in-out rounded-lg border overflow-hidden">
-      <div className="flex-1 p-5">
-        <CardHeader className="p-0 mb-3">
+    <Card className="flex flex-col shadow-sm hover:shadow-md transition-shadow duration-200 ease-in-out rounded-lg border overflow-hidden">
+      <div className="flex-1 p-4"> {/* Reduced padding from p-5 to p-4 */}
+        <CardHeader className="p-0 mb-2"> {/* Reduced margin-bottom from mb-3 to mb-2 */}
           <CardTitle className="text-xl font-semibold text-foreground">
             {plan.operator} Plan ₹{plan.price}
           </CardTitle>
@@ -42,8 +31,8 @@ export function PlanCard({ plan, isSelected, onSelectToggle }: PlanCardProps) {
           {plan.additionalBenefits && <p className="text-xs mt-1"><em>Benefits: {plan.additionalBenefits}</em></p>}
 
           {plan.ottServices && plan.ottServices.length > 0 && (
-            <div className="mt-3 pt-3 border-t border-border/50">
-              <h4 className="text-xs font-semibold text-foreground mb-2 flex items-center">
+            <div className="mt-2 pt-2 border-t border-border/50"> {/* Reduced mt and pt */}
+              <h4 className="text-xs font-semibold text-foreground mb-1.5 flex items-center"> {/* Reduced mb */}
                 <Tv2 className="h-4 w-4 mr-1.5 text-primary" />
                 Included Apps:
               </h4>
@@ -53,9 +42,9 @@ export function PlanCard({ plan, isSelected, onSelectToggle }: PlanCardProps) {
                     <Image
                       src={ott.logoSrc}
                       alt={`${ott.name} logo`}
-                      width={64} // Adjusted for better visibility, assuming aspect ratio allows
-                      height={20} // Adjusted for better visibility
-                      className="object-contain h-5 w-auto" // Max height, auto width
+                      width={64}
+                      height={20}
+                      className="object-contain h-5 w-auto"
                       data-ai-hint={ott.logoHint}
                     />
                     <span className="text-foreground/90">{ott.name}</span>
@@ -65,18 +54,17 @@ export function PlanCard({ plan, isSelected, onSelectToggle }: PlanCardProps) {
             </div>
           )}
         </CardContent>
-        <CardFooter className="p-0 mt-4">
+        <CardFooter className="p-0 mt-3"> {/* Reduced margin-top from mt-4 to mt-3 */}
           <Button
             variant={isSelected ? "default" : "outline"}
             size="sm"
-            onClick={() => onSelectToggle(plan.id || plan.rechargeUrl)} // Use plan.id if available
+            onClick={() => onSelectToggle(plan.id || plan.rechargeUrl)}
             className="w-full sm:w-auto"
           >
             {isSelected ? "Selected for Compare" : "Select to Compare"}
           </Button>
         </CardFooter>
       </div>
-      {/* Removed the operator logo section */}
     </Card>
   );
 }

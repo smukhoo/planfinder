@@ -135,7 +135,7 @@ export default function PlanDiscoveryPage() {
         if (prev.length < MAX_COMPARE_PLANS) {
           return [...prev, planId];
         }
-        alert(`You can compare up to ${MAX_COMPARE_PLANS} plans.`);
+        alert(\`You can compare up to \${MAX_COMPARE_PLANS} plans.\`);
         return prev;
       }
     });

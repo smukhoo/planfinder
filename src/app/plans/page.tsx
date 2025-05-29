@@ -13,6 +13,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2 } from 'lucide-react';
 
 const MAX_COMPARE_PLANS = 3; // As per image, showing 3 plans in comparison
+type Language = 'english' | 'hindi' | 'tamil';
 
 export default function PlanDiscoveryPage() {
   const searchParams = useSearchParams();
@@ -40,11 +41,12 @@ export default function PlanDiscoveryPage() {
   const [maxPricePossible, setMaxPricePossible] = useState<number>(1000);
 
   const [selectedForCompare, setSelectedForCompare] = useState<string[]>([]);
+  const [currentLanguage, setCurrentLanguage] = useState<Language>('english');
 
   const fetchAndProcessPlans = useCallback(async () => {
     setLoading(true);
     try {
-      const fetchedPlans = await getTelecomPlans({});
+      const fetchedPlans = await getTelecomPlans({}); // Fetch all initially
       setAllPlans(fetchedPlans);
 
       const operators = [...new Set(fetchedPlans.map(p => p.operator))].sort();
@@ -58,10 +60,10 @@ export default function PlanDiscoveryPage() {
       setMaxPricePossible(maxPrice);
       
       let currentFilters = { ...filters };
-      if (initialOperator) {
+      if (initialOperator && !currentFilters.operator) { // Apply initial operator only if not already set
         currentFilters.operator = initialOperator;
+        setFilters(currentFilters); 
       }
-      setFilters(currentFilters); 
       applyFilters(fetchedPlans, currentFilters, additionalFeatures);
 
     } catch (error) {
@@ -69,7 +71,7 @@ export default function PlanDiscoveryPage() {
     } finally {
       setLoading(false);
     }
-  }, [initialOperator]); // filters and additionalFeatures removed from dependency to avoid re-fetch on their change
+  }, [initialOperator]); // filters and additionalFeatures removed to apply them explicitly via handlers
 
   useEffect(() => {
     fetchAndProcessPlans();
@@ -106,7 +108,7 @@ export default function PlanDiscoveryPage() {
     }
     if (currentAdditionalFeatures.internationalRoaming) {
         // This is a mock filter; real data would need a specific flag.
-        tempFilteredPlans = tempFilteredPlans.filter(plan => plan.additionalBenefits?.toLowerCase().includes('roaming'));
+        tempFilteredPlans = tempFilteredPlans.filter(plan => plan.additionalBenefits?.some(b => b.toLowerCase().includes('roaming')));
     }
 
     setFilteredPlans(tempFilteredPlans);
@@ -137,7 +139,7 @@ export default function PlanDiscoveryPage() {
     });
   };
 
-  const plansToCompare = allPlans.filter(plan => selectedForCompare.includes(plan.rechargeUrl));
+  const plansToCompare = allPlans.filter(plan => selectedForCompare.includes(plan.id || plan.rechargeUrl));
 
   return (
     <div className="container mx-auto px-4 py-8 md:px-6">
@@ -183,7 +185,7 @@ export default function PlanDiscoveryPage() {
             </div>
           </div>
           
-          <Tabs defaultValue="english" className="mb-6">
+          <Tabs defaultValue="english" className="mb-6" onValueChange={(value) => setCurrentLanguage(value as Language)}>
             <TabsList className="grid w-full grid-cols-3 sm:w-auto sm:inline-flex">
               <TabsTrigger value="english">English</TabsTrigger>
               <TabsTrigger value="hindi">Hindi</TabsTrigger>
@@ -201,13 +203,14 @@ export default function PlanDiscoveryPage() {
               loading={loading}
               selectedForCompare={selectedForCompare}
               onPlanSelectToggle={handlePlanSelectToggle}
+              currentLanguage={currentLanguage}
             />
           )}
 
           {plansToCompare.length > 0 && (
             <div className="mt-12">
               <h2 className="text-2xl font-semibold mb-6 text-foreground">Plan Comparison</h2>
-              <PlanComparisonTable plansToCompare={plansToCompare} />
+              <PlanComparisonTable plansToCompare={plansToCompare} currentLanguage={currentLanguage} />
             </div>
           )}
         </div>
@@ -215,5 +218,3 @@ export default function PlanDiscoveryPage() {
     </div>
   );
 }
-
-    

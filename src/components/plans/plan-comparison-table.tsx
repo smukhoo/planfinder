@@ -9,6 +9,7 @@ import { ExternalLink } from 'lucide-react';
 
 interface PlanComparisonTableProps {
   plansToCompare: TelecomPlan[];
+  currentLanguage: 'english' | 'hindi' | 'tamil';
 }
 
 const getOperatorColorClass = (operator: string): string => {
@@ -18,42 +19,65 @@ const getOperatorColorClass = (operator: string): string => {
     case 'airtel':
       return 'text-red-600';
     case 'vi':
-      return 'text-yellow-600'; // Using yellow-600 as Vi has purple too
+      return 'text-yellow-600'; 
     default:
       return 'text-foreground';
   }
 };
 
-export function PlanComparisonTable({ plansToCompare }: PlanComparisonTableProps) {
+export function PlanComparisonTable({ plansToCompare, currentLanguage }: PlanComparisonTableProps) {
+  const lang = currentLanguage;
+
   if (plansToCompare.length === 0) {
     return (
       <Card className="mt-8">
         <CardHeader>
-          <CardTitle>Plan Comparison</CardTitle>
-          <CardDescription>Select up to 3 plans from the list above to compare them side-by-side.</CardDescription>
+          <CardTitle>{lang === 'hindi' ? 'प्लान तुलना' : 'Plan Comparison'}</CardTitle>
+          <CardDescription>{lang === 'hindi' ? 'तुलना करने के लिए ऊपर दी गई सूची से अधिकतम 3 प्लान चुनें।' : 'Select up to 3 plans from the list above to compare them side-by-side.'}</CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground text-center py-8">No plans selected for comparison.</p>
+          <p className="text-muted-foreground text-center py-8">{lang === 'hindi' ? 'तुलना के लिए कोई प्लान चयनित नहीं है।' : 'No plans selected for comparison.'}</p>
         </CardContent>
       </Card>
     );
   }
 
-  const features: Array<{ key: keyof TelecomPlan | 'price' | 'dataPerDay'; label: string }> = [
-    { key: 'price', label: 'Price (₹)' },
-    { key: 'data', label: 'Data' },
-    { key: 'talktime', label: 'Talktime' },
+  const features = [
+    { key: 'price', label: lang === 'hindi' ? 'मूल्य (₹)' : 'Price (₹)' },
+    { key: 'data', label: lang === 'hindi' ? 'डेटा' : 'Data' },
+    { key: 'talktime', label: lang === 'hindi' ? 'टॉकटाइम' : 'Talktime' },
     { key: 'sms', label: 'SMS' },
-    { key: 'validity', label: 'Validity (Days)' },
-    { key: 'additionalBenefits', label: 'Additional Benefits' },
+    { key: 'validity', label: lang === 'hindi' ? 'वैधता (दिन)' : 'Validity (Days)' },
+    { key: 'additionalBenefits', label: lang === 'hindi' ? 'अतिरिक्त लाभ' : 'Additional Benefits' },
   ];
+
+  const getDisplayValue = (plan: TelecomPlan, featureKey: keyof TelecomPlan | 'price' | 'dataPerDay') => {
+    if (lang === 'hindi') {
+      switch (featureKey) {
+        case 'planNameDisplay': return plan.planNameDisplay_hi || plan.planNameDisplay || `${plan.operator} Plan`;
+        case 'data': return plan.data_hi || plan.data;
+        case 'talktime': return plan.talktime_hi || plan.talktime;
+        case 'sms': return plan.sms_hi || plan.sms;
+        case 'additionalBenefits': return plan.additionalBenefits_hi?.join(', ') || plan.additionalBenefits?.join(', ') || '-';
+        default: // for price and validity (which are numbers) or other non-translated fields
+          return plan[featureKey as keyof TelecomPlan]?.toString() || '-';
+      }
+    }
+    // English default
+    switch (featureKey) {
+        case 'additionalBenefits': return plan.additionalBenefits?.join(', ') || '-';
+        default:
+            return plan[featureKey as keyof TelecomPlan]?.toString() || '-';
+    }
+  };
+
 
   return (
     <Card className="overflow-hidden shadow-lg">
       <CardHeader>
-        <CardTitle className="text-xl">Plan Comparison</CardTitle>
+        <CardTitle className="text-xl">{lang === 'hindi' ? 'प्लान तुलना' : 'Plan Comparison'}</CardTitle>
         <CardDescription>
-          Comparing {plansToCompare.length} plan{plansToCompare.length > 1 ? 's' : ''}.
+          {lang === 'hindi' ? `${plansToCompare.length} प्लान की तुलना की जा रही है।` : `Comparing ${plansToCompare.length} plan${plansToCompare.length > 1 ? 's' : ''}.`}
         </CardDescription>
       </CardHeader>
       <CardContent className="p-0">
@@ -61,10 +85,10 @@ export function PlanComparisonTable({ plansToCompare }: PlanComparisonTableProps
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[150px] font-semibold text-muted-foreground">Feature</TableHead>
+                <TableHead className="w-[150px] font-semibold text-muted-foreground">{lang === 'hindi' ? 'सुविधा' : 'Feature'}</TableHead>
                 {plansToCompare.map((plan) => (
-                  <TableHead key={plan.rechargeUrl} className={`text-center font-semibold ${getOperatorColorClass(plan.operator)}`}>
-                    {plan.operator} Plan {plan.price}
+                  <TableHead key={plan.id || plan.rechargeUrl} className={`text-center font-semibold ${getOperatorColorClass(plan.operator)}`}>
+                    {lang === 'hindi' ? (plan.planNameDisplay_hi || `${plan.operator} प्लान ${plan.price}`) : (plan.planNameDisplay || `${plan.operator} Plan ${plan.price}`)}
                   </TableHead>
                 ))}
               </TableRow>
@@ -74,25 +98,23 @@ export function PlanComparisonTable({ plansToCompare }: PlanComparisonTableProps
                 <TableRow key={feature.key}>
                   <TableCell className="font-medium text-foreground">{feature.label}</TableCell>
                   {plansToCompare.map((plan) => (
-                    <TableCell key={`${plan.rechargeUrl}-${feature.key}`} className="text-center text-sm">
-                      {feature.key === 'price' ? `${plan.price}` : 
-                       feature.key === 'validity' ? `${plan.validity}` :
-                       (plan[feature.key as keyof TelecomPlan] || '-')}
+                    <TableCell key={`${plan.id || plan.rechargeUrl}-${feature.key}`} className="text-center text-sm">
+                      {getDisplayValue(plan, feature.key as any)}
                     </TableCell>
                   ))}
                 </TableRow>
               ))}
               <TableRow>
-                <TableCell className="font-medium text-foreground">Recharge</TableCell>
+                <TableCell className="font-medium text-foreground">{lang === 'hindi' ? 'रिचार्ज' : 'Recharge'}</TableCell>
                 {plansToCompare.map((plan) => (
-                  <TableCell key={`recharge-${plan.rechargeUrl}`} className="text-center">
+                  <TableCell key={`recharge-${plan.id || plan.rechargeUrl}`} className="text-center">
                     <Button
                       variant="default"
                       size="sm"
                       className="bg-accent text-accent-foreground hover:bg-accent/90"
                       onClick={() => window.open(plan.rechargeUrl, '_blank')}
                     >
-                      Go to Site
+                      {lang === 'hindi' ? 'साइट पर जाएं' : 'Go to Site'}
                       <ExternalLink className="ml-1.5 h-3.5 w-3.5" />
                     </Button>
                   </TableCell>

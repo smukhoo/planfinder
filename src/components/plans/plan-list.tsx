@@ -8,9 +8,10 @@ interface PlanListProps {
   loading: boolean;
   selectedForCompare: string[];
   onPlanSelectToggle: (planId: string) => void;
+  currentLanguage: 'english' | 'hindi' | 'tamil';
 }
 
-export function PlanList({ plans, loading, selectedForCompare, onPlanSelectToggle }: PlanListProps) {
+export function PlanList({ plans, loading, selectedForCompare, onPlanSelectToggle, currentLanguage }: PlanListProps) {
   if (loading) {
     return (
       <div className="grid grid-cols-1 gap-6">
@@ -37,10 +38,11 @@ export function PlanList({ plans, loading, selectedForCompare, onPlanSelectToggl
     <div className="grid grid-cols-1 gap-4">
       {plans.map((plan) => (
         <PlanCard
-          key={`${plan.operator}-${plan.price}-${plan.validity}-${plan.data}`} // More robust key
+          key={`${plan.operator}-${plan.price}-${plan.validity}-${plan.data}-${plan.id}`} // More robust key
           plan={plan}
-          isSelected={selectedForCompare.includes(plan.rechargeUrl)}
-          onSelectToggle={onPlanSelectToggle}
+          isSelected={selectedForCompare.includes(plan.id || plan.rechargeUrl)}
+          onPlanSelectToggle={onPlanSelectToggle}
+          currentLanguage={currentLanguage}
         />
       ))}
     </div>
@@ -49,16 +51,16 @@ export function PlanList({ plans, loading, selectedForCompare, onPlanSelectToggl
 
 function CardSkeleton() {
   return (
-    <div className="flex flex-row justify-between items-center p-5 border rounded-lg shadow-sm bg-card h-[160px]">
+    <div className="flex flex-row justify-between items-center p-4 border rounded-lg shadow-sm bg-card h-auto min-h-[150px]">
       <div className="flex-1 space-y-3">
         <Skeleton className="h-6 w-1/3" />
         <Skeleton className="h-4 w-3/4" />
         <Skeleton className="h-4 w-2/3" />
         <Skeleton className="h-4 w-1/2" />
-        <Skeleton className="h-8 w-1/4 mt-2" />
       </div>
-      <div className="w-1/3 lg:w-2/5 xl:w-1/3 flex items-center justify-center p-2">
-        <Skeleton className="h-[60px] w-[120px]" />
+      <div className="flex flex-col items-end gap-2 ml-4">
+         <Skeleton className="h-8 w-24" />
+         <Skeleton className="h-8 w-32" />
       </div>
     </div>
   );
@@ -73,5 +75,3 @@ function ImageSkeleton() {
         </svg>
     );
 }
-
-    

@@ -133,20 +133,6 @@ export default function PersonalizedPage() {
         </div>
       </header>
 
-      {decodedDataFromQuery && (
-        <Card className={`${glassCardStyle} mb-10`}>
-          <CardHeader>
-            <CardTitle className="text-xl text-primary flex items-center">
-              <Info className="mr-2 h-6 w-6" />
-              Information from URL
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-md text-foreground">{decodedDataFromQuery}</p>
-          </CardContent>
-        </Card>
-      )}
-
       <Accordion type="multiple" defaultValue={["profile", "recommendations"]} className="w-full space-y-6">
         <AccordionItem value="profile" className={`${glassCardStyle} overflow-hidden`}>
           <AccordionTrigger className={accordionTriggerStyle}>
@@ -186,9 +172,23 @@ export default function PersonalizedPage() {
         </AccordionItem>
       </Accordion>
       
+      {decodedDataFromQuery && (
+        <Card className={`${glassCardStyle} my-10`}> {/* Added my-10 for spacing */}
+          <CardHeader>
+            <CardTitle className="text-xl text-primary flex items-center">
+              <Info className="mr-2 h-6 w-6" />
+              Information from URL
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-md text-foreground">{decodedDataFromQuery}</p>
+          </CardContent>
+        </Card>
+      )}
+
       <Card className={`mt-12 ${glassCardStyle}`}>
         <CardHeader>
-            <CardTitle className="text-lg text-primary">Privacy & Consent</CardTitle>
+            <CardTitle className="text-lg text-primary">Privacy &amp; Consent</CardTitle>
         </CardHeader>
         <CardContent>
             <p className="text-sm text-muted-foreground">

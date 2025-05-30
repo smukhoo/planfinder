@@ -8,7 +8,7 @@ import { getPersonalizedData } from '@/services/personalized-data';
 import { UserProfileSection } from '@/components/personalized/user-profile-section';
 import { DataUsageSection } from '@/components/personalized/data-usage-section';
 import { RecommendationsSection } from '@/components/personalized/recommendations-section';
-import { Loader2, TrendingUp, ShieldAlert, Award, Zap, Gift, User, BarChart2, Lightbulb } from 'lucide-react';
+import { Loader2, TrendingUp, ShieldAlert, Award, Zap, Gift, User, BarChart2, Lightbulb, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
@@ -18,6 +18,7 @@ const glassCardStyle = "bg-card/60 dark:bg-card/40 backdrop-blur-lg border borde
 const accordionTriggerStyle = "p-4 sm:p-6 hover:no-underline text-left w-full text-xl font-semibold text-primary";
 const accordionContentStyle = "p-4 sm:p-6 pt-0";
 
+const DECODED_DATA_KEY = 'decodedQueryData';
 
 export default function PersonalizedPage() {
   const [data, setData] = useState<MockPersonalizedData | null>(null);
@@ -26,12 +27,21 @@ export default function PersonalizedPage() {
   const [currentScenario, setCurrentScenario] = useState<'highUsage' | 'moderateUsage' | 'newUser'>('highUsage');
   const [greeting, setGreeting] = useState('');
   const [userName, setUserName] = useState('');
+  const [decodedDataFromQuery, setDecodedDataFromQuery] = useState<string | null>(null);
 
   useEffect(() => {
     const hour = new Date().getHours();
     if (hour < 12) setGreeting('Good morning');
     else if (hour < 18) setGreeting('Good afternoon');
     else setGreeting('Good evening');
+
+    // Read from localStorage on mount
+    if (typeof window !== 'undefined') {
+      const storedData = localStorage.getItem(DECODED_DATA_KEY);
+      if (storedData) {
+        setDecodedDataFromQuery(storedData);
+      }
+    }
   }, []);
 
   useEffect(() => {
@@ -123,13 +133,26 @@ export default function PersonalizedPage() {
         </div>
       </header>
 
+      {decodedDataFromQuery && (
+        <Card className={`${glassCardStyle} mb-10`}>
+          <CardHeader>
+            <CardTitle className="text-xl text-primary flex items-center">
+              <Info className="mr-2 h-6 w-6" />
+              Information from URL
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-md text-foreground">{decodedDataFromQuery}</p>
+          </CardContent>
+        </Card>
+      )}
+
       <Accordion type="multiple" defaultValue={["profile", "recommendations"]} className="w-full space-y-6">
         <AccordionItem value="profile" className={`${glassCardStyle} overflow-hidden`}>
           <AccordionTrigger className={accordionTriggerStyle}>
             <span className="flex items-center"><User className="mr-3 h-6 w-6" /> Profile Overview</span>
           </AccordionTrigger>
           <AccordionContent className={accordionContentStyle}>
-            {/* UserProfileSection will render its own Card, so we adjust styling to avoid card-in-card look */}
             <UserProfileSection profile={data.userProfile} cardStyle="shadow-none border-none bg-transparent dark:bg-transparent rounded-none" />
           </AccordionContent>
         </AccordionItem>
@@ -138,12 +161,12 @@ export default function PersonalizedPage() {
             <AccordionTrigger className={accordionTriggerStyle}>
                  <span className="flex items-center"><BarChart2 className="mr-3 h-6 w-6" /> Data Usage Insights</span>
             </AccordionTrigger>
-            <AccordionContent className={`${accordionContentStyle} space-y-0`}> {/* Remove default padding top from content and inner space */}
+            <AccordionContent className={`${accordionContentStyle} space-y-0`}>
                  <DataUsageSection 
                     dataStatus={data.dataStatus}
                     appConsumption={data.appConsumption}
                     usagePatterns={data.usagePatterns}
-                    cardStyle="shadow-none border-none bg-transparent dark:bg-transparent rounded-none p-0" // Make internal cards blend in
+                    cardStyle="shadow-none border-none bg-transparent dark:bg-transparent rounded-none p-0" 
                  />
             </AccordionContent>
         </AccordionItem>
@@ -157,7 +180,7 @@ export default function PersonalizedPage() {
                     costSaving={data.costSaving}
                     ottRecommendation={data.ottRecommendation}
                     travelRecommendation={data.travelRecommendation}
-                    cardStyle="shadow-none border-none bg-transparent dark:bg-transparent rounded-none p-0" // Make internal cards blend in
+                    cardStyle="shadow-none border-none bg-transparent dark:bg-transparent rounded-none p-0"
                 />
             </AccordionContent>
         </AccordionItem>
@@ -178,6 +201,3 @@ export default function PersonalizedPage() {
     </div>
   );
 }
-    
-
-    

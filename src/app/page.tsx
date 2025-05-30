@@ -5,25 +5,32 @@ import { HeroSection } from '@/components/home/hero-section';
 import { PopularPlansSection } from '@/components/home/popular-plans-section';
 import { TestimonialsSection } from '@/components/home/testimonials-section';
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
+
+const DECODED_DATA_KEY = 'decodedQueryData';
 
 export default function HomePage() {
   const searchParams = useSearchParams();
-  const [dataParamValue, setDataParamValue] = useState<string | null>(null);
 
   useEffect(() => {
     const encodedDataValue = searchParams.get('data');
     if (encodedDataValue) {
       try {
         const decodedValue = atob(encodedDataValue);
-        setDataParamValue(decodedValue);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(DECODED_DATA_KEY, decodedValue);
+        }
+        console.log('Decoded and stored data from query parameter:', decodedValue);
       } catch (error) {
-        console.error("Failed to decode base64 data from query parameter:", error);
-        setDataParamValue("Error: Could not decode data.");
+        console.error("Failed to decode or store base64 data from query parameter:", error);
+        if (typeof window !== 'undefined') {
+          // Optionally store error or indicate failure in localStorage
+          localStorage.setItem(DECODED_DATA_KEY, "Error: Could not decode data.");
+        }
       }
-    } else {
-      setDataParamValue(null); // Reset if the param is not present
     }
+    // We don't clear localStorage here, as it might be needed by other pages
+    // or if the user navigates back without the query param.
   }, [searchParams]);
 
   return (
@@ -31,20 +38,7 @@ export default function HomePage() {
       <HeroSection />
       <PopularPlansSection />
       <TestimonialsSection />
-      {dataParamValue && (
-        <section className="w-full py-8 md:py-12 bg-background">
-          <div className="container mx-auto px-4 md:px-6 text-center">
-            <h3 className="text-2xl font-semibold text-foreground mb-3">
-              Decoded Information from URL:
-            </h3>
-            <div className="p-4 border rounded-lg bg-card shadow-sm">
-              <p className="text-md text-muted-foreground">
-                {dataParamValue}
-              </p>
-            </div>
-          </div>
-        </section>
-      )}
+      {/* The section to display dataParamValue has been removed from here */}
     </>
   );
 }

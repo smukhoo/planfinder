@@ -57,20 +57,6 @@ export default function RootLayout({
         <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png" />
         <link rel="manifest" href="/manifest.json" />
         <link rel="shortcut icon" href="/favicon.ico" />
-
-        {/* Script to read and log the 'data' query parameter */}
-        <script>
-          {`
-            console.log("App loaded. Hello"); // Existing log
-            const urlParams = new URLSearchParams(window.location.search);
-            const dataParam = urlParams.get('data');
-            if (dataParam) {
-              console.log('Data from query parameter:', dataParam);
-              // You can add more logic here to use the dataParam
-            }
-          `}
-        </script>
-
       </head>
       <body className="flex min-h-screen flex-col antialiased">
         <Header isChatOpen={isChatOpen} setIsChatOpen={setIsChatOpen} />

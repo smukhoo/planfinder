@@ -17,7 +17,14 @@ export function PlanCard({ plan, isSelected, onPlanSelect, currentLanguage }: Pl
   const displayData = currentLanguage === 'hindi' && plan.data_hi ? plan.data_hi : plan.data;
   const displayTalktime = currentLanguage === 'hindi' && plan.talktime_hi ? plan.talktime_hi : plan.talktime;
   const displaySms = currentLanguage === 'hindi' && plan.sms_hi ? plan.sms_hi : plan.sms;
-  const displayAdditionalBenefits = currentLanguage === 'hindi' && plan.additionalBenefits_hi ? plan.additionalBenefits_hi : plan.additionalBenefits;
+  
+  let displayAdditionalBenefits: string[] = [];
+  if (currentLanguage === 'hindi' && plan.additionalBenefits_hi && plan.additionalBenefits_hi.length > 0) {
+    displayAdditionalBenefits = plan.additionalBenefits_hi;
+  } else if (plan.additionalBenefits && plan.additionalBenefits.length > 0) {
+    displayAdditionalBenefits = plan.additionalBenefits;
+  }
+
 
   const parseDataForDisplay = (dataStr: string | undefined) => {
     if (!dataStr) return { value: 'N/A', unit: '' };
@@ -41,13 +48,12 @@ export function PlanCard({ plan, isSelected, onPlanSelect, currentLanguage }: Pl
   };
 
   return (
-    <Card className="relative flex flex-col shadow-sm hover:shadow-lg transition-shadow duration-200 ease-in-out rounded-lg border overflow-hidden">
+    <Card className="relative flex flex-col shadow-sm hover:shadow-lg transition-shadow duration-200 ease-in-out rounded-lg border overflow-hidden bg-card">
       {plan.isMostPopular && (
         <div className="absolute top-0 left-0 bg-yellow-400 text-yellow-900 text-xs font-semibold px-2 py-1 rounded-br-lg z-10">
           {currentLanguage === 'hindi' ? 'सबसे लोकप्रिय' : 'Most Popular'}
         </div>
       )}
-      {/* Main inner content wrapper - pt-7 for "Most Popular" tag spacing */}
       <div className="px-3 pb-3 pt-7 flex-1 flex flex-col justify-between"> 
         <div> {/* Content top part */}
           <CardHeader className="p-0 mb-2">
@@ -59,7 +65,7 @@ export function PlanCard({ plan, isSelected, onPlanSelect, currentLanguage }: Pl
               </div>
 
               {/* Right: Key Stats & Buy Button */}
-              <div className="flex items-baseline gap-x-3 gap-y-2">
+              <div className="flex flex-col sm:flex-row items-start sm:items-baseline gap-x-3 gap-y-2">
                 <div className="flex items-baseline gap-1">
                   <p className="font-semibold text-xl text-foreground">{dataInfo.value}</p>
                   <p className="text-xs text-muted-foreground">{dataInfo.unit}</p>
@@ -69,7 +75,7 @@ export function PlanCard({ plan, isSelected, onPlanSelect, currentLanguage }: Pl
                   <p className="text-xs text-muted-foreground">{currentLanguage === 'hindi' ? 'दिन वैधता' : 'days validity'}</p>
                 </div>
                  <Button 
-                    className="bg-accent text-accent-foreground hover:bg-accent/90 px-4 py-2 h-auto text-sm"
+                    className="bg-accent text-accent-foreground hover:bg-accent/90 px-4 py-2 h-auto text-sm mt-1 sm:mt-0"
                     onClick={() => window.open(plan.rechargeUrl, '_blank', 'noopener,noreferrer')}
                   >
                     {currentLanguage === 'hindi' ? 'प्लान खरीदें' : 'Buy Plan'} <ExternalLink className="ml-2 h-4 w-4" />
@@ -89,7 +95,7 @@ export function PlanCard({ plan, isSelected, onPlanSelect, currentLanguage }: Pl
                   {currentLanguage === 'hindi' ? 'शामिल लाभ:' : 'Benefits Included:'}
                 </h4>
                 <ul className="space-y-1 text-xs pl-1">
-                  {displayTalktime && displayTalktime !== "N/A" && displayTalktime !== "" && (
+                 {displayTalktime && displayTalktime !== "N/A" && displayTalktime !== "" && (
                     <li className="flex items-center gap-1.5">
                       <Phone className="h-3.5 w-3.5 text-primary/80 shrink-0" />
                       <span className="text-foreground/90">
@@ -118,13 +124,13 @@ export function PlanCard({ plan, isSelected, onPlanSelect, currentLanguage }: Pl
                       <span className="text-foreground/90">{getOttServiceName(ott)}</span>
                     </li>
                   ))}
-                  {displayAdditionalBenefits && Array.isArray(displayAdditionalBenefits) && displayAdditionalBenefits.slice(0, 2).map((benefit, index) => (
+                  {displayAdditionalBenefits && displayAdditionalBenefits.slice(0, 2).map((benefit, index) => (
                     <li key={`benefit-${index}`} className="flex items-start text-left ml-0.5">
                        <ChevronRight className="mr-1 h-3.5 w-3.5 text-primary/70 shrink-0 relative top-0.5" /> 
                        <span className="text-foreground/90">{benefit.length > 60 ? benefit.substring(0,57) + "..." : benefit}</span>
                     </li>
                   ))}
-                  {displayAdditionalBenefits && Array.isArray(displayAdditionalBenefits) && displayAdditionalBenefits.length > 2 && (
+                  {displayAdditionalBenefits && displayAdditionalBenefits.length > 2 && (
                     <li className="text-xs text-primary hover:underline cursor-pointer pl-4">...see more benefits</li>
                   )}
                 </ul>

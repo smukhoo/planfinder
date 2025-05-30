@@ -7,7 +7,7 @@ interface PlanListProps {
   plans: TelecomPlan[];
   loading: boolean;
   selectedForCompare: string[];
-  onPlanSelect: (planId: string) => void; // Renamed from onPlanSelectToggle
+  onPlanSelect: (planId: string) => void;
   currentLanguage: 'english' | 'hindi' | 'tamil';
 }
 
@@ -38,10 +38,10 @@ export function PlanList({ plans, loading, selectedForCompare, onPlanSelect, cur
     <div className="grid grid-cols-1 gap-4">
       {plans.map((plan) => (
         <PlanCard
-          key={`${plan.operator}-${plan.price}-${plan.validity}-${plan.data}-${plan.id}`}
+          key={`${plan.operator}-${plan.price}-${plan.validity}-${plan.data}-${plan.id}`} // Ensures key uniqueness
           plan={plan}
           isSelected={selectedForCompare.includes(plan.id || plan.rechargeUrl)}
-          onPlanSelect={onPlanSelect} // Renamed from onSelectToggle
+          onPlanSelect={onPlanSelect}
           currentLanguage={currentLanguage}
         />
       ))}
@@ -51,16 +51,24 @@ export function PlanList({ plans, loading, selectedForCompare, onPlanSelect, cur
 
 function CardSkeleton() {
   return (
-    <div className="flex flex-row justify-between items-center p-4 border rounded-lg shadow-sm bg-card h-auto min-h-[150px]">
-      <div className="flex-1 space-y-3">
-        <Skeleton className="h-6 w-1/3" />
-        <Skeleton className="h-4 w-3/4" />
-        <Skeleton className="h-4 w-2/3" />
-        <Skeleton className="h-4 w-1/2" />
+    <div className="flex flex-col p-4 border rounded-lg shadow-sm bg-card space-y-3 h-auto min-h-[180px]">
+      <div className="flex justify-between items-start">
+        <div className="space-y-1">
+          <Skeleton className="h-7 w-24" />
+          <Skeleton className="h-4 w-32" />
+        </div>
+        <Skeleton className="h-8 w-20" />
       </div>
-      <div className="flex flex-col items-end gap-2 ml-4">
-         <Skeleton className="h-8 w-24" />
-         <Skeleton className="h-8 w-32" />
+      <div className="flex items-baseline gap-4">
+        <Skeleton className="h-6 w-16" />
+        <Skeleton className="h-6 w-20" />
+      </div>
+      <hr className="border-border/50"/>
+      <Skeleton className="h-4 w-1/3 mb-1" />
+      <Skeleton className="h-3 w-3/4" />
+      <Skeleton className="h-3 w-2/3" />
+      <div className="pt-3 mt-auto border-t border-border/50">
+        <Skeleton className="h-8 w-full" />
       </div>
     </div>
   );
@@ -74,3 +82,4 @@ function ImageSkeleton() {
         </svg>
     );
 }
+

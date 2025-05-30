@@ -51,23 +51,24 @@ export function PlanComparisonTable({ plansToCompare, currentLanguage }: PlanCom
     { key: 'additionalBenefits', label: lang === 'hindi' ? 'अतिरिक्त लाभ' : 'Additional Benefits' },
   ];
 
-  const getDisplayValue = (plan: TelecomPlan, featureKey: keyof TelecomPlan | 'price' | 'dataPerDay') => {
-    if (lang === 'hindi') {
-      switch (featureKey) {
-        case 'planNameDisplay': return plan.planNameDisplay_hi || plan.planNameDisplay || `${plan.operator} Plan`;
-        case 'data': return plan.data_hi || plan.data;
-        case 'talktime': return plan.talktime_hi || plan.talktime;
-        case 'sms': return plan.sms_hi || plan.sms;
-        case 'additionalBenefits': return plan.additionalBenefits_hi?.join(', ') || plan.additionalBenefits?.join(', ') || '-';
-        default: // for price and validity (which are numbers) or other non-translated fields
-          return plan[featureKey as keyof TelecomPlan]?.toString() || '-';
-      }
-    }
-    // English default
+  const getDisplayValue = (plan: TelecomPlan, featureKey: keyof TelecomPlan | 'price') => {
+    const isHindi = lang === 'hindi';
     switch (featureKey) {
-        case 'additionalBenefits': return plan.additionalBenefits?.join(', ') || '-';
-        default:
-            return plan[featureKey as keyof TelecomPlan]?.toString() || '-';
+      case 'price':
+        return plan.price.toString();
+      case 'data':
+        return (isHindi && plan.data_hi) ? plan.data_hi : plan.data || '-';
+      case 'talktime':
+        return (isHindi && plan.talktime_hi) ? plan.talktime_hi : plan.talktime || '-';
+      case 'sms':
+        return (isHindi && plan.sms_hi) ? plan.sms_hi : plan.sms || '-';
+      case 'validity':
+        return plan.validity.toString();
+      case 'additionalBenefits':
+        const benefits = (isHindi && plan.additionalBenefits_hi) ? plan.additionalBenefits_hi : plan.additionalBenefits;
+        return benefits && benefits.length > 0 ? benefits.join(', ') : '-';
+      default:
+        return (plan[featureKey as keyof TelecomPlan] as any)?.toString() || '-';
     }
   };
 
@@ -127,3 +128,4 @@ export function PlanComparisonTable({ plansToCompare, currentLanguage }: PlanCom
     </Card>
   );
 }
+

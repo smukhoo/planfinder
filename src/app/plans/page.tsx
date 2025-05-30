@@ -4,20 +4,15 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getTelecomPlans, type TelecomPlan, type TelecomPlanFilter } from '@/services/telecom-plans';
 import { PlanList } from '@/components/plans/plan-list';
-import { FilterBar, type AdditionalFeatures } from '@/components/plans/filter-bar';
+import { FilterBar } from '@/components/plans/filter-bar'; // Removed AdditionalFeatures as it's not used here
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { PlanComparisonTable } from '@/components/plans/plan-comparison-table';
 import { useSearchParams } from 'next/navigation';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogClose } from '@/components/ui/dialog';
-import { Loader2, CompareArrows, Search as SearchIcon, ListFilter } from 'lucide-react';
-import { PaginationControls } from '@/components/plans/pagination-controls';
-import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Loader2, CompareArrows } from 'lucide-react';
 
 const MAX_COMPARE_PLANS = 3;
-const PLANS_PER_PAGE = 5;
 type Language = 'english' | 'hindi' | 'tamil';
 
 export default function PlanDiscoveryPage() {
@@ -27,20 +22,13 @@ export default function PlanDiscoveryPage() {
   const [allPlans, setAllPlans] = useState<TelecomPlan[]>([]);
   const [filteredPlans, setFilteredPlans] = useState<TelecomPlan[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
-
+  
   const [filters, setFilters] = useState<TelecomPlanFilter>({
     operator: initialOperator,
     minPrice: undefined,
     maxPrice: undefined,
     dataPerDay: undefined,
     validity: undefined,
-  });
-  const [additionalFeatures, setAdditionalFeatures] = useState<AdditionalFeatures>({
-    unlimitedCalls: false,
-    sms: false,
-    internationalRoaming: false,
   });
 
   const [allOperators, setAllOperators] = useState<string[]>([]);
@@ -57,8 +45,6 @@ export default function PlanDiscoveryPage() {
 
   const [selectedForCompare, setSelectedForCompare] = useState<string[]>([]);
   const [currentLanguage, setCurrentLanguage] = useState<Language>('english');
-  const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
 
   const fetchAndProcessPlans = useCallback(async () => {
     setLoading(true);
@@ -95,22 +81,18 @@ export default function PlanDiscoveryPage() {
       let currentFilters = { ...filters };
       if (initialOperator && !currentFilters.operator) {
         currentFilters.operator = initialOperator;
-        setFilters(currentFilters); // This will trigger the other useEffect for filtering
+        setFilters(currentFilters); 
       }
     } catch (error) {
       console.error("Failed to fetch plans:", error);
-      // Potentially set an error state to display to the user
     } finally {
       setLoading(false);
     }
-  }, [initialOperator]); // Removed filters from here to avoid loops
+  }, [initialOperator]); // Removed filters to prevent loops
 
-  // This function contains the core filtering logic.
   const performFiltering = useCallback((
     plansToFilter: TelecomPlan[],
-    currentFilters: TelecomPlanFilter,
-    currentAdditionalFeatures: AdditionalFeatures,
-    currentSearchTerm: string
+    currentFilters: TelecomPlanFilter
   ): TelecomPlan[] => {
     let tempFilteredPlans = [...plansToFilter];
 
@@ -135,42 +117,6 @@ export default function PlanDiscoveryPage() {
     if (currentFilters.validity !== undefined) {
       tempFilteredPlans = tempFilteredPlans.filter(plan => plan.validity === currentFilters.validity);
     }
-
-    if (currentAdditionalFeatures.unlimitedCalls) {
-        tempFilteredPlans = tempFilteredPlans.filter(plan => plan.talktime && plan.talktime.toLowerCase().includes('unlimited'));
-    }
-    if (currentAdditionalFeatures.sms) {
-        tempFilteredPlans = tempFilteredPlans.filter(plan => {
-            if (!plan.sms) return false;
-            const smsLower = plan.sms.toLowerCase();
-            if (smsLower.includes('unlimited') || smsLower.includes('/day')) return true;
-            const smsCount = parseInt(plan.sms); // parseInt will handle cases like "100 SMS" by returning 100
-            return !isNaN(smsCount) && smsCount > 0;
-        });
-    }
-    if (currentAdditionalFeatures.internationalRoaming) {
-        tempFilteredPlans = tempFilteredPlans.filter(plan => plan.additionalBenefits?.some(b => typeof b === 'string' && b.toLowerCase().includes('roaming')));
-    }
-
-    if (currentSearchTerm) {
-      const lowerSearchTerm = currentSearchTerm.toLowerCase();
-      tempFilteredPlans = tempFilteredPlans.filter(plan => {
-        const checkString = (s: string | number | undefined | null) => s ? String(s).toLowerCase().includes(lowerSearchTerm) : false;
-        return (
-          checkString(plan.operator) ||
-          checkString(plan.price) ||
-          checkString(plan.data) ||
-          checkString(plan.talktime) ||
-          checkString(plan.sms) ||
-          checkString(plan.validity) ||
-          checkString(plan.planNameDisplay) ||
-          checkString(plan.category) ||
-          checkString(plan.callout) ||
-          (plan.additionalBenefits?.some(b => typeof b === 'string' && b.toLowerCase().includes(lowerSearchTerm))) ||
-          (plan.ottServices?.some(ott => typeof ott.name === 'string' && ott.name.toLowerCase().includes(lowerSearchTerm)))
-        );
-      });
-    }
     return tempFilteredPlans;
   }, []);
 
@@ -180,21 +126,14 @@ export default function PlanDiscoveryPage() {
   }, [fetchAndProcessPlans]);
   
   useEffect(() => {
-    const newFiltered = performFiltering(allPlans, filters, additionalFeatures, searchTerm);
+    const newFiltered = performFiltering(allPlans, filters);
     setFilteredPlans(newFiltered);
-    // Reset pagination and comparison only if the actual filter criteria or source data changed
-    // This prevents resetting when filteredPlans itself changes due to this effect
     setSelectedForCompare([]);
-    setCurrentPage(1);
-  }, [allPlans, filters, additionalFeatures, searchTerm, performFiltering]);
+  }, [allPlans, filters, performFiltering]);
 
 
   const handleFilterChange = (newFilters: TelecomPlanFilter) => {
     setFilters(newFilters);
-  };
-
-  const handleAdditionalFeaturesChange = (newAdditionalFeatures: AdditionalFeatures) => {
-    setAdditionalFeatures(newAdditionalFeatures);
   };
 
   const handlePlanSelectionForCompare = (planId: string) => {
@@ -213,37 +152,19 @@ export default function PlanDiscoveryPage() {
 
   const plansToCompare = allPlans.filter(plan => selectedForCompare.includes(plan.id || plan.rechargeUrl));
 
-  const totalPages = Math.ceil(filteredPlans.length / PLANS_PER_PAGE);
-  const startIndex = (currentPage - 1) * PLANS_PER_PAGE;
-  const endIndex = startIndex + PLANS_PER_PAGE;
-  const currentPlansToDisplay = filteredPlans.slice(startIndex, endIndex);
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    if (typeof window !== 'undefined') {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  };
-
-  const filterBarContent = (
-    <FilterBar
-      filters={filters}
-      onFilterChange={handleFilterChange}
-      allOperators={allOperators}
-      allDataOptions={allDataOptions}
-      allValidityOptions={allValidityOptions}
-      priceBrackets={priceBrackets}
-      additionalFeatures={additionalFeatures}
-      onAdditionalFeaturesChange={handleAdditionalFeaturesChange}
-    />
-  );
-
   return (
     <div className="container mx-auto px-4 py-8 md:px-6">
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        <aside className="hidden lg:block lg:col-span-1 space-y-6 sticky top-24 h-fit">
+        <aside className="lg:col-span-1 space-y-6 sticky top-24 h-fit">
           <h2 className="text-2xl font-semibold text-foreground">Filters</h2>
-          {filterBarContent}
+          <FilterBar
+            filters={filters}
+            onFilterChange={handleFilterChange}
+            allOperators={allOperators}
+            allDataOptions={allDataOptions}
+            allValidityOptions={allValidityOptions}
+            priceBrackets={priceBrackets}
+          />
         </aside>
 
         <main className="lg:col-span-3">
@@ -257,21 +178,6 @@ export default function PlanDiscoveryPage() {
               </p>
             </div>
             <div className="flex items-center gap-2 sm:gap-4">
-               <Sheet open={isFilterSheetOpen} onOpenChange={setIsFilterSheetOpen}>
-                <SheetTrigger asChild>
-                  <Button variant="outline" className="lg:hidden">
-                    <ListFilter className="mr-2 h-4 w-4" /> Filters
-                  </Button>
-                </SheetTrigger>
-                <SheetContent side="left" className="w-[300px] sm:w-[400px] p-0 overflow-y-auto">
-                  <SheetHeader className="p-6 pb-2">
-                    <SheetTitle className="text-xl">Filters</SheetTitle>
-                  </SheetHeader>
-                  <div className="p-6 pt-0 space-y-4">
-                    {filterBarContent}
-                  </div>
-                </SheetContent>
-              </Sheet>
                <Select defaultValue="popularity">
                 <SelectTrigger className="w-full sm:w-[180px]">
                   <SelectValue placeholder="Sort By" />
@@ -283,51 +189,24 @@ export default function PlanDiscoveryPage() {
                   <SelectItem value="validity-desc">Validity: High to Low</SelectItem>
                 </SelectContent>
               </Select>
-              <Dialog open={isCompareModalOpen} onOpenChange={setIsCompareModalOpen}>
-                <DialogTrigger asChild>
-                  <Button 
-                    variant="outline" 
-                    disabled={selectedForCompare.length < 1}
-                    className="border-primary text-primary hover:bg-primary/10 hover:text-primary"
-                  >
-                    <CompareArrows className="mr-2 h-4 w-4" />
-                    Compare ({selectedForCompare.length})
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle>Plan Comparison</DialogTitle>
-                    <DialogDescription>
-                      Comparing {selectedForCompare.length} selected plan{selectedForCompare.length === 1 ? '' : 's'}. 
-                      Select up to {MAX_COMPARE_PLANS} plans to compare.
-                    </DialogDescription>
-                  </DialogHeader>
-                  {plansToCompare.length > 0 ? (
-                    <PlanComparisonTable plansToCompare={plansToCompare} currentLanguage={currentLanguage} />
-                  ) : (
-                    <p className="text-muted-foreground text-center py-8">
-                      No plans selected or available for comparison. Please select at least one plan.
-                    </p>
-                  )}
-                  <DialogClose asChild>
-                      <Button type="button" variant="outline" className="mt-4">
-                        Close
-                      </Button>
-                  </DialogClose>
-                </DialogContent>
-              </Dialog>
+              <Button 
+                variant="outline" 
+                disabled={selectedForCompare.length < 1}
+                className="border-primary text-primary hover:bg-primary/10 hover:text-primary"
+                onClick={() => {
+                    if (selectedForCompare.length > 0) {
+                         // Logic to scroll to comparison table or open modal if re-added
+                        const comparisonTable = document.getElementById('plan-comparison-table');
+                        comparisonTable?.scrollIntoView({ behavior: 'smooth' });
+                    } else {
+                        alert("Please select at least one plan to compare.");
+                    }
+                }}
+              >
+                <CompareArrows className="mr-2 h-4 w-4" />
+                Compare ({selectedForCompare.length})
+              </Button>
             </div>
-          </div>
-
-          <div className="mb-6 relative">
-            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search plans (e.g., '5gb', 'unlimited calls', 'hotstar')..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10"
-            />
           </div>
 
           <Tabs defaultValue="english" className="mb-6" onValueChange={(value) => setCurrentLanguage(value as Language)}>
@@ -345,23 +224,26 @@ export default function PlanDiscoveryPage() {
           ) : (
             <>
               <PlanList
-                plans={currentPlansToDisplay} 
+                plans={filteredPlans} // Show all filtered plans
                 loading={loading}
                 selectedForCompare={selectedForCompare}
                 onPlanSelect={handlePlanSelectionForCompare}
                 currentLanguage={currentLanguage}
               />
-              {filteredPlans.length > PLANS_PER_PAGE && (
-                <PaginationControls
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={handlePageChange}
-                  itemsPerPage={PLANS_PER_PAGE}
-                  totalItems={filteredPlans.length}
-                />
-              )}
             </>
           )}
+          
+          {filteredPlans.length > 0 && plansToCompare.length > 0 && (
+            <div id="plan-comparison-table" className="mt-12">
+              <PlanComparisonTable plansToCompare={plansToCompare} currentLanguage={currentLanguage} />
+            </div>
+          )}
+          {filteredPlans.length > 0 && plansToCompare.length === 0 && selectedForCompare.length > 0 && (
+             <div id="plan-comparison-table" className="mt-12 text-center text-muted-foreground">
+                Select valid plans to compare. Some selected plans might have been filtered out.
+            </div>
+          )}
+
         </main>
       </div>
     </div>

@@ -170,9 +170,16 @@ export function DataUsageSection({ dataStatus, appConsumption, usagePatterns, ca
                           type="number"
                           domain={[0, 2]} 
                           ticks={yAxisTicks} 
-                          allowDecimals={true}
+                          tickFormatter={(value) => {
+                            const numValue = Number(value);
+                            if (isNaN(numValue)) {
+                              return String(value); 
+                            }
+                            return `${numValue.toFixed(1)}GB`;
+                          }}
                           interval={0} 
-                          tickFormatter={(value) => `${value.toFixed(1)}GB`}
+                          allowDecimals={true}
+                          minTickGap={1} 
                           tickLine={false}
                           axisLine={false}
                           tickMargin={10}
@@ -200,4 +207,5 @@ export function DataUsageSection({ dataStatus, appConsumption, usagePatterns, ca
     
 
     
+
 

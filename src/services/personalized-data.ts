@@ -11,7 +11,7 @@ import type {
   MockTravelRecommendation,
 } from '@/types/personalized';
 import type { TelecomPlan } from '@/services/telecom-plans';
-import { Instagram, Youtube, Facebook, Wifi, ShoppingCart, Globe, Video, MessageSquare } from 'lucide-react'; // Added MessageSquare
+import { Instagram, Youtube, Facebook, Wifi, ShoppingCart, Globe, Video, MessageSquare } from 'lucide-react';
 
 // Sample TelecomPlan objects (can be fetched or defined more robustly)
 const samplePlan1: TelecomPlan = {
@@ -107,7 +107,7 @@ const highUsageUser: MockPersonalizedData = {
     validityDate: 'August 15, 2025', // Example for an 84-day plan
   },
   appConsumption: [
-    { id: '1', name: 'WhatsApp (Video Calls)', icon: MessageSquare, usageGB: 1.0, usagePercentage: 60 }, // Adjusted to make space for others
+    { id: '1', name: 'WhatsApp (Video Calls)', icon: MessageSquare, usageGB: 1.0, usagePercentage: 60 },
     { id: '2', name: 'Instagram', icon: Instagram, usageGB: 0.2, usagePercentage: 15 },
     { id: '3', name: 'YouTube', icon: Youtube, usageGB: 0.15, usagePercentage: 10 },
     { id: '4', name: 'Chrome', icon: Globe, usageGB: 0.1, usagePercentage: 10 },
@@ -146,6 +146,28 @@ const highUsageUser: MockPersonalizedData = {
   lastUpdated: 'Just now',
 };
 
+
+// New recommended plan for Amit Singh
+const amitRecommendedPlan: TelecomPlan = {
+  operator: 'Jio',
+  price: 548,
+  data: '7GB', // Bulk data
+  data_hi: '7जीबी',
+  talktime: 'Unlimited Calls',
+  talktime_hi: 'अनलिमिटेड कॉल्स',
+  sms: '100/day', // Standard assumption
+  sms_hi: '100/दिन',
+  validity: 84,
+  additionalBenefits: ['JioTV', 'JioCinema Access'], // Generic Jio benefits
+  additionalBenefits_hi: ['जियो टीवी', 'जियो सिनेमा एक्सेस'],
+  rechargeUrl: 'https://www.jio.com/selfcare/plans/mobility/prepaid-plans-home/',
+  id: 'jio-548-bulk-amit',
+  category: 'AI Recommended',
+  planNameDisplay: "AI Value Saver 548",
+  planNameDisplay_hi: "AI वैल्यू सेवर ५४८",
+  callout: "Save ₹291 and get ample bulk data!",
+};
+
 const moderateUser: MockPersonalizedData = {
   userProfile: {
     name: 'Amit Singh',
@@ -155,27 +177,36 @@ const moderateUser: MockPersonalizedData = {
     avatarFallback: 'AS',
     avatarHint: 'man glasses'
   },
-  dataStatus: {
-    remainingDataGB: 20.5,
-    totalDataGB: 56.0,
-    validityDate: 'August 20, 2025',
+  dataStatus: { // Assuming this is his status *before* ConnectPlan on the old plan
+    remainingDataGB: 20.5, // Could be mid-cycle on his 1.5GB/day plan
+    totalDataGB: 1.5 * 84, // Total data he would get from 1.5GB/day plan over 84 days
+    validityDate: 'August 20, 2025', // Example
   },
-  appConsumption: [
+  appConsumption: [ // Kept original consumption for now, can be adjusted
     { id: '1', name: 'YouTube', icon: Youtube, usageGB: 10.2, usagePercentage: 50 },
     { id: '2', name: 'WhatsApp', icon: MessageSquare, usageGB: 5.0, usagePercentage: 25 },
     { id: '3', name: 'Amazon Shopping', icon: ShoppingCart, usageGB: 3.0, usagePercentage: 15 },
     { id: '4', name: 'Chrome', icon: Globe, usageGB: 2.0, usagePercentage: 10 },
   ],
-  usagePatterns: [
+  usagePatterns: [ // Illustrative weekly usage
     { date: 'Week 1', usageGB: 5.0 },
     { date: 'Week 2', usageGB: 6.5 },
     { date: 'Week 3', usageGB: 4.8 },
     { date: 'Week 4', usageGB: 5.5 },
   ],
   costSaving: {
-    averageUsageGB: 1.0,
-    potentialSavingINR: 120,
-    recommendedPlan: { ...samplePlan1, price: 199, data: '1GB/day', id: 'jio-199', additionalBenefits: ['Free Hellotunes'] },
+    averageUsageGB: (7 / 84) * 30, // Approx monthly usage based on new plan's data
+    potentialSavingINR: 291, // 839 - 548
+    recommendedPlan: amitRecommendedPlan,
+    previousPlanCost: 839,
+    previousPlanData: "1.5GB/day",
+    previousTotalSpending: 839, // Assuming no top-ups for Amit's moderate scenario, just inefficient base plan
+    scenarioDescription: "You're currently on a ₹839 plan (1.5GB/day for 84 days). We noticed you don't use the included 'Rewards Mini Subscription'. Our AI suggests switching to a ₹548 plan which offers 7GB of bulk data and unlimited calls for 84 days. This could save you ₹291!",
+  },
+  ottRecommendation: {
+    usedOttApp: "Rewards Mini Subscription", // From his previous ₹839 plan
+    recommendedPlan: amitRecommendedPlan,
+    notes: "The 'Rewards Mini Subscription' from your previous ₹839 plan seems to be unused. The recommended ₹548 plan focuses on providing better data value and cost savings, which aligns better with your needs.",
   },
   lastUpdated: '1 hour ago',
 };
@@ -205,7 +236,7 @@ export async function getPersonalizedData(scenario: 'highUsage' | 'moderateUsage
   switch (scenario) {
     case 'highUsage': // This now represents Priya Sharma
       return highUsageUser;
-    case 'moderateUsage':
+    case 'moderateUsage': // This now represents Amit Singh
       return moderateUser;
     case 'newUser':
       return newUser;

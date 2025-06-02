@@ -31,27 +31,35 @@ export interface MockUsagePatternPoint {
 }
 
 export interface MockCostSavingRecommendation {
-  averageUsageGB: number;
-  potentialSavingINR: number;
+  averageUsageGB: number; // Her actual need/usage that led to top-ups
+  potentialSavingINR: number; // The final saving amount (e.g., 804) over the cycle
   recommendedPlan: TelecomPlan;
+  // Fields to help tell Priya's story
+  previousPlanCost?: number; // e.g., 839 (base cost of old plan)
+  previousPlanData?: string; // e.g., "1.5GB/day"
+  topUpCost?: number; // e.g., 77 (cost of one top-up)
+  topUpFrequency?: string; // e.g., "almost weekly"
+  previousTotalSpending?: number; // e.g., 1783 (estimated actual spending over cycle)
+  scenarioDescription?: string; // A short description of the problem
 }
 
 export interface MockOttRecommendation {
-  usedOttApp: string;
-  recommendedPlan: TelecomPlan;
+  usedOttApp?: string; // The OTT she had or was analyzed
+  recommendedPlan: TelecomPlan; // The new plan context
+  notes?: string; // e.g., "Previous OTT was unused, new plan focuses on core needs."
 }
 
 export interface MockTravelRecommendation {
   destination: string;
   travelDate: string; // e.g., "July 2025"
-  recommendedPack: TelecomPlan; // Using TelecomPlan for simplicity, can be a specific RoamingPack type later
+  recommendedPack: TelecomPlan;
 }
 
 export interface MockPersonalizedData {
   userProfile: MockUserProfile;
   dataStatus: MockDataStatus;
   appConsumption: MockAppConsumption[];
-  usagePatterns: MockUsagePatternPoint[]; // For a line/bar chart
+  usagePatterns: MockUsagePatternPoint[];
   costSaving?: MockCostSavingRecommendation;
   ottRecommendation?: MockOttRecommendation;
   travelRecommendation?: MockTravelRecommendation;

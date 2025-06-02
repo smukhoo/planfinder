@@ -102,19 +102,19 @@ const highUsageUser: MockPersonalizedData = {
     avatarHint: 'woman developer glasses' // More specific hint
   },
   dataStatus: { // Reflects her situation *before* ConnectPlan on a typical day
-    remainingDataGB: 0.15, // Almost out of her 1.5GB daily allowance
-    totalDataGB: 1.5,      // Daily allowance from her ₹839 plan
+    remainingDataGB: 0.15, // Almost out of her 1.5GB daily mobile allowance
+    totalDataGB: 1.5,      // Daily mobile allowance from her ₹839 plan
     validityDate: 'August 15, 2025', // Example for an 84-day plan
   },
-  appConsumption: [
+  appConsumption: [ // These apps primarily consume mobile data during commute
     { id: '1', name: 'WhatsApp (Video Calls)', icon: MessageSquare, usageGB: 1.0, usagePercentage: 60 },
     { id: '2', name: 'Instagram', icon: Instagram, usageGB: 0.2, usagePercentage: 15 },
     { id: '3', name: 'YouTube', icon: Youtube, usageGB: 0.15, usagePercentage: 10 },
     { id: '4', name: 'Chrome', icon: Globe, usageGB: 0.1, usagePercentage: 10 },
-    { id: '5', name: 'Other Apps', icon: Wifi, usageGB: 0.05, usagePercentage: 5 },
+    { id: '5', name: 'Other Apps (Mobile)', icon: Wifi, usageGB: 0.05, usagePercentage: 5 }, // Renamed for clarity
   ],
-  usagePatterns: [ // Showing daily data frequently hitting limit
-    { date: 'Mon', usageGB: 1.5 },
+  usagePatterns: [ // Showing daily *mobile data* usage frequently hitting limit
+    { date: 'Mon', usageGB: 1.5 }, // usageGB here means mobile data usage for the chart
     { date: 'Tue', usageGB: 1.6 }, // Exceeded, implies top-up needed
     { date: 'Wed', usageGB: 1.5 },
     { date: 'Thu', usageGB: 1.7 }, // Exceeded
@@ -123,20 +123,20 @@ const highUsageUser: MockPersonalizedData = {
     { date: 'Sun', usageGB: 1.6 }, // Exceeded
   ],
   costSaving: {
-    averageUsageGB: 1.7, // Her effective daily need that caused top-ups
+    averageUsageGB: 1.7, // Her effective daily *mobile data* need that caused top-ups
     potentialSavingINR: 804, // Actual saving over 84 days (1783 - 979)
     recommendedPlan: priyaRecommendedPlan,
     previousPlanCost: 839,
-    previousPlanData: "1.5GB/day",
+    previousPlanData: "1.5GB/day (Mobile)",
     topUpCost: 77,
     topUpFrequency: "almost weekly",
     previousTotalSpending: 1783, // Her actual spend over 84 days (839 + ~12*77)
-    scenarioDescription: "Your daily 1.5GB data often runs out during your commute video calls, forcing frequent ₹77 top-ups. Over 84 days, this adds up to ₹1,783!",
+    scenarioDescription: "Your daily 1.5GB mobile data often runs out during your bus commute video calls, forcing frequent ₹77 top-ups. While you might use WiFi at home/work, this critical mobile usage adds up to ₹1,783 over 84 days!",
   },
   ottRecommendation: {
     usedOttApp: "Airtel Rewards Mini Subscription", // From her ₹839 plan
     recommendedPlan: priyaRecommendedPlan, // The new plan might have different/no OTT, focus is data fix
-    notes: "The Rewards Mini subscription from your previous plan seemed unused. This new plan prioritizes your crucial data needs for video calls, ensuring a seamless experience without paying for unutilized OTT benefits.",
+    notes: "The Rewards Mini subscription from your previous plan seemed unused. This new plan prioritizes your crucial mobile data needs for video calls, ensuring a seamless experience without paying for unutilized OTT benefits.",
   },
   travelRecommendation: { // Adding a travel recommendation for Priya
     destination: 'Dubai, UAE',
@@ -147,28 +147,28 @@ const highUsageUser: MockPersonalizedData = {
 };
 
 
-// New recommended plan for Amit Singh
-const amitRecommendedPlan: TelecomPlan = {
+// New recommended plan for Amit Singh (low mobile data user)
+const amitRecommendedPlanLowMobile: TelecomPlan = {
   operator: 'Jio',
-  price: 548,
-  data: '7GB', // Bulk data
-  data_hi: '7जीबी',
+  price: 395,
+  data: '6GB', // Total data for 84 days
+  data_hi: '6जीबी',
   talktime: 'Unlimited Calls',
   talktime_hi: 'अनलिमिटेड कॉल्स',
-  sms: '100/day', // Standard assumption
-  sms_hi: '100/दिन',
+  sms: '1000 SMS', // Jio often gives bulk SMS for longer validity plans
+  sms_hi: '१००० एसएमएस',
   validity: 84,
-  additionalBenefits: ['JioTV', 'JioCinema Access'], // Generic Jio benefits
-  additionalBenefits_hi: ['जियो टीवी', 'जियो सिनेमा एक्सेस'],
+  additionalBenefits: ['JioTV Basic', 'JioCinema Basic'],
+  additionalBenefits_hi: ['जियो टीवी बेसिक', 'जियो सिनेमा बेसिक'],
   rechargeUrl: 'https://www.jio.com/selfcare/plans/mobility/prepaid-plans-home/',
-  id: 'jio-548-bulk-amit',
+  id: 'jio-395-6gb-84d-amit',
   category: 'AI Recommended',
-  planNameDisplay: "AI Value Saver 548",
-  planNameDisplay_hi: "AI वैल्यू सेवर ५४८",
-  callout: "Save ₹291 and get ample bulk data!",
+  planNameDisplay: "AI WiFi Companion 395",
+  planNameDisplay_hi: "AI वाईफाई साथी ३९५",
+  callout: "Perfect for WiFi users, save ₹444!",
 };
 
-const moderateUser: MockPersonalizedData = {
+const moderateUser: MockPersonalizedData = { // Amit Singh
   userProfile: {
     name: 'Amit Singh',
     mobileNumber: 'XXXXXX1234',
@@ -177,36 +177,40 @@ const moderateUser: MockPersonalizedData = {
     avatarFallback: 'AS',
     avatarHint: 'man glasses'
   },
-  dataStatus: { // Assuming this is his status *before* ConnectPlan on the old plan
-    remainingDataGB: 20.5, // Could be mid-cycle on his 1.5GB/day plan
-    totalDataGB: 1.5 * 84, // Total data he would get from 1.5GB/day plan over 84 days
-    validityDate: 'August 20, 2025', // Example
+  dataStatus: { // Reflects his current mobile plan status
+    remainingDataGB: 5.8, // Example: if he's on the 6GB/84 day plan already, or remaining from an old one.
+    totalDataGB: 6.0,   // From his low-usage mobile plan
+    validityDate: 'September 10, 2025', // Example
   },
-  appConsumption: [ // Kept original consumption for now, can be adjusted
-    { id: '1', name: 'YouTube', icon: Youtube, usageGB: 10.2, usagePercentage: 50 },
-    { id: '2', name: 'WhatsApp', icon: MessageSquare, usageGB: 5.0, usagePercentage: 25 },
-    { id: '3', name: 'Amazon Shopping', icon: ShoppingCart, usageGB: 3.0, usagePercentage: 15 },
-    { id: '4', name: 'Chrome', icon: Globe, usageGB: 2.0, usagePercentage: 10 },
+  appConsumption: [ // Apps that *might* use mobile data when he's out
+    { id: '1', name: 'WhatsApp', icon: MessageSquare, usageGB: 0.1, usagePercentage: 40 }, // Low mobile usage
+    { id: '2', name: 'Google Maps', icon: Globe, usageGB: 0.05, usagePercentage: 20 },
+    { id: '3', name: 'Banking App', icon: ShoppingCart, usageGB: 0.05, usagePercentage: 20 }, // Assuming banking app icon
+    { id: '4', name: 'Browser (Occasional)', icon: Globe, usageGB: 0.05, usagePercentage: 20 },
   ],
-  usagePatterns: [ // Illustrative weekly usage
-    { date: 'Week 1', usageGB: 5.0 },
-    { date: 'Week 2', usageGB: 6.5 },
-    { date: 'Week 3', usageGB: 4.8 },
-    { date: 'Week 4', usageGB: 5.5 },
+  usagePatterns: [ // Showing daily *mobile data* usage (very low)
+    // Daily mobile data usage averaging < 50MB (0.05GB)
+    { date: 'Mon', usageGB: 0.04 },
+    { date: 'Tue', usageGB: 0.02 },
+    { date: 'Wed', usageGB: 0.05 },
+    { date: 'Thu', usageGB: 0.03 },
+    { date: 'Fri', usageGB: 0.06 },
+    { date: 'Sat', usageGB: 0.07 }, // Slightly more on weekend
+    { date: 'Sun', usageGB: 0.04 },
   ],
   costSaving: {
-    averageUsageGB: (7 / 84) * 30, // Approx monthly usage based on new plan's data
-    potentialSavingINR: 291, // 839 - 548
-    recommendedPlan: amitRecommendedPlan,
+    averageUsageGB: 0.05, // His typical daily *mobile data* usage
+    potentialSavingINR: 444, // 839 (old plan) - 395 (new plan)
+    recommendedPlan: amitRecommendedPlanLowMobile,
     previousPlanCost: 839,
-    previousPlanData: "1.5GB/day",
-    previousTotalSpending: 839, // Assuming no top-ups for Amit's moderate scenario, just inefficient base plan
-    scenarioDescription: "You're currently on a ₹839 plan (1.5GB/day for 84 days). We noticed you don't use the included 'Rewards Mini Subscription'. Our AI suggests switching to a ₹548 plan which offers 7GB of bulk data and unlimited calls for 84 days. This could save you ₹291!",
+    previousPlanData: "1.5GB/day (Mobile)",
+    previousTotalSpending: 839, // Assuming no top-ups, just an inefficient base plan
+    scenarioDescription: "We see you're a heavy WiFi user (around 3GB/day) and use very little mobile data (typically under 50MB/day). Your previous ₹839 mobile plan (1.5GB/day) seems excessive for your mobile needs. By switching to the Jio ₹395 plan (6GB total data for 84 days, unlimited calls), you could save ₹444 while still having sufficient mobile data for when you're away from WiFi. This plan also doesn't include the 'Rewards Mini Subscription' which you weren't using.",
   },
   ottRecommendation: {
     usedOttApp: "Rewards Mini Subscription", // From his previous ₹839 plan
-    recommendedPlan: amitRecommendedPlan,
-    notes: "The 'Rewards Mini Subscription' from your previous ₹839 plan seems to be unused. The recommended ₹548 plan focuses on providing better data value and cost savings, which aligns better with your needs.",
+    recommendedPlan: amitRecommendedPlanLowMobile,
+    notes: "The 'Rewards Mini Subscription' from your previous ₹839 plan was likely unused given your primary WiFi usage. The recommended Jio ₹395 plan focuses on essential mobile connectivity at a much lower cost.",
   },
   lastUpdated: '1 hour ago',
 };
@@ -226,7 +230,7 @@ const newUser: MockPersonalizedData = {
     validityDate: 'N/A',
   },
   appConsumption: [],
-  usagePatterns: [],
+  usagePatterns: [], // This `usageGB` will represent mobile data usage for the chart
   lastUpdated: 'N/A',
 };
 

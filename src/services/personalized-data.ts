@@ -40,17 +40,25 @@ const samplePlan2: TelecomPlan = {
   category: 'Entertainment',
 };
 
-const sampleRoamingPack: TelecomPlan = {
-  operator: 'Vi',
-  price: 2999,
-  data: '5GB Global Data',
-  talktime: '100 mins Local/India',
-  sms: '20 SMS',
-  validity: 30,
-  additionalBenefits: ['Valid in 80+ countries including Dubai'],
-  rechargeUrl: 'https://www.myvi.in/international-roaming-packs',
-  id: 'vi-ir-2999',
-  category: 'Roaming',
+// Define a specific Airtel International Roaming pack for Priya's hypothetical trip
+const airtelDubaiRoamingPack: TelecomPlan = {
+  operator: 'Airtel',
+  price: 1299, // Example price
+  data: '3GB Data',
+  data_hi: '3जीबी डेटा',
+  talktime: '100 Mins (Local/India)',
+  talktime_hi: '100 मिनट (स्थानीय/भारत)',
+  sms: '50 SMS',
+  sms_hi: '50 एसएमएस',
+  validity: 10, // Example validity
+  additionalBenefits: ['Valid in UAE (Dubai)', 'Free Incoming Calls on Wi-Fi Calling'],
+  additionalBenefits_hi: ['UAE (दुबई) में मान्य', 'वाई-फाई कॉलिंग पर मुफ्त इनकमिंग कॉल'],
+  rechargeUrl: 'https://www.airtel.in/ir-packs/',
+  id: 'airtel-ir-dubai-1299',
+  category: 'International Roaming',
+  planNameDisplay: "Airtel Dubai Roamer",
+  planNameDisplay_hi: "एयरटेल दुबई रोमर",
+  callout: "Perfect for your upcoming Dubai trip!",
 };
 
 
@@ -99,11 +107,11 @@ const highUsageUser: MockPersonalizedData = {
     validityDate: 'August 15, 2025', // Example for an 84-day plan
   },
   appConsumption: [
-    { id: '1', name: 'WhatsApp (Video Calls)', icon: MessageSquare, usageGB: 1.2, usagePercentage: 70 },
-    { id: '2', name: 'Instagram', icon: Instagram, usageGB: 0.2, usagePercentage: 12 },
-    { id: '3', name: 'YouTube', icon: Youtube, usageGB: 0.15, usagePercentage: 9 },
-    { id: '4', name: 'Chrome', icon: Globe, usageGB: 0.1, usagePercentage: 6 },
-    { id: '5', name: 'Other Apps', icon: Wifi, usageGB: 0.05, usagePercentage: 3 },
+    { id: '1', name: 'WhatsApp (Video Calls)', icon: MessageSquare, usageGB: 1.0, usagePercentage: 60 }, // Adjusted to make space for others
+    { id: '2', name: 'Instagram', icon: Instagram, usageGB: 0.2, usagePercentage: 15 },
+    { id: '3', name: 'YouTube', icon: Youtube, usageGB: 0.15, usagePercentage: 10 },
+    { id: '4', name: 'Chrome', icon: Globe, usageGB: 0.1, usagePercentage: 10 },
+    { id: '5', name: 'Other Apps', icon: Wifi, usageGB: 0.05, usagePercentage: 5 },
   ],
   usagePatterns: [ // Showing daily data frequently hitting limit
     { date: 'Mon', usageGB: 1.5 },
@@ -130,7 +138,11 @@ const highUsageUser: MockPersonalizedData = {
     recommendedPlan: priyaRecommendedPlan, // The new plan might have different/no OTT, focus is data fix
     notes: "The Rewards Mini subscription from your previous plan seemed unused. This new plan prioritizes your crucial data needs for video calls, ensuring a seamless experience without paying for unutilized OTT benefits.",
   },
-  travelRecommendation: undefined, // No travel for Priya in this story
+  travelRecommendation: { // Adding a travel recommendation for Priya
+    destination: 'Dubai, UAE',
+    travelDate: 'July 2025', // Hypothetical travel date
+    recommendedPack: airtelDubaiRoamingPack,
+  },
   lastUpdated: 'Just now',
 };
 
@@ -150,7 +162,7 @@ const moderateUser: MockPersonalizedData = {
   },
   appConsumption: [
     { id: '1', name: 'YouTube', icon: Youtube, usageGB: 10.2, usagePercentage: 50 },
-    { id: '2', name: 'WhatsApp', icon: MessageSquare, usageGB: 5.0, usagePercentage: 25 }, 
+    { id: '2', name: 'WhatsApp', icon: MessageSquare, usageGB: 5.0, usagePercentage: 25 },
     { id: '3', name: 'Amazon Shopping', icon: ShoppingCart, usageGB: 3.0, usagePercentage: 15 },
     { id: '4', name: 'Chrome', icon: Globe, usageGB: 2.0, usagePercentage: 10 },
   ],

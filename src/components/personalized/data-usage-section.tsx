@@ -5,7 +5,7 @@
 import type { MockDataStatus, MockAppConsumption, MockUsagePatternPoint } from '@/types/personalized';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { TrendingUp, List, BarChart2, ChevronRight } from 'lucide-react'; // BarChart2 used for title in page.tsx
+import { TrendingUp, List, BarChart2 as BarChart2Icon, ChevronRight } from 'lucide-react'; // Renamed BarChart2 to avoid conflict
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig } from "@/components/ui/chart";
 import { Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart as RechartsBarChart } from "recharts";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -33,6 +33,28 @@ const dataUsagePatternChartConfig = {
 } satisfies ChartConfig;
 
 const yAxisTicks = [0, 0.5, 1, 1.5, 2];
+
+// Custom Tick component for Y-Axis to hardcode labels
+const HardcodedYAxisTick = (props: any) => {
+  const { x, y, payload, index } = props; // payload might contain an original value, index is key
+
+  let tickText = '';
+  if (index >= 0 && index < yAxisTicks.length) {
+    tickText = `${yAxisTicks[index].toFixed(1)}GB`;
+  } else {
+    // Fallback if index is out of bounds, though with interval={0} and matching ticks array, it shouldn't be.
+    tickText = payload && Number.isFinite(payload.value) ? `${Number(payload.value).toFixed(1)}GB` : '';
+  }
+
+  return (
+    <g transform={`translate(${x},${y})`}>
+      <text x={0} y={0} dy={4} textAnchor="end" fill="hsl(var(--muted-foreground))" className="text-xs">
+        {tickText}
+      </text>
+    </g>
+  );
+};
+
 
 export function DataUsageSection({ dataStatus, appConsumption, usagePatterns, cardStyle }: DataUsageSectionProps) {
   const dataUsedPercentage = dataStatus.totalDataGB > 0 ? ( (dataStatus.totalDataGB - dataStatus.remainingDataGB) / dataStatus.totalDataGB) * 100 : 0;
@@ -147,7 +169,7 @@ export function DataUsageSection({ dataStatus, appConsumption, usagePatterns, ca
       <Card className={effectiveCardStyle}>
         <CardHeader>
           <CardTitle className="text-xl font-semibold text-primary flex items-center">
-            <BarChart2 className="mr-2 h-6 w-6" />
+            <BarChart2Icon className="mr-2 h-6 w-6" />
             Data Usage Patterns
           </CardTitle>
           <CardDescription>Your typical data usage over the last period.</CardDescription>
@@ -170,19 +192,12 @@ export function DataUsageSection({ dataStatus, appConsumption, usagePatterns, ca
                           type="number"
                           domain={[0, 2]} 
                           ticks={yAxisTicks} 
-                          interval={0} // Crucial for using all defined ticks
-                          tickFormatter={(_value: any, index: number) => {
-                            // Ignore _value, use index to get from our yAxisTicks
-                            if (index >= 0 && index < yAxisTicks.length) {
-                              return `${yAxisTicks[index].toFixed(1)}GB`;
-                            }
-                            return ''; // Fallback, should not be reached
-                          }}
-                          allowDecimals={true}
+                          interval={0}
                           tickLine={false}
                           axisLine={false}
-                          tickMargin={10}
-                          className="text-xs fill-muted-foreground"
+                          tickMargin={10} // Standard margin
+                          width={40} // Give enough width for "2.0GB"
+                          tick={<HardcodedYAxisTick />} // Use the custom tick component
                         />
                         <RechartsTooltip 
                             cursor={{ fill: 'hsl(var(--muted)/0.5)' }}
@@ -202,10 +217,3 @@ export function DataUsageSection({ dataStatus, appConsumption, usagePatterns, ca
   );
 }
     
-
-    
-
-    
-
-
-

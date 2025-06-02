@@ -11,7 +11,7 @@ import type {
   MockTravelRecommendation,
 } from '@/types/personalized';
 import type { TelecomPlan } from '@/services/telecom-plans';
-import { Instagram, Youtube, Facebook, Wifi, ShoppingCart, Globe, Video } from 'lucide-react'; // Added Video icon
+import { Instagram, Youtube, Facebook, Wifi, ShoppingCart, Globe, Video, MessageSquare } from 'lucide-react'; // Added MessageSquare
 
 // Sample TelecomPlan objects (can be fetched or defined more robustly)
 const samplePlan1: TelecomPlan = {
@@ -98,10 +98,12 @@ const highUsageUser: MockPersonalizedData = {
     totalDataGB: 1.5,      // Daily allowance from her ₹839 plan
     validityDate: 'August 15, 2025', // Example for an 84-day plan
   },
-  appConsumption: [ // Reflecting video call usage
-    { id: '1', name: 'Video Calls (Mother)', icon: Video, usageGB: 1.2, usagePercentage: 80 },
-    { id: '2', name: 'Social Media & Browsing', icon: Instagram, usageGB: 0.2, usagePercentage: 13 },
-    { id: '3', name: 'Other Apps', icon: Wifi, usageGB: 0.1, usagePercentage: 7 },
+  appConsumption: [
+    { id: '1', name: 'WhatsApp (Video Calls)', icon: MessageSquare, usageGB: 1.2, usagePercentage: 70 },
+    { id: '2', name: 'Instagram', icon: Instagram, usageGB: 0.2, usagePercentage: 12 },
+    { id: '3', name: 'YouTube', icon: Youtube, usageGB: 0.15, usagePercentage: 9 },
+    { id: '4', name: 'Chrome', icon: Globe, usageGB: 0.1, usagePercentage: 6 },
+    { id: '5', name: 'Other Apps', icon: Wifi, usageGB: 0.05, usagePercentage: 3 },
   ],
   usagePatterns: [ // Showing daily data frequently hitting limit
     { date: 'Mon', usageGB: 1.5 },
@@ -148,7 +150,7 @@ const moderateUser: MockPersonalizedData = {
   },
   appConsumption: [
     { id: '1', name: 'YouTube', icon: Youtube, usageGB: 10.2, usagePercentage: 50 },
-    { id: '2', name: 'WhatsApp', icon: Wifi, usageGB: 5.0, usagePercentage: 25 }, // Generic icon for WhatsApp
+    { id: '2', name: 'WhatsApp', icon: MessageSquare, usageGB: 5.0, usagePercentage: 25 }, 
     { id: '3', name: 'Amazon Shopping', icon: ShoppingCart, usageGB: 3.0, usagePercentage: 15 },
     { id: '4', name: 'Chrome', icon: Globe, usageGB: 2.0, usagePercentage: 10 },
   ],
@@ -199,3 +201,4 @@ export async function getPersonalizedData(scenario: 'highUsage' | 'moderateUsage
       return highUsageUser;
   }
 }
+

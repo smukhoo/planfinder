@@ -36,11 +36,16 @@ export function DataUsageSection({ dataStatus, appConsumption, usagePatterns, ca
   const dataUsedPercentage = dataStatus.totalDataGB > 0 ? ( (dataStatus.totalDataGB - dataStatus.remainingDataGB) / dataStatus.totalDataGB) * 100 : 0;
   const remainingPercentage = 100 - dataUsedPercentage;
 
-  // If cardStyle indicates transparent/no border (meaning it's inside an accordion), apply it.
-  // Otherwise, use a default card styling for standalone use.
   const defaultInnerCardStyle = "shadow-lg";
   const effectiveCardStyle = cardStyle && cardStyle.includes("bg-transparent") ? cardStyle : `${defaultInnerCardStyle} ${cardStyle || ''}`;
 
+  // Calculate max GB for Y-axis domain of usage patterns chart
+  const usagePatternsMaxGB = usagePatterns.length > 0 
+    ? Math.max(...usagePatterns.map(p => p.usageGB), 0)
+    : 0;
+  // Ensure domain max is at least 1, add some padding, then ceil to nearest 0.5 or integer for cleaner ticks.
+  let yAxisDomainMax = Math.max(1, usagePatternsMaxGB + 0.3);
+  yAxisDomainMax = Math.ceil(yAxisDomainMax * 2) / 2; // Rounds up to nearest 0.5
 
   return (
     <div className="space-y-6"> {/* This div is now the root, no outer Card here */}
@@ -167,7 +172,15 @@ export function DataUsageSection({ dataStatus, appConsumption, usagePatterns, ca
                           axisLine={false}
                           className="text-xs fill-muted-foreground"
                         />
-                        <YAxis tickLine={false} axisLine={false} tickMargin={10} className="text-xs fill-muted-foreground" unit="GB"/>
+                        <YAxis
+                          tickLine={false}
+                          axisLine={false}
+                          tickMargin={10}
+                          className="text-xs fill-muted-foreground"
+                          unit="GB"
+                          domain={[0, yAxisDomainMax]} 
+                          allowDecimals={true} 
+                        />
                         <RechartsTooltip 
                             cursor={{ fill: 'hsl(var(--muted)/0.5)' }}
                             content={<ChartTooltipContent indicator="dot" />} 
@@ -185,6 +198,8 @@ export function DataUsageSection({ dataStatus, appConsumption, usagePatterns, ca
     </div>
   );
 }
+    
+
     
 
     

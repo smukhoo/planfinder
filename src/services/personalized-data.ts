@@ -11,7 +11,7 @@ import type {
   MockTravelRecommendation,
 } from '@/types/personalized';
 import type { TelecomPlan } from '@/services/telecom-plans';
-import { Instagram, Youtube, Facebook, Wifi, ShoppingCart, Globe, Video, MessageSquare } from 'lucide-react';
+import { Instagram, Youtube, Facebook, Wifi, ShoppingCart, Globe, Video, MessageSquare, Music } from 'lucide-react';
 
 // Sample TelecomPlan objects (can be fetched or defined more robustly)
 const samplePlan1: TelecomPlan = {
@@ -111,7 +111,7 @@ const highUsageUser: MockPersonalizedData = {
     { id: '2', name: 'Instagram', icon: Instagram, usageGB: 0.2, usagePercentage: 15 },
     { id: '3', name: 'YouTube', icon: Youtube, usageGB: 0.15, usagePercentage: 10 },
     { id: '4', name: 'Chrome', icon: Globe, usageGB: 0.1, usagePercentage: 10 },
-    { id: '5', name: 'Other Apps (Mobile)', icon: Wifi, usageGB: 0.05, usagePercentage: 5 }, // Renamed for clarity
+    { id: '5', name: 'Other Apps (Mobile)', icon: Wifi, usageGB: 0.05, usagePercentage: 5 },
   ],
   usagePatterns: [ // Showing daily *mobile data* usage frequently hitting limit
     { date: 'Mon', usageGB: 1.5 }, // usageGB here means mobile data usage for the chart
@@ -147,70 +147,69 @@ const highUsageUser: MockPersonalizedData = {
 };
 
 
-// New recommended plan for Amit Singh (low mobile data user)
-const amitRecommendedPlanLowMobile: TelecomPlan = {
-  operator: 'Jio',
-  price: 395,
+// New recommended plan for Amit Singh (low mobile data user, now Airtel)
+const airtelRecommendedPlanLowMobile: TelecomPlan = {
+  operator: 'Airtel',
+  price: 455,
   data: '6GB', // Total data for 84 days
   data_hi: '6जीबी',
   talktime: 'Unlimited Calls',
   talktime_hi: 'अनलिमिटेड कॉल्स',
-  sms: '1000 SMS', // Jio often gives bulk SMS for longer validity plans
-  sms_hi: '१००० एसएमएस',
+  sms: '900 SMS', // Airtel often gives bulk SMS for longer validity plans
+  sms_hi: '९०० एसएमएस',
   validity: 84,
-  additionalBenefits: ['JioTV Basic', 'JioCinema Basic'],
-  additionalBenefits_hi: ['जियो टीवी बेसिक', 'जियो सिनेमा बेसिक'],
-  rechargeUrl: 'https://www.jio.com/selfcare/plans/mobility/prepaid-plans-home/',
-  id: 'jio-395-6gb-84d-amit',
+  additionalBenefits: ['Wynk Music Free', 'Free Hellotunes'],
+  additionalBenefits_hi: ['विंक म्यूजिक फ्री', 'फ्री हेलोट्यून्स'],
+  rechargeUrl: 'https://www.airtel.in/prepaid-recharge/',
+  id: 'airtel-455-6gb-84d-amit',
   category: 'AI Recommended',
-  planNameDisplay: "AI WiFi Companion 395",
-  planNameDisplay_hi: "AI वाईफाई साथी ३९५",
-  callout: "Perfect for WiFi users, save ₹444!",
+  planNameDisplay: "AI WiFi Companion 455",
+  planNameDisplay_hi: "AI वाईफाई साथी ४५५",
+  callout: "Perfect for WiFi users, save ₹384!",
 };
 
-const moderateUser: MockPersonalizedData = { // Amit Singh
+const moderateUser: MockPersonalizedData = { // Amit Singh - Now an Airtel User
   userProfile: {
     name: 'Amit Singh',
     mobileNumber: 'XXXXXX1234',
-    operator: 'Jio',
+    operator: 'Airtel', // Changed to Airtel
     avatarSrc: '/avatars/amit-singh.png',
     avatarFallback: 'AS',
     avatarHint: 'man glasses'
   },
-  dataStatus: { // Reflects his current mobile plan status
-    remainingDataGB: 5.8, // Example: if he's on the 6GB/84 day plan already, or remaining from an old one.
-    totalDataGB: 6.0,   // From his low-usage mobile plan
-    validityDate: 'September 10, 2025', // Example
+  dataStatus: {
+    remainingDataGB: 5.8, // Example remaining from a 6GB bulk plan
+    totalDataGB: 6.0,
+    validityDate: 'September 10, 2025',
   },
-  appConsumption: [ // Apps that *might* use mobile data when he's out
-    { id: '1', name: 'WhatsApp', icon: MessageSquare, usageGB: 0.1, usagePercentage: 40 }, // Low mobile usage
-    { id: '2', name: 'Google Maps', icon: Globe, usageGB: 0.05, usagePercentage: 20 },
-    { id: '3', name: 'Banking App', icon: ShoppingCart, usageGB: 0.05, usagePercentage: 20 }, // Assuming banking app icon
-    { id: '4', name: 'Browser (Occasional)', icon: Globe, usageGB: 0.05, usagePercentage: 20 },
+  appConsumption: [
+    { id: '1', name: 'WhatsApp', icon: MessageSquare, usageGB: 0.02, usagePercentage: 40 },
+    { id: '2', name: 'Google Maps', icon: Globe, usageGB: 0.01, usagePercentage: 20 },
+    { id: '3', name: 'Banking App', icon: ShoppingCart, usageGB: 0.01, usagePercentage: 20 },
+    { id: '4', name: 'Browser (Occasional)', icon: Globe, usageGB: 0.01, usagePercentage: 20 },
   ],
-  usagePatterns: [ // Showing daily *mobile data* usage (very low)
-    // Daily mobile data usage averaging < 50MB (0.05GB)
+  usagePatterns: [
     { date: 'Mon', usageGB: 0.04 },
     { date: 'Tue', usageGB: 0.02 },
     { date: 'Wed', usageGB: 0.05 },
     { date: 'Thu', usageGB: 0.03 },
     { date: 'Fri', usageGB: 0.06 },
-    { date: 'Sat', usageGB: 0.07 }, // Slightly more on weekend
+    { date: 'Sat', usageGB: 0.07 },
     { date: 'Sun', usageGB: 0.04 },
   ],
   costSaving: {
-    averageUsageGB: 0.05, // His typical daily *mobile data* usage
-    potentialSavingINR: 444, // 839 (old plan) - 395 (new plan)
-    recommendedPlan: amitRecommendedPlanLowMobile,
+    averageUsageGB: 0.05,
+    potentialSavingINR: 384, // 839 (old plan) - 455 (new plan)
+    recommendedPlan: airtelRecommendedPlanLowMobile, // Changed to Airtel plan
     previousPlanCost: 839,
     previousPlanData: "1.5GB/day (Mobile)",
-    previousTotalSpending: 839, // Assuming no top-ups, just an inefficient base plan
-    scenarioDescription: "We see you're a heavy WiFi user (around 3GB/day) and use very little mobile data (typically under 50MB/day). Your previous ₹839 mobile plan (1.5GB/day) seems excessive for your mobile needs. By switching to the Jio ₹395 plan (6GB total data for 84 days, unlimited calls), you could save ₹444 while still having sufficient mobile data for when you're away from WiFi. This plan also doesn't include the 'Rewards Mini Subscription' which you weren't using.",
+    previousTotalSpending: 839,
+    scenarioDescription: "We see you're a heavy WiFi user (around 3GB/day) and use very little mobile data (typically under 50MB/day). Your previous ₹839 mobile plan (1.5GB/day) seems excessive for your mobile needs. By switching to the Airtel ₹455 plan (6GB total data for 84 days, unlimited calls), you could save ₹384 while still having sufficient mobile data for when you're away from WiFi. This plan also doesn't include the 'Rewards Mini Subscription' which you weren't using.",
   },
   ottRecommendation: {
-    usedOttApp: "Rewards Mini Subscription", // From his previous ₹839 plan
-    recommendedPlan: amitRecommendedPlanLowMobile,
-    notes: "The 'Rewards Mini Subscription' from your previous ₹839 plan was likely unused given your primary WiFi usage. The recommended Jio ₹395 plan focuses on essential mobile connectivity at a much lower cost.",
+    usedOttApp: "Rewards Mini Subscription",
+    recommendedPlan: airtelRecommendedPlanLowMobile, // Changed to Airtel plan
+    notes: "The 'Rewards Mini Subscription' from your previous ₹839 plan was likely unused given your primary WiFi usage. The recommended Airtel ₹455 plan focuses on essential mobile connectivity at a much lower cost, including benefits like Wynk Music.",
   },
   lastUpdated: '1 hour ago',
 };
@@ -230,7 +229,7 @@ const newUser: MockPersonalizedData = {
     validityDate: 'N/A',
   },
   appConsumption: [],
-  usagePatterns: [], // This `usageGB` will represent mobile data usage for the chart
+  usagePatterns: [],
   lastUpdated: 'N/A',
 };
 
@@ -238,9 +237,9 @@ const newUser: MockPersonalizedData = {
 export async function getPersonalizedData(scenario: 'highUsage' | 'moderateUsage' | 'newUser' = 'highUsage'): Promise<MockPersonalizedData> {
   await new Promise(resolve => setTimeout(resolve, 500));
   switch (scenario) {
-    case 'highUsage': // This now represents Priya Sharma
+    case 'highUsage':
       return highUsageUser;
-    case 'moderateUsage': // This now represents Amit Singh
+    case 'moderateUsage':
       return moderateUser;
     case 'newUser':
       return newUser;
@@ -248,4 +247,3 @@ export async function getPersonalizedData(scenario: 'highUsage' | 'moderateUsage
       return highUsageUser;
   }
 }
-

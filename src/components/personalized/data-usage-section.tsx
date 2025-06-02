@@ -32,20 +32,14 @@ const dataUsagePatternChartConfig = {
   },
 } satisfies ChartConfig;
 
+const yAxisTicks = [0, 0.5, 1, 1.5, 2];
+
 export function DataUsageSection({ dataStatus, appConsumption, usagePatterns, cardStyle }: DataUsageSectionProps) {
   const dataUsedPercentage = dataStatus.totalDataGB > 0 ? ( (dataStatus.totalDataGB - dataStatus.remainingDataGB) / dataStatus.totalDataGB) * 100 : 0;
   const remainingPercentage = 100 - dataUsedPercentage;
 
   const defaultInnerCardStyle = "shadow-lg";
   const effectiveCardStyle = cardStyle && cardStyle.includes("bg-transparent") ? cardStyle : `${defaultInnerCardStyle} ${cardStyle || ''}`;
-
-  // Calculate max GB for Y-axis domain of usage patterns chart
-  const usagePatternsMaxGB = usagePatterns.length > 0 
-    ? Math.max(...usagePatterns.map(p => p.usageGB), 0)
-    : 0;
-  // Ensure domain max is at least 1, add some padding, then ceil to nearest 0.5 or integer for cleaner ticks.
-  let yAxisDomainMax = Math.max(1, usagePatternsMaxGB + 0.3);
-  yAxisDomainMax = Math.ceil(yAxisDomainMax * 2) / 2; // Rounds up to nearest 0.5
 
   return (
     <div className="space-y-6"> {/* This div is now the root, no outer Card here */}
@@ -178,7 +172,8 @@ export function DataUsageSection({ dataStatus, appConsumption, usagePatterns, ca
                           tickMargin={10}
                           className="text-xs fill-muted-foreground"
                           unit="GB"
-                          domain={[0, yAxisDomainMax]} 
+                          domain={[0, 2]} // Explicitly set domain to match ticks
+                          ticks={yAxisTicks} // Explicitly set ticks
                           allowDecimals={true} 
                         />
                         <RechartsTooltip 

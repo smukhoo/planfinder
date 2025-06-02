@@ -167,14 +167,16 @@ export function DataUsageSection({ dataStatus, appConsumption, usagePatterns, ca
                           className="text-xs fill-muted-foreground"
                         />
                         <YAxis
+                          type="number"
+                          domain={[0, 2]} 
+                          ticks={yAxisTicks} 
+                          allowDecimals={true}
+                          interval={0} 
+                          tickFormatter={(value) => `${value.toFixed(1)}GB`}
                           tickLine={false}
                           axisLine={false}
                           tickMargin={10}
                           className="text-xs fill-muted-foreground"
-                          unit="GB"
-                          domain={[0, 2]} // Explicitly set domain to match ticks
-                          ticks={yAxisTicks} // Explicitly set ticks
-                          allowDecimals={true} 
                         />
                         <RechartsTooltip 
                             cursor={{ fill: 'hsl(var(--muted)/0.5)' }}
@@ -198,3 +200,4 @@ export function DataUsageSection({ dataStatus, appConsumption, usagePatterns, ca
     
 
     
+

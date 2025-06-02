@@ -52,7 +52,7 @@ export function Header({ setIsChatOpen }: HeaderProps) { // Removed isChatOpen f
             <path d="M12 6V12L16 14" stroke="hsl(var(--primary-foreground))" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
             <path d="M10 10L14 14M14 10L10 14" stroke="hsl(var(--primary-foreground))" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-          <span className="text-xl font-bold text-foreground">Recharge Finder</span>
+          <span className="text-xl font-bold text-foreground">RechargeWise</span>
         </Link>
 
         {/* Desktop Navigation */}
@@ -105,7 +105,7 @@ export function Header({ setIsChatOpen }: HeaderProps) { // Removed isChatOpen f
                      <path d="M12 6V12L16 14" stroke="hsl(var(--primary-foreground))" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                      <path d="M10 10L14 14M14 10L10 14" stroke="hsl(var(--primary-foreground))" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                    </svg>
-                  <span className="text-xl font-bold text-foreground">Recharge Finder</span>
+                  <span className="text-xl font-bold text-foreground">RechargeWise</span>
                 </Link>
                 {navLinks.map(link => {
                   if (link.action) {

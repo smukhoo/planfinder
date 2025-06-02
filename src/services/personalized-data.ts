@@ -131,12 +131,12 @@ const highUsageUser: MockPersonalizedData = {
     topUpCost: 77,
     topUpFrequency: "almost weekly",
     previousTotalSpending: 1783, // Her actual spend over 84 days (839 + ~12*77)
-    scenarioDescription: "Your daily 1.5GB mobile data often runs out during your bus commute video calls, forcing frequent ₹77 top-ups. While you might use WiFi at home/work, this critical mobile usage adds up to ₹1,783 over 84 days!",
+    scenarioDescription: "Your daily 1.5GB mobile data often runs out, forcing frequent ₹77 top-ups. This critical mobile usage adds up to ₹1,783 over 84 days!",
   },
   ottRecommendation: {
     usedOttApp: "Airtel Rewards Mini Subscription", // From her ₹839 plan
     recommendedPlan: priyaRecommendedPlan, // The new plan might have different/no OTT, focus is data fix
-    notes: "The Rewards Mini subscription from your previous plan seemed unused. This new plan prioritizes your crucial mobile data needs for video calls, ensuring a seamless experience without paying for unutilized OTT benefits.",
+    notes: "The Rewards Mini subscription from your previous plan seemed unused. This new plan prioritizes your crucial mobile data needs, ensuring a seamless experience without paying for unutilized OTT benefits.",
   },
   travelRecommendation: { // Adding a travel recommendation for Priya
     destination: 'Dubai, UAE',

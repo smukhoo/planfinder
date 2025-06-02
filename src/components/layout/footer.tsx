@@ -14,7 +14,7 @@ export function Footer() {
             </Link>
         </div>
         <p className="text-sm text-muted-foreground">
-          &copy; {new Date().getFullYear()} Recharge Finder. All rights reserved.
+          &copy; {new Date().getFullYear()} RechargeWise. All rights reserved.
         </p>
       </div>
     </footer>
